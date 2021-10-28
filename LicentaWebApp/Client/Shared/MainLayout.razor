@@ -1,0 +1,118 @@
+﻿@inherits LayoutComponentBase
+@using MudBlazor
+
+<MudThemeProvider Theme="currentTheme"/>
+<MudDialogProvider />
+<MudSnackbarProvider />
+<style>
+    .mud-nav-link-text{
+        color: wheat;
+    }
+</style>
+<div class="page">
+    <MudLayout>
+        <MudAppBar Elevation="1">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+            <MudSpacer />
+            @if (currentTheme == darkTheme)
+             {
+                <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@((e) => DarkMode())"></MudIconButton>
+             }
+            else
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.ModeNight" OnClick="@((e) => DarkMode())"></MudIconButton>
+            }
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/MudBlazor/MudBlazor" Target="_blank" />
+
+        </MudAppBar>
+
+        <MudDrawer @bind-Open="@open" Elevation="1">
+            <MudDrawerHeader>
+                <MudText Typo="Typo.h6">Schnorr Sign</MudText>
+            </MudDrawerHeader>
+
+            <MudNavMenu Class="mud-width-full">
+                <MudDivider Class="my-2" />
+                <MudNavLink Href="/" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Filled.Storage">Servers</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Filled.Receipt" >Billing</MudNavLink>
+
+                <MudNavGroup Title="Settings" Icon="@Icons.Filled.Settings" Expanded="true">
+                    <MudNavLink Href="/users" Icon="@Icons.Filled.People" IconColor="Color.Success">Users</MudNavLink>
+                    <MudNavLink Href="/security" Icon="@Icons.Filled.Security" IconColor="Color.Info">Security</MudNavLink>
+                </MudNavGroup>
+
+            </MudNavMenu>
+        </MudDrawer>
+
+        <MudMainContent Class="pt-16 px-16">
+            <MudContainer Class="mt-6">
+                @Body
+            </MudContainer>
+        </MudMainContent>
+    </MudLayout>
+</div>
+
+
+@code {
+    bool open = true;
+
+    protected override void OnInitialized()
+    {
+        currentTheme = darkTheme;
+    }
+
+    void ToggleDrawer()
+    {
+        open = !open;
+    }
+
+    MudTheme currentTheme = new MudTheme();
+    MudTheme defaultTheme = new MudTheme()
+    {
+        Palette = new Palette()
+        {
+            Black = "#272c34"
+        }
+    };
+    MudTheme darkTheme = new MudTheme()
+    {
+        Palette = new Palette()
+        {
+            Black = "#27272f",
+            Background = "#32333d",
+            BackgroundGrey = "#27272f",
+            Surface = "#373740",
+            DrawerBackground = "#27272f",
+            DrawerText = "rgba(255,255,255, 0.50)",
+            DrawerIcon = "rgba(255,255,255, 0.50)",
+            AppbarBackground = "#27272f",
+            AppbarText = "rgba(255,255,255, 0.70)",
+            TextPrimary = "rgba(255,255,255, 0.70)",
+            TextSecondary = "rgba(255,255,255, 0.50)",
+            ActionDefault = "#adadb1",
+            ActionDisabled = "rgba(255,255,255, 0.26)",
+            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+            Divider = "rgba(255,255,255, 0.12)",
+            DividerLight = "rgba(255,255,255, 0.06)",
+            TableLines = "rgba(255,255,255, 0.12)",
+            LinesDefault = "rgba(255,255,255, 0.12)",
+            LinesInputs = "rgba(255,255,255, 0.3)",
+            TextDisabled = "rgba(255,255,255, 0.2)"
+
+        }
+    };
+
+    void DarkMode()
+    {
+        if (currentTheme == defaultTheme)
+        {
+            currentTheme = darkTheme;
+        }
+        else
+        {
+            currentTheme = defaultTheme;
+        }
+    }
+}
+
