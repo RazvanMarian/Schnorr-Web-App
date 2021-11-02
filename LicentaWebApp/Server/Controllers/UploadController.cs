@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 
@@ -26,24 +27,37 @@ namespace LicentaWebApp.Server.Controllers
         }
 
 
+        //[HttpPost]
+        //public async Task Post()
+        //{
+
+        //    if (HttpContext.Request.Form.Files.Any())
+        //    {
+        //        foreach (var file in HttpContext.Request.Form.Files)
+        //        {
+        //            var path = Path.Combine(environment.ContentRootPath, "upload", file.FileName);
+
+        //            using (var stream = new FileStream(path, FileMode.Create))
+        //            {
+        //                await file.CopyToAsync(stream);
+        //            }
+        //        }
+        //    }
+
+        //    //Hello();
+        //}
+
         [HttpPost]
-        public async Task Post()
+        public async Task<IActionResult> PostHash(byte[] hash)
         {
-            
-            if(HttpContext.Request.Form.Files.Any())
+            for (int i = 0; i < hash.Length; i++)
             {
-                foreach(var file in HttpContext.Request.Form.Files)
-                {
-                    var path = Path.Combine(environment.ContentRootPath, "upload", file.FileName);
-
-                    using (var stream = new FileStream(path,FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-                }
+                Console.Write($"{hash[i]:X2}");
+                if ((i % 4) == 3) Console.Write(" ");
             }
-
-            //Hello();
+            Console.WriteLine();
+            Console.WriteLine("Am ajuns aici salutare");
+            return Ok();
         }
     }
 }
