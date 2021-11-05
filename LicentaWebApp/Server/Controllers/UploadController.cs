@@ -18,8 +18,8 @@ namespace LicentaWebApp.Server.Controllers
     public class UploadController : ControllerBase
     {
         
-        //[DllImport("../../x64/Debug/SchnorrSig.dll", CallingConvention = CallingConvention.Cdecl)]
-        //public static extern void Hello();
+        [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void Hello();
         private readonly IWebHostEnvironment environment;
         public UploadController(IWebHostEnvironment environment)
         {
@@ -57,6 +57,8 @@ namespace LicentaWebApp.Server.Controllers
             }
             Console.WriteLine();
             Console.WriteLine("Am ajuns aici salutare");
+            Hello();
+            Console.WriteLine("Dupa hello");
             return Ok();
         }
     }
