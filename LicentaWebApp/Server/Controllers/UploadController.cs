@@ -17,9 +17,13 @@ namespace LicentaWebApp.Server.Controllers
     [ApiController]
     public class UploadController : ControllerBase
     {
-        
+
         [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Hello();
+        public static extern void Hello(string str);
+
+        [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void test_sign(string str);
+
         private readonly IWebHostEnvironment environment;
         public UploadController(IWebHostEnvironment environment)
         {
@@ -50,15 +54,14 @@ namespace LicentaWebApp.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> PostHash(byte[] hash)
         {
+
+            var builder = new StringBuilder();
             for (int i = 0; i < hash.Length; i++)
             {
-                Console.Write($"{hash[i]:X2}");
-                if ((i % 4) == 3) Console.Write(" ");
+                builder.Append($"{hash[i]:X2}");
             }
-            Console.WriteLine();
-            Console.WriteLine("Am ajuns aici salutare");
-            Hello();
-            Console.WriteLine("Dupa hello");
+            string _hash = builder.ToString();
+            test_sign(_hash);
             return Ok();
         }
     }
