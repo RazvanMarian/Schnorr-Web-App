@@ -1,111 +1,11 @@
 ﻿@page "/"
-@using System.IO
-@inject HttpClient HttpClient
-@inject ISnackbar Snackbar
-@inject IUploadFileService UploadFileService 
-
-<style>
-    .drag-drop-zone {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all .4s;
-        min-height: 100px;
-        width:100%;
-    }
-
-    .drag-drop-input {
-        position: absolute;
-        width: 51%;
-        min-height: 100px;
-        
-        opacity: 0;
-        cursor: pointer;
-        z-index: 2;
-    }
-
-    .dragdrop {
-        width: 70%;
-        align-self: center !important;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .drag-enter {
-        box-shadow: var(--mud-elevation-10);
-    }
-
-    .list {
-        padding: 2em;
-        min-width: 50%;
-    }
-</style>
-
-
-
-
-<MudGrid Justify="Justify.Center" Spacing="4" Class="dragdrop">
-    
-   <MudPaper @ondragenter="@(()=>_dragEnterStyle="drag-enter")"
-              @ondragleave="@(()=>_dragEnterStyle=null)"
-              @ondragend="@(()=>_dragEnterStyle=null)"
-              Class=@("drag-drop-zone"+ _dragEnterStyle)>
-
-        <InputFile OnChange="OnInputFileChanged" class="drag-drop-input" />
-
-        @if (fileName == null)
-        {
-            <MudText Typo="Typo.h6">Drag and drop files or click here</MudText>
-        }
-        else
-        {
-            <MudList Style="padding:2em;width:50%;" Dense="true">
-                <MudListItem @key="@file">
-                    <MudChip Color="Color.Dark"
-                             Style="width:60px; overflow:hidden;"
-                             Text="@(fileType)" />
-                    @fileName
-                </MudListItem>
-            </MudList>
-        }
-    </MudPaper>
-
-   <MudGrid Justify="Justify.Center" Spacing="4">
-       <MudItem>
-           <MudButton OnClick="() => { UploadFileService.UploadHashFile(file); fileName = null; show = true; }" Disabled="@(show)" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
-       </MudItem>
-
-       <MudItem>
-           <MudButton OnClick="Clear" Disabled="@(show)" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
-       </MudItem>
-   </MudGrid>
- 
-</MudGrid>
-
+<h1>Salutare</h1>
+<MyInputFile></MyInputFile>
 
 @code {
-    string _dragEnterStyle;
-    string fileType;
-    IBrowserFile file;
-    String fileName = null;
-    Boolean show = true;
 
-    void OnInputFileChanged(InputFileChangeEventArgs e)
-    {
-        file = e.File;
-        fileName = file.Name;
-        fileType = Path.GetExtension(file.Name);
-        show = false;
-    }
-
-    void Clear()
-    {
-        fileName = null;
-        show = true;
-    }
-
-    async Task Upload()
-    {
+    @* async Task Upload()
+        {
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
         fileName = null;
 
@@ -114,23 +14,19 @@
 
         if (file != null)
         {
-            var ms = new MemoryStream();
+        var ms = new MemoryStream();
 
-            await file.OpenReadStream().CopyToAsync(ms);
+        await file.OpenReadStream().CopyToAsync(ms);
 
 
-            var content = new MultipartFormDataContent
-            {
-                    {new ByteArrayContent(ms.GetBuffer()),"\"upload\"",file.Name }
-            };
-            await HttpClient.PostAsync("upload", content);
+        var content = new MultipartFormDataContent
+        {
+        {new ByteArrayContent(ms.GetBuffer()),"\"upload\"",file.Name }
+        };
+        await HttpClient.PostAsync("upload", content);
 
         }
 
         file = null;
-    }
+        } *@
 }
-
-
-
-
