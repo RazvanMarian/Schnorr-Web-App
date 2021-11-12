@@ -1,29 +1,31 @@
 ﻿@inherits LayoutComponentBase
 @using MudBlazor
 
-<MudThemeProvider Theme="currentTheme"/>
+<MudThemeProvider Theme="currentTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <style>
-    .mud-nav-link-text{
-        color: wheat;
+    .mud-nav-link-text {
+        color: #bbbbbb;
     }
 </style>
 <div class="page">
     <MudLayout>
         <MudAppBar Elevation="1">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                OnClick="@ToggleDrawer" />
             <MudSpacer />
             @if (currentTheme == darkTheme)
-             {
+            {
                 <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@((e) => DarkMode())"></MudIconButton>
-             }
+            }
             else
             {
                 <MudIconButton Icon="@Icons.Material.Filled.ModeNight" OnClick="@((e) => DarkMode())"></MudIconButton>
             }
-            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/MudBlazor/MudBlazor" Target="_blank" />
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
+                Link="https://github.com/RazvanMarian/Schnorr-Web-App" Target="_blank" />
 
         </MudAppBar>
 
@@ -36,11 +38,12 @@
                 <MudDivider Class="my-2" />
                 <MudNavLink Href="/" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
                 <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Filled.Storage">Servers</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Filled.Receipt" >Billing</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Filled.Receipt">Billing</MudNavLink>
 
                 <MudNavGroup Title="Settings" Icon="@Icons.Filled.Settings" Expanded="true">
                     <MudNavLink Href="/users" Icon="@Icons.Filled.People" IconColor="Color.Success">Users</MudNavLink>
-                    <MudNavLink Href="/security" Icon="@Icons.Filled.Security" IconColor="Color.Info">Security</MudNavLink>
+                    <MudNavLink Href="/security" Icon="@Icons.Filled.Security" IconColor="Color.Info">Security
+                    </MudNavLink>
                 </MudNavGroup>
 
             </MudNavMenu>
@@ -116,4 +119,3 @@
         }
     }
 }
-

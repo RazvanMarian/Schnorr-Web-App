@@ -49,7 +49,6 @@ namespace LicentaWebApp.Server.Controllers
                 }
             }
 
-            //Hello();
         }
 
         [HttpPost]

@@ -69,37 +69,5 @@ a, .btn-link {
     font-size: 20px;
 }
 
-.drag-drop-zone {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all .4s;
-    min-height: 100px;
-    width: 100%;
-}
 
-.drag-drop-input {
-    position: absolute;
-    width: 51%;
-    min-height: 100px;
 
-    opacity: 0;
-    cursor: pointer;
-    z-index: 2;
-}
-
-.dragdrop {
-    width: 70%;
-    align-self: center !important;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.drag-enter {
-    box-shadow: var(--mud-elevation-10);
-}
-
-.list {
-    padding: 2em;
-    min-width: 50%;
-}

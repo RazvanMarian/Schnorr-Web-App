@@ -4,42 +4,71 @@
 @inject IUploadFileService UploadFileService
 
 
-<MudGrid Justify="Justify.Center" Spacing="4" Class="dragdrop">
 
+<style>
+    .drag-drop-zone {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .4s;
+        height: 80px;
+        width: 33%;
+    }
+
+    .drag-drop-input {
+        position: absolute;
+        width: 23%;
+        height: 28%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    .button-container {
+        width: 33%;
+        padding-top: 1rem;
+    }
+
+    .drag-enter {
+        box-shadow: var(--mud-elevation-10);
+    }
+
+    .list {
+        padding: 2em;
+        min-width: 100%;
+    }
+</style>
+
+<MudGrid Justify="Justify.FlexStart" Spacing="4" Style="display: initial;">
     <MudPaper @ondragenter="@(()=>_dragEnterStyle="drag-enter")" @ondragleave="@(()=>_dragEnterStyle=null)"
-        @ondragend="@(()=>_dragEnterStyle=null)" Class=@("drag-drop-zone"+ _dragEnterStyle)>
+        @ondragend="@(()=>_dragEnterStyle=null)" Class=@("drag-drop-zone "+ _dragEnterStyle)>
 
-        <InputFile OnChange="OnInputFileChanged" class="drag-drop-input" />
+        <InputFile OnChange="OnInputFileChanged" multiple class="drag-drop-input" />
 
         @if (fileName == null)
         {
-            <MudText Typo="Typo.h6">Drag and drop files or click here</MudText>
+            <MudText Typo="Typo.h6">Upload file</MudText>
         }
         else
         {
-            <MudList Style="padding:2em;width:50%;" Dense="true">
-                <MudListItem @key="@file">
-                    <MudChip Color="Color.Dark" Style="width:60px; overflow:hidden;" Text="@(fileType)" />
-                    @fileName
-                </MudListItem>
-            </MudList>
+            <MudItem @key="@file">
+                <MudChip Color="Color.Dark" Style="width:60px; overflow:hidden;" Text="@fileType" />
+                @fileName
+            </MudItem>
         }
     </MudPaper>
 
-    <MudGrid Justify="Justify.Center" Spacing="4">
+    <MudGrid Justify="Justify.Center" Class="button-container">
         <MudItem>
             <MudButton OnClick="() => { UploadFileService.UploadHashFile(file); fileName = null; show = true; }"
-                Disabled="@(show)" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
+                Disabled="@show" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
         </MudItem>
-
         <MudItem>
-            <MudButton OnClick="Clear" Disabled="@(show)" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
+            <MudButton OnClick="Clear" Disabled="@(show)" Style="color: #42424c;" Variant="Variant.Filled">Clear
+            </MudButton>
         </MudItem>
     </MudGrid>
-
-
 </MudGrid>
-
 
 @code {
     string _dragEnterStyle;
@@ -60,6 +89,7 @@
     {
         fileName = null;
         show = true;
+        _dragEnterStyle = null;
     }
 
 }
