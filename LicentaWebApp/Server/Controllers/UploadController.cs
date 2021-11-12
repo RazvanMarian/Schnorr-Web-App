@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace LicentaWebApp.Server.Controllers
 {
-    [Route("[controller]")]
+    [Route("upload")]
     [ApiController]
     public class UploadController : ControllerBase
     {
@@ -52,6 +52,7 @@ namespace LicentaWebApp.Server.Controllers
         //}
 
         [HttpPost]
+        [Route("uploadhash")]
         public async Task<IActionResult> PostHash(byte[] hash)
         {
 

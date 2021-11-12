@@ -22,7 +22,7 @@ namespace LicentaWebApp.Client.Services
         {
             SHA256 Sha256 = SHA256.Create();
 
-            
+
 
             if (file != null)
             {
@@ -30,7 +30,7 @@ namespace LicentaWebApp.Client.Services
                 var ms = new MemoryStream();
 
                 await file.OpenReadStream().CopyToAsync(ms);
-                
+
                 var buffer = ms.ToArray();
 
                 var hash = Sha256.ComputeHash(buffer);
@@ -41,7 +41,7 @@ namespace LicentaWebApp.Client.Services
                 }
                 Console.WriteLine();
 
-                await _httpClient.PostAsJsonAsync("upload", hash);
+                await _httpClient.PostAsJsonAsync("upload/uploadhash", hash);
             }
 
         }
