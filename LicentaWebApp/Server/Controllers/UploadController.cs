@@ -31,28 +31,29 @@ namespace LicentaWebApp.Server.Controllers
         }
 
 
-        //[HttpPost]
-        //public async Task Post()
-        //{
+        [HttpPost]
+        [Route("uploadFile")]
+        public async Task Post()
+        {
 
-        //    if (HttpContext.Request.Form.Files.Any())
-        //    {
-        //        foreach (var file in HttpContext.Request.Form.Files)
-        //        {
-        //            var path = Path.Combine(environment.ContentRootPath, "upload", file.FileName);
+            if (HttpContext.Request.Form.Files.Any())
+            {
+                foreach (var file in HttpContext.Request.Form.Files)
+                {
+                    var path = Path.Combine(environment.ContentRootPath, "upload", file.FileName);
 
-        //            using (var stream = new FileStream(path, FileMode.Create))
-        //            {
-        //                await file.CopyToAsync(stream);
-        //            }
-        //        }
-        //    }
+                    using (var stream = new FileStream(path, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                }
+            }
 
-        //    //Hello();
-        //}
+            //Hello();
+        }
 
         [HttpPost]
-        [Route("uploadhash")]
+        [Route("uploadHash")]
         public async Task<IActionResult> PostHash(byte[] hash)
         {
 

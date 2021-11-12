@@ -41,7 +41,7 @@ namespace LicentaWebApp.Client.Services
                 }
                 Console.WriteLine();
 
-                await _httpClient.PostAsJsonAsync("upload/uploadhash", hash);
+                await _httpClient.PostAsJsonAsync("upload/uploadHash", hash);
             }
 
         }
