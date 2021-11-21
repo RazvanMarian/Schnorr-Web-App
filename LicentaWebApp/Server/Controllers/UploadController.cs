@@ -9,6 +9,10 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using DataAccessLayer.DataAccess;
+using Microsoft.EntityFrameworkCore;
+
+
 
 
 namespace LicentaWebApp.Server.Controllers
@@ -17,6 +21,11 @@ namespace LicentaWebApp.Server.Controllers
     [ApiController]
     public class UploadController : ControllerBase
     {
+        private readonly UserContext _context;
+        public UploadController(UserContext context)
+        {
+            _context = context;
+        }
 
         [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void Hello(string str);
@@ -24,38 +33,38 @@ namespace LicentaWebApp.Server.Controllers
         [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void test_sign(string str);
 
-        private readonly IWebHostEnvironment environment;
-        public UploadController(IWebHostEnvironment environment)
-        {
-            this.environment = environment;
-        }
+        //private readonly IWebHostEnvironment environment;
+
+        // public UploadController(IWebHostEnvironment environment)
+        // {
+        //     this.environment = environment;
+        // }
 
 
-        [HttpPost]
-        [Route("uploadFile")]
-        public async Task Post()
-        {
+        // [HttpPost]
+        // [Route("uploadFile")]
+        // public async Task Post()
+        // {
 
-            if (HttpContext.Request.Form.Files.Any())
-            {
-                foreach (var file in HttpContext.Request.Form.Files)
-                {
-                    var path = Path.Combine(environment.ContentRootPath, "upload", file.FileName);
+        //     if (HttpContext.Request.Form.Files.Any())
+        //     {
+        //         foreach (var file in HttpContext.Request.Form.Files)
+        //         {
+        //             var path = Path.Combine(environment.ContentRootPath, "upload", file.FileName);
 
-                    using (var stream = new FileStream(path, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-                }
-            }
+        //             using (var stream = new FileStream(path, FileMode.Create))
+        //             {
+        //                 await file.CopyToAsync(stream);
+        //             }
+        //         }
+        //     }
 
-        }
+        // }
 
         [HttpPost]
         [Route("uploadHash")]
         public async Task<IActionResult> PostHash(byte[] hash)
         {
-
             var builder = new StringBuilder();
             for (int i = 0; i < hash.Length; i++)
             {
@@ -63,6 +72,15 @@ namespace LicentaWebApp.Server.Controllers
             }
             string _hash = builder.ToString();
             test_sign(_hash);
+
+
+            var users = await _context.Users.Include(a => a.EmailAddresses).ToListAsync();
+
+            Console.WriteLine(users.FirstOrDefault().FirstName + " " + users.FirstOrDefault().LastName
+            + " Email:" + users.FirstOrDefault().EmailAddresses.FirstOrDefault().EmailAddress);
+
+
+
             return Ok();
         }
     }

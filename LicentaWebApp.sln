@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicentaWebApp.Shared", "Lic
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SchnorrSig", "SchnorrSig\SchnorrSig.vcxproj", "{21972F83-CDEF-4AC9-B86F-B93BE0A596E8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LicentaWebApp", "LicentaWebApp", "{4DF57937-F1ED-422F-B318-67A6E4958468}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "LicentaWebApp\DataAccessLayer\DataAccessLayer.csproj", "{EE89CA79-06C2-4790-8178-2682DDBE02CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,11 +71,26 @@ Global
 		{21972F83-CDEF-4AC9-B86F-B93BE0A596E8}.Release|x64.Build.0 = Release|x64
 		{21972F83-CDEF-4AC9-B86F-B93BE0A596E8}.Release|x86.ActiveCfg = Release|Win32
 		{21972F83-CDEF-4AC9-B86F-B93BE0A596E8}.Release|x86.Build.0 = Release|Win32
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Debug|x64.Build.0 = Debug|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Debug|x86.Build.0 = Debug|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Release|x64.ActiveCfg = Release|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Release|x64.Build.0 = Release|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Release|x86.ActiveCfg = Release|Any CPU
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7F44012D-AE1C-4487-B252-2B2909A5EB10}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EE89CA79-06C2-4790-8178-2682DDBE02CC} = {4DF57937-F1ED-422F-B318-67A6E4958468}
 	EndGlobalSection
 EndGlobal
