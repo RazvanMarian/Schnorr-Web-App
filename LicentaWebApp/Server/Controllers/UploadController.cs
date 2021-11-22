@@ -12,9 +12,6 @@ using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using Microsoft.EntityFrameworkCore;
 
-
-
-
 namespace LicentaWebApp.Server.Controllers
 {
     [Route("upload")]
@@ -26,9 +23,6 @@ namespace LicentaWebApp.Server.Controllers
         {
             _context = context;
         }
-
-        [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Hello(string str);
 
         [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void test_sign(string str);
@@ -71,6 +65,7 @@ namespace LicentaWebApp.Server.Controllers
                 builder.Append($"{hash[i]:X2}");
             }
             string _hash = builder.ToString();
+
             test_sign(_hash);
 
 

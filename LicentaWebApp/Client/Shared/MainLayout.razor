@@ -37,11 +37,10 @@
         <MudNavMenu Class="mud-width-full">
             <MudDivider Class="my-2" />
             <MudNavLink Href="/" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
-            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Filled.Storage">Servers</MudNavLink>
+            <MudNavLink Href="/users" Icon="@Icons.Filled.People">Users</MudNavLink>
             <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Filled.Receipt">Billing</MudNavLink>
 
-            <MudNavGroup Title="Settings" Icon="@Icons.Filled.Settings" Expanded="true">
-                <MudNavLink Href="/users" Icon="@Icons.Filled.People" IconColor="Color.Success">Users</MudNavLink>
+            <MudNavGroup Title="Settings" Icon="@Icons.Filled.Settings" Expanded="false">
                 <MudNavLink Href="/security" Icon="@Icons.Filled.Security" IconColor="Color.Info">Security
                 </MudNavLink>
             </MudNavGroup>

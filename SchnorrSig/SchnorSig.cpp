@@ -576,6 +576,6 @@ extern "C"
             return;
         }
 
-        std::cout << "Generare, Semnare, Verificare OK :)" << std::endl;
+        std::cout << "Generare, Semnare, Verificare OK :) phew" << std::endl;
     }
 }
