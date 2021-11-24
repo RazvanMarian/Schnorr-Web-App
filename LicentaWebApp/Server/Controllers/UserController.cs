@@ -27,16 +27,9 @@ namespace LicentaWebApp.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<List<UserModel>> GetUsers()
+        public async Task<List<User>> GetUsers()
         {
-            var res = await _context.Users.ToListAsync<User>();
-            List<UserModel> list = new List<UserModel>();
-            foreach (var u in res)
-            {
-                list.Add(new UserModel(u.Id, u.FirstName, u.LastName));
-            }
-
-            return list;
+            return await _context.Users.ToListAsync<User>();
         }
     }
 }
