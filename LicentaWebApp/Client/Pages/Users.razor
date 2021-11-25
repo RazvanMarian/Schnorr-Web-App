@@ -1,24 +1,25 @@
 @page "/users"
-@inject HttpClient HttpClient
 @using LicentaWebApp.Client.ViewModels
 @using LicentaWebApp.Shared.Models
-@using System.Reflection.Metadata
+@inject IUserViewModel _userViewModel
 
 
 <MudText Typo=Typo.h2>Salutare</MudText>
 
 <div class="col-12">
-    <MudText>@_userViewModel.FirstName @_userViewModel.LastName</MudText>
+    @foreach (var u in _userViewModel.UserList)
+    {
+        <MudText>@u.FirstName @u.LastName</MudText>
+    }
+    
 </div>
 
 @code {
 
-    UserViewModel _userViewModel = new UserViewModel();
+    
     protected override async Task OnInitializedAsync()
     {
-        var users = await HttpClient.GetFromJsonAsync<List<User>>("user");
-        _userViewModel = users.FirstOrDefault();
-
+        await _userViewModel.InitializeUserList();
     }
 
 }

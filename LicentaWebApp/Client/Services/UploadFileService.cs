@@ -21,25 +21,18 @@ namespace LicentaWebApp.Client.Services
         public async Task UploadHashFile(IBrowserFile file)
         {
             SHA256 Sha256 = SHA256.Create();
-
-
-
+            
             if (file != null)
             {
-
                 var ms = new MemoryStream();
-
                 await file.OpenReadStream().CopyToAsync(ms);
-
                 var buffer = ms.ToArray();
-
                 var hash = Sha256.ComputeHash(buffer);
                 for (int i = 0; i < hash.Length; i++)
                 {
                     Console.Write($"{hash[i]:X2}");
                     if ((i % 4) == 3) Console.Write(" ");
                 }
-                Console.WriteLine();
 
                 await _httpClient.PostAsJsonAsync("upload/uploadHash", hash);
             }

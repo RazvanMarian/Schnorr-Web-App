@@ -13,6 +13,7 @@ using DataAccessLayer.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLayer.Models;
 using LicentaWebApp.Shared;
+using Microsoft.AspNetCore.Routing;
 
 namespace LicentaWebApp.Server.Controllers
 {
@@ -27,6 +28,7 @@ namespace LicentaWebApp.Server.Controllers
         }
 
         [HttpGet]
+        [Route("getusers")]
         public async Task<List<User>> GetUsers()
         {
             return await _context.Users.ToListAsync<User>();

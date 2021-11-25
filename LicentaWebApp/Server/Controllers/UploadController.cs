@@ -25,57 +25,20 @@ namespace LicentaWebApp.Server.Controllers
         }
 
         [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void test_sign(string str);
-
-        //private readonly IWebHostEnvironment environment;
-
-        // public UploadController(IWebHostEnvironment environment)
-        // {
-        //     this.environment = environment;
-        // }
-
-
-        // [HttpPost]
-        // [Route("uploadFile")]
-        // public async Task Post()
-        // {
-
-        //     if (HttpContext.Request.Form.Files.Any())
-        //     {
-        //         foreach (var file in HttpContext.Request.Form.Files)
-        //         {
-        //             var path = Path.Combine(environment.ContentRootPath, "upload", file.FileName);
-
-        //             using (var stream = new FileStream(path, FileMode.Create))
-        //             {
-        //                 await file.CopyToAsync(stream);
-        //             }
-        //         }
-        //     }
-
-        // }
+        private static extern void test_sign(string str);
 
         [HttpPost]
         [Route("uploadHash")]
-        public async Task<IActionResult> PostHash(byte[] hash)
+        public async Task<IActionResult> PostHash(byte[] hashP)
         {
             var builder = new StringBuilder();
-            for (int i = 0; i < hash.Length; i++)
+            for (int i = 0; i < hashP.Length; i++)
             {
-                builder.Append($"{hash[i]:X2}");
+                builder.Append($"{hashP[i]:X2}");
             }
-            string _hash = builder.ToString();
+            string hash = builder.ToString();
 
-            test_sign(_hash);
-
-
-            var users = await _context.Users.Include(a => a.EmailAddresses).ToListAsync();
-
-            Console.WriteLine(users.FirstOrDefault().FirstName + " " + users.FirstOrDefault().LastName
-            + " Email:" + users.FirstOrDefault().EmailAddresses.FirstOrDefault().EmailAddress);
-
-
-
+            test_sign(hash);
             return Ok();
         }
     }

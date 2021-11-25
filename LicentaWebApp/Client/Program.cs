@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using LicentaWebApp.Client.ViewModels;
+using LicentaWebApp.Shared.Models;
 
 namespace LicentaWebApp.Client
 {
@@ -22,8 +24,8 @@ namespace LicentaWebApp.Client
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddMudServices();
             builder.Services.AddScoped<IUploadFileService, UploadFileService>();
-
-
+            builder.Services.AddTransient<IUserViewModel, UserViewModel>();
+            
 
             await builder.Build().RunAsync();
         }

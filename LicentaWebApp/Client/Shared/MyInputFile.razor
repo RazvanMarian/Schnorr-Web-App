@@ -1,7 +1,7 @@
 @using System.IO
-@inject HttpClient HttpClient
-@inject ISnackbar Snackbar
-@inject IUploadFileService UploadFileService
+@inject HttpClient _httpClient
+@inject ISnackbar _snackbar
+@inject IUploadFileService _uploadFileService
 
 
 
@@ -45,26 +45,26 @@
 
         <InputFile OnChange="OnInputFileChanged" multiple class="drag-drop-input" />
 
-        @if (fileName == null)
+        @if (_fileName == null)
         {
             <MudText Typo="Typo.h6">Upload file</MudText>
         }
         else
         {
-            <MudItem @key="@file">
-                <MudChip Color="Color.Dark" Style="width:60px; overflow:hidden;" Text="@fileType" />
-                @fileName
+            <MudItem @key="@_file">
+                <MudChip Color="Color.Dark" Style="width:60px; overflow:hidden;" Text="@_fileType" />
+                @_fileName
             </MudItem>
         }
     </MudPaper>
 
     <MudGrid Justify="Justify.Center" Class="button-container">
         <MudItem>
-            <MudButton OnClick="() => { UploadFileService.UploadHashFile(file); fileName = null; show = true; }"
-                Disabled="@show" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
+            <MudButton OnClick="() => { _uploadFileService.UploadHashFile(_file); _fileName = null; _show = true; }"
+                Disabled="@_show" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
         </MudItem>
         <MudItem>
-            <MudButton OnClick="Clear" Disabled="@(show)" Style="color: #42424c;" Variant="Variant.Filled">Clear
+            <MudButton OnClick="Clear" Disabled="@(_show)" Style="color: #42424c;" Variant="Variant.Filled">Clear
             </MudButton>
         </MudItem>
     </MudGrid>
@@ -72,23 +72,23 @@
 
 @code {
     string _dragEnterStyle;
-    string fileType;
-    IBrowserFile file;
-    String fileName = null;
-    Boolean show = true;
+    string _fileType;
+    IBrowserFile _file;
+    String _fileName = null;
+    Boolean _show = true;
 
     void OnInputFileChanged(InputFileChangeEventArgs e)
     {
-        file = e.File;
-        fileName = file.Name;
-        fileType = Path.GetExtension(file.Name);
-        show = false;
+        _file = e.File;
+        _fileName = _file.Name;
+        _fileType = Path.GetExtension(_file.Name);
+        _show = false;
     }
 
     void Clear()
     {
-        fileName = null;
-        show = true;
+        _fileName = null;
+        _show = true;
         _dragEnterStyle = null;
     }
 
