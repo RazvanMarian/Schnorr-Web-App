@@ -12,9 +12,5 @@ OPENSSL: 1.1.1f  31 Mar 2020
 
 .NET packages:
 
-MudBlazor: Version = 5.1.15
-https://mudblazor.com/
-
-TO DO:
-
-Entity Framework, Entity Framework Core
+By using git clone on this repository you dont need to worry about any package used in this project.
+They will be installed immediately after cloning
