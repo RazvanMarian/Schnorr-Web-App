@@ -1,17 +1,24 @@
 @page "/users"
 @using LicentaWebApp.Client.ViewModels
-@using LicentaWebApp.Shared.Models
 @inject IUserViewModel _userViewModel
 
 
 <MudText Typo=Typo.h2>Salutare</MudText>
 
 <div class="col-12">
-    @foreach (var u in _userViewModel.UserList)
+    @if (_userViewModel.UserList.Any())
     {
-        <MudText>@u.FirstName @u.LastName</MudText>
+        @foreach (var u in _userViewModel.UserList)
+        {
+            <MudText>@u.FirstName @u.LastName</MudText>
+        }
+    }
+    else
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
     }
     
+
 </div>
 
 @code {

@@ -36,9 +36,10 @@ namespace LicentaWebApp.Server.Controllers
             {
                 builder.Append($"{hashP[i]:X2}");
             }
-            string hash = builder.ToString();
+            string hash =  builder.ToString();
 
             test_sign(hash);
+            await Task.Delay(1000);
             return Ok();
         }
     }

@@ -33,6 +33,8 @@ namespace DataAccessLayer.Models
         public List<Address> Addresses { get; set; } = new List<Address>();
 
         [Required]
-        public List<Email> EmailAddresses { get; set; } = new List<Email>();
+        [MaxLength(100)]
+        [EmailAddress]
+        public string EmailAddress { get; set; }
     }
 }

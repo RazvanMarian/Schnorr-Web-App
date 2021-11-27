@@ -1,7 +1,8 @@
 ﻿@inherits LayoutComponentBase
-@using MudBlazor
+@inject NavigationManager _navigationManager
+@inject HttpClient _httpClient
 
-<MudThemeProvider Theme="currentTheme" />
+<MudThemeProvider Theme="_currentTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
@@ -14,9 +15,22 @@
 <MudLayout>
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
-            OnClick="@ToggleDrawer" />
+                       OnClick="() => { _open = !_open; }"/>
         <MudSpacer />
-        @if (currentTheme == darkTheme)
+        
+        
+        <AuthorizeView>
+            <Authorized>
+                <MudText>Salutare @context.User.Identity.Name</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" OnClick="LogoutUser"/>
+            </Authorized>
+            <NotAuthorized>
+                <MudIconButton Icon="@Icons.Material.Filled.Login" Color="Color.Inherit" OnClick="LoginUser"/>
+            </NotAuthorized>
+        </AuthorizeView>
+        
+        
+        @if (_currentTheme == _darkTheme)
         {
             <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@((e) => DarkMode())"></MudIconButton>
         }
@@ -29,24 +43,7 @@
 
     </MudAppBar>
 
-    <MudDrawer @bind-Open="@open" Elevation="1">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h6">Schnorr Sign</MudText>
-        </MudDrawerHeader>
-
-        <MudNavMenu Class="mud-width-full">
-            <MudDivider Class="my-2" />
-            <MudNavLink Href="/" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
-            <MudNavLink Href="/users" Icon="@Icons.Filled.People">Users</MudNavLink>
-            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Filled.Receipt">Billing</MudNavLink>
-
-            <MudNavGroup Title="Settings" Icon="@Icons.Filled.Settings" Expanded="false">
-                <MudNavLink Href="/security" Icon="@Icons.Filled.Security" IconColor="Color.Info">Security
-                </MudNavLink>
-            </MudNavGroup>
-
-        </MudNavMenu>
-    </MudDrawer>
+    <NavBar Open="@_open"/>
 
     <MudMainContent Class="pt-16 px-16">
         <MudContainer Class="mt-6">
@@ -57,27 +54,23 @@
 
 
 @code {
-    bool open = true;
-
+    bool _open = true;
     protected override void OnInitialized()
     {
-        currentTheme = darkTheme;
+        _currentTheme = _darkTheme;
     }
+    
+    MudTheme _currentTheme = new MudTheme();
 
-    void ToggleDrawer()
-    {
-        open = !open;
-    }
-
-    MudTheme currentTheme = new MudTheme();
-    MudTheme defaultTheme = new MudTheme()
+    readonly MudTheme _defaultTheme = new MudTheme()
     {
         Palette = new Palette()
         {
             Black = "#272c34"
         }
     };
-    MudTheme darkTheme = new MudTheme()
+
+    readonly MudTheme _darkTheme = new MudTheme()
     {
         Palette = new Palette()
         {
@@ -107,13 +100,18 @@
 
     void DarkMode()
     {
-        if (currentTheme == defaultTheme)
-        {
-            currentTheme = darkTheme;
-        }
-        else
-        {
-            currentTheme = defaultTheme;
-        }
+        _currentTheme = _currentTheme == _defaultTheme ? _darkTheme : _defaultTheme;
     }
+
+    private void LoginUser()
+    {
+        _navigationManager.NavigateTo("/login");
+    }
+
+    private async Task LogoutUser()
+    {
+        await _httpClient.GetAsync("user/logoutuser");
+        _navigationManager.NavigateTo("/", true);
+    }
+    
 }
