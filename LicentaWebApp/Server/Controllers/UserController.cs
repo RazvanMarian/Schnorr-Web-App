@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLayer.Models;
+using LicentaWebApp.Shared;
 using Microsoft.AspNetCore.Authentication;
 
 
@@ -26,8 +27,9 @@ namespace LicentaWebApp.Server.Controllers
         [Route("loginuser")]
         public async Task<ActionResult<User>> LoginUser(User user)
         {
+            user.Password = Utility.Encode(user.Password);
             User loggedInUser = await _context.Users.Where(
-                u => u.EmailAddress == user.EmailAddress && u.password == user.password).FirstOrDefaultAsync();
+                u => u.EmailAddress == user.EmailAddress && u.Password == user.Password).FirstOrDefaultAsync();
             
             if (loggedInUser != null)
             {

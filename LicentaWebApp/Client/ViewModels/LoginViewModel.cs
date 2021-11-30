@@ -1,4 +1,4 @@
-using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -8,6 +8,7 @@ namespace LicentaWebApp.Client.ViewModels
 {
     public class LoginViewModel: ILoginViewModel
     {
+        [EmailAddress]
         public string EmailAddress { get; set; }
         public string Password { get; set; }
 
@@ -31,7 +32,7 @@ namespace LicentaWebApp.Client.ViewModels
             return new LoginViewModel
             {
                 EmailAddress = user.EmailAddress,
-                Password = user.password
+                Password = user.Password
             };
         }
 
@@ -42,8 +43,8 @@ namespace LicentaWebApp.Client.ViewModels
                 FirstName="first",
                 LastName = "last",
                 EmailAddress = loginViewModel.EmailAddress,
-                password = loginViewModel.Password,
-                dateOfBirth = "fake_date"
+                Password = loginViewModel.Password,
+                DateOfBirth = "fake_date"
             };
         }
     }

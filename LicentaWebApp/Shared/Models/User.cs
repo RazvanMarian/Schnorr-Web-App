@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace LicentaWebApp.Shared.Models
 {
@@ -10,8 +9,8 @@ namespace LicentaWebApp.Shared.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(32)]
-        public string password { get; set; }
+        [MaxLength(64)]
+        public string Password { get; set; }
 
         [Required]
         [MaxLength(50)]
@@ -23,11 +22,11 @@ namespace LicentaWebApp.Shared.Models
 
         [Required]
         [MaxLength(20)]
-        public string dateOfBirth { get; set; }
+        public string DateOfBirth { get; set; }
 
-        public int darkTheme { get; set; }
+        public int DarkTheme { get; set; }
 
-        public DateTime createdDate { get; set; }
+        public DateTime CreatedDate { get; set; }
 
         [Required]
         public List<Address> Addresses { get; set; } = new List<Address>();

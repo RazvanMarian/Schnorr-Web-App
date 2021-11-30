@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -35,13 +33,11 @@ namespace LicentaWebApp.Client.ViewModels
 
             if (users != null)
             {
-                UserViewModel us = new UserViewModel();
                 foreach (var u in users)
                 {
-                    us = u;
+                    UserViewModel us = u;
                     UserList.Add(us);
                 }
-                Console.WriteLine(UserList.FirstOrDefault().FirstName);
             }
         }
         

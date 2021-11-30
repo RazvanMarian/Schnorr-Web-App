@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LicentaWebApp.Client.ViewModels;
 using Microsoft.AspNetCore.Components.Authorization;
-using MudBlazor;
 
 
 namespace LicentaWebApp.Client
