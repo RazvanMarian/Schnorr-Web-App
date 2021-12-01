@@ -21,7 +21,8 @@ namespace LicentaWebApp.Server.Controllers
             var hash =  BitConverter.ToString(hashP).Replace("-", "").ToLower();
 
             test_sign(hash);
-            await Task.Delay(2000);
+            Console.WriteLine("Dupa test!");
+            await Task.Delay(500);
             return Ok();
         }
     }

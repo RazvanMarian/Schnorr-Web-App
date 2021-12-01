@@ -34,25 +34,33 @@ extern "C"
         // }
 
         // std::cout << "Generare, Semnare, Verificare OK :) phew" << std::endl;
-
-        EC_KEY *keys[2];
-        int res = Gen(&(keys[0]));
-        if (res != 0)
+        EC_KEY *keys[3];
+        int res;
+        for (int i = 0; i < 3; i++)
         {
-            std::cout << "Eroare la generarea cheii" << std::endl;
-            return;
-        }
 
-        res = Gen(&(keys[1]));
-        if (res != 0)
-        {
-            std::cout << "Eroare la generarea cheii" << std::endl;
-            return;
+            res = Gen(&(keys[i]));
+            if (res != 0)
+            {
+                std::cout << "Eroare la generarea cheii" << std::endl;
+                return;
+            }
         }
 
         schnorr_signature sig;
-        res = Schnorr_Multiple_Sign(keys, 2, hash, SHA256_DIGEST_LENGTH, sig);
-        std::cout << "s: ";
+        res = Schnorr_Multiple_Sign(keys, 3, hash, SHA256_DIGEST_LENGTH, sig);
+        printf("s:");
         BN_print_fp(stdout, sig.s);
+        std::cout << std::endl;
+
+        res = Verify_Multiple_Sign(keys, 3, hash, SHA256_DIGEST_LENGTH, sig);
+        if (res != 0)
+        {
+            std::cout << "Eroare la verificarea semnaturii" << std::endl;
+        }
+        std::cout << "Semnare si verificare fisier cu 3 semnatari ok!";
+        std::cout << std::endl;
+
+        return;
     }
 }

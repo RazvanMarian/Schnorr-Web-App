@@ -306,6 +306,28 @@ int Verify_Sign(EC_KEY *key, const char *message, int message_length, schnorr_si
     return 0;
 }
 
+void display_point(EC_POINT *Q)
+{
+    BIGNUM *x = BN_new();
+    BIGNUM *y = BN_new();
+    EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_secp256k1);
+    if (group == nullptr)
+    {
+        std::cout << "The curve group does not exist!" << std::endl;
+        throw GROUP_ERROR;
+    }
+
+    EC_POINT_get_affine_coordinates(group, Q, x, y, NULL);
+
+    printf("x punct: ");
+    BN_print_fp(stdout, x);
+    printf("\n");
+    printf("y punct: ");
+    BN_print_fp(stdout, y);
+    printf("\n\n");
+    return;
+}
+
 int Schnorr_Multiple_Sign(EC_KEY **keys, int signers_number, const char *message, int message_length, schnorr_signature &sig)
 {
 
@@ -390,6 +412,7 @@ int Schnorr_Multiple_Sign(EC_KEY **keys, int signers_number, const char *message
             std::cout << "The point does not belong to the curve!" << std::endl;
             throw POINT_ERROR;
         }
+        // display_point(Q);
         //*************************************************************************************************
 
         // Get xQ
@@ -466,5 +489,168 @@ int Schnorr_Multiple_Sign(EC_KEY **keys, int signers_number, const char *message
     BN_free(xQ);
     EC_GROUP_free(group);
 
+    return 0;
+}
+
+int Verify_Multiple_Sign(EC_KEY **keys, int signers_number, const char *message, int message_length, schnorr_signature sig)
+{
+    BIGNUM *order, *x, *y;
+    EC_POINT *G, *Q;
+    EC_GROUP *group;
+
+    try
+    {
+        group = EC_GROUP_new_by_curve_name(NID_secp256k1);
+        if (group == nullptr)
+        {
+            std::cout << "The curve group does not exist!" << std::endl;
+            throw GROUP_ERROR;
+        }
+
+        // Getting the order of the curve
+        order = BN_new();
+        if (order == nullptr)
+        {
+            std::cout << "Memory error" << std::endl;
+            throw MEMORY_ERROR;
+        }
+        if (EC_GROUP_get_order(group, order, nullptr) == 0)
+        {
+            std::cout << "Order error" << std::endl;
+            throw ORDER_ERROR;
+        }
+        //*************************************************************************************************
+
+        // Check if is in the normal bounds
+        BIGNUM *test = BN_new();
+        BN_one(test);
+        if ((BN_cmp(sig.s, order) == 1) || (BN_cmp(sig.s, test) == -1))
+        {
+            std::cout << "S component of the signature is out of bounds";
+            throw VERIFICATION_ERROR;
+        }
+        BN_free(test);
+        //*************************************************************************************************
+
+        // BASE POINT G
+        G = EC_POINT_new(group);
+        if (G == nullptr)
+        {
+            std::cout << "Memory error" << std::endl;
+            throw MEMORY_ERROR;
+        }
+        x = BN_new();
+        y = BN_new();
+        if (x == nullptr || y == nullptr)
+        {
+            std::cout << "Memory error" << std::endl;
+            throw MEMORY_ERROR;
+        }
+        BN_hex2bn(&x, xG);
+        BN_hex2bn(&y, yG);
+
+        if (!EC_POINT_set_affine_coordinates(group, G, x, y, nullptr))
+        {
+            std::cout << "The point does not belong to the curve!" << std::endl;
+            throw POINT_ERROR;
+        }
+        //*************************************************************************************************
+        // Calculate Q = s*G + r*Sum(P)
+        // Q = s * G
+        Q = EC_POINT_new(group);
+        // s * G
+        EC_POINT_mul(group, Q, NULL, G, sig.s, NULL);
+        EC_POINT *P = EC_POINT_new(group);
+
+        for (int i = 0; i < signers_number; i++)
+        {
+            const EC_POINT *temporar = EC_KEY_get0_public_key(keys[i]);
+            if (i == 0)
+                EC_POINT_copy(P, temporar);
+            else
+                EC_POINT_add(group, P, P, temporar, nullptr);
+        }
+
+        EC_POINT *T = EC_POINT_new(group);
+
+        // r * P
+        EC_POINT_mul(group, T, NULL, P, sig.R, NULL);
+
+        // s * G + r * P
+        EC_POINT_add(group, Q, Q, T, NULL);
+
+        if (EC_POINT_is_at_infinity(group, Q))
+        {
+            std::cout << "Verification error" << std::endl;
+            throw VERIFICATION_ERROR;
+        }
+        std::cout << "Punctul din verificare" << std::endl;
+        // display_point(Q);
+        //*************************************************************************************************
+        //  get xQ
+        BIGNUM *xQ = BN_new();
+        if (xQ == nullptr)
+        {
+            std::cout << "Memory error" << std::endl;
+            throw MEMORY_ERROR;
+        }
+        EC_POINT_get_affine_coordinates(group, Q, xQ, NULL, NULL);
+        printf("\n");
+
+        unsigned char *xQ_OS = new unsigned char[BN_num_bytes(xQ)];
+        BN_bn2bin(xQ, (unsigned char *)xQ_OS);
+        //*************************************************************************************************
+        // M || xQ
+        unsigned char *temp = new unsigned char[message_length + BN_num_bytes(xQ)];
+        memcpy(temp, message, message_length);
+        memcpy(temp + message_length, xQ_OS, BN_num_bytes(xQ));
+        //*************************************************************************************************
+
+        // Hash ( M || xQ)
+        unsigned char *hash = new unsigned char[SHA256_DIGEST_LENGTH];
+        SHA256(temp, message_length + BN_num_bytes(xQ), hash);
+        //*************************************************************************************************
+
+        // Calculate v = Hash(M || xQ)
+        BIGNUM *v = BN_new();
+        if (v == nullptr)
+        {
+            std::cout << "Memory error" << std::endl;
+            throw MEMORY_ERROR;
+        }
+        BN_bin2bn(hash, SHA256_DIGEST_LENGTH, v);
+        delete[](hash);
+        delete[](xQ_OS);
+        BN_free(xQ);
+
+        BN_CTX *ctx = BN_CTX_new();
+        BN_mod(v, v, order, ctx);
+        BN_CTX_free(ctx);
+        //*************************************************************************************************
+
+        // Compare v with r
+        // if v == r => verification successful
+        if (BN_cmp(v, sig.R) == 0)
+        {
+            std::cout << "VERIFICATION OK" << std::endl;
+        }
+        else
+        {
+            std::cout << "Verification error" << std::endl;
+            throw VERIFICATION_ERROR;
+        }
+        BN_free(v);
+    }
+    catch (int err)
+    {
+        std::cout << "ERROR: " << err << std::endl;
+        return err;
+    }
+    EC_POINT_free(G);
+    EC_POINT_free(Q);
+    BN_free(order);
+    BN_free(x);
+    BN_free(y);
+    EC_GROUP_free(group);
     return 0;
 }
