@@ -34,6 +34,7 @@ extern "C"
         // }
 
         // std::cout << "Generare, Semnare, Verificare OK :) phew" << std::endl;
+
         EC_KEY *keys[3];
         int res;
         for (int i = 0; i < 3; i++)
@@ -46,6 +47,10 @@ extern "C"
                 return;
             }
         }
+
+        // PEM_Write_SchnorrPrivateKEY(keys[0], "/home/razvan/keys/key.prv", NULL, NULL, 0, NULL, NULL);
+        // PEM_Write_SchnorrPUBKEY(keys[0], "/home/razvan/keys/key.pub");
+        write_schnorr_private_key(keys[0], "/home/razvan/keys/key.prv");
 
         schnorr_signature sig;
         res = Schnorr_Multiple_Sign(keys, 3, hash, SHA256_DIGEST_LENGTH, sig);

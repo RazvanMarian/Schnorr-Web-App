@@ -7,6 +7,7 @@
 #include <openssl/bn.h>
 #include <openssl/sha.h>
 #include <openssl/pem.h>
+#include <openssl/err.h>
 
 // Base point coordinates
 #define xG "79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
