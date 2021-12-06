@@ -1,6 +1,6 @@
 # Schnorr-Web-App
 
-Setup pentru testare aplicatie
+## Setup used for testing the application
 
 OS: Ubuntu 20.04.3 LTS
 
