@@ -584,8 +584,6 @@ int Verify_Multiple_Sign(EC_KEY **keys, int signers_number, const char *message,
             std::cout << "Verification error" << std::endl;
             throw VERIFICATION_ERROR;
         }
-        std::cout << "Punctul din verificare" << std::endl;
-        // display_point(Q);
         //*************************************************************************************************
         //  get xQ
         BIGNUM *xQ = BN_new();
@@ -631,15 +629,13 @@ int Verify_Multiple_Sign(EC_KEY **keys, int signers_number, const char *message,
         // Compare v with r
         // if v == r => verification successful
         if (BN_cmp(v, sig.R) == 0)
-        {
-            std::cout << "VERIFICATION OK" << std::endl;
-        }
+            BN_free(v);
         else
         {
+            BN_free(v);
             std::cout << "Verification error" << std::endl;
             throw VERIFICATION_ERROR;
         }
-        BN_free(v);
     }
     catch (int err)
     {
