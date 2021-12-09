@@ -40,7 +40,7 @@ namespace LicentaWebApp.Client.ViewModels
         {
             return new User
             {
-                FirstName="first",
+                FirstName = "first",
                 LastName = "last",
                 EmailAddress = loginViewModel.EmailAddress,
                 Password = loginViewModel.Password,

@@ -35,5 +35,7 @@ namespace LicentaWebApp.Shared.Models
         [MaxLength(100)]
         [EmailAddress]
         public string EmailAddress { get; set; }
+
+        public List<Key> Keys { get; set; } = new List<Key>();
     }
 }

@@ -12,5 +12,6 @@ namespace DataAccessLayer.DataAccess
 
         public DbSet<User> Users { get; set; }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<Key> Keys { get; set; }
     }
 }

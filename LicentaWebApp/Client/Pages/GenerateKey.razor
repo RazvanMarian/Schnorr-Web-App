@@ -1,0 +1,42 @@
+@page "/GenerateKey"
+@inject HttpClient _httpClient
+@inject IGenerateKeyViewModel _generateKeyViewModel
+@inject ISnackbar _snackbar
+@using LicentaWebApp.Client.ViewModels
+
+<div style="max-width: 400px;">
+    <EditForm Model="@_generateKeyViewModel" OnValidSubmit="OnClickFunction">
+        <DataAnnotationsValidator />
+        <MudCard>
+            <MudCardContent>
+                <MudTextField Label="Key Name" HelperText="Used for differentiating your keys"
+                              @bind-Value="_generateKeyViewModel.Name" For="@(() => _generateKeyViewModel.Name)" />
+                <MudTextField Label="Key description" Class="mt-3"
+                              @bind-Value="_generateKeyViewModel.Description" For="@(() => _generateKeyViewModel.Description)" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit"  Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Generate</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </EditForm>
+</div>
+
+@code {
+
+    private async Task OnClickFunction()
+    {
+        var result = await _generateKeyViewModel.GenerateKey();
+        Console.WriteLine(result.RequestMessage.Content.ToString());
+        if (result.IsSuccessStatusCode)
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Add("Key generated successfully", Severity.Normal);
+        }
+        else
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Add("Key generation failed!", Severity.Error);
+        }
+    }
+
+}

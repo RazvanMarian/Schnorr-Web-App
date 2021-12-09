@@ -60,7 +60,7 @@
 
     <MudGrid Justify="Justify.Center" Class="button-container">
         <MudItem>
-            <MudButton OnClick="() => { _uploadFileService.UploadHashFile(_file); _fileName = null; _show = true; }"
+            <MudButton OnClick="OnClickFunction"
                 Disabled="@_show" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
         </MudItem>
         <MudItem>
@@ -85,6 +85,15 @@
         _show = false;
     }
 
+    void OnClickFunction()
+    {
+        _uploadFileService.UploadHashFile(_file);
+        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        _snackbar.Add("File uploaded", Severity.Normal);
+        _fileName = null;
+        _show = true;
+    }
+    
     void Clear()
     {
         _fileName = null;

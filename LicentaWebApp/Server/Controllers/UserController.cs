@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -34,9 +33,11 @@ namespace LicentaWebApp.Server.Controllers
             if (loggedInUser != null)
             {
                 //create a claim
+                var claimId = new Claim(ClaimTypes.NameIdentifier, loggedInUser.Id.ToString());
+                //create a claim
                 var claim = new Claim(ClaimTypes.Name, loggedInUser.EmailAddress);
                 //create a claimsIdentity
-                var claimsIdentity = new ClaimsIdentity(new[] {claim}, "serverAuth");
+                var claimsIdentity = new ClaimsIdentity(new[] {claimId,claim}, "serverAuth");
                 //create a claimsPrincipal
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
                 //Sign In User
@@ -51,7 +52,7 @@ namespace LicentaWebApp.Server.Controllers
         public async Task<ActionResult<User>> GetCurrentUser()
         {
             User currentUser = new User();
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
             }
@@ -61,7 +62,7 @@ namespace LicentaWebApp.Server.Controllers
         
         [HttpGet]
         [Route("logoutuser")]
-        public async Task<ActionResult<String>> LogOutUser()
+        public async Task<ActionResult<string>> LogOutUser()
         {
             await HttpContext.SignOutAsync();
             return "Success";
@@ -71,7 +72,7 @@ namespace LicentaWebApp.Server.Controllers
         [Route("getusers")]
         public async Task<List<User>> GetUsers()
         {
-            return await _context.Users.ToListAsync<User>();
+            return await _context.Users.ToListAsync();
         }
     }
 }

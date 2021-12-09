@@ -4,6 +4,34 @@
 
 extern "C"
 {
+
+    int Generate(const char *privateFilename, const char *publicFilename)
+    {
+        EC_KEY *key;
+        int res = Gen(&key);
+        if (res != 0)
+        {
+            std::cout << "Eroare la generarea cheii" << std::endl;
+            return res;
+        }
+
+        res = Write_Schnorr_Private_Key(key, privateFilename);
+        if (res != 0)
+        {
+            std::cout << "Eroare la scrierea cheii in fisier" << std::endl;
+            return res;
+        }
+
+        res = Write_Schnorr_Public_Key(key, publicFilename);
+        if (res != 0)
+        {
+            std::cout << "Eroare la scrierea cheii in fisier" << std::endl;
+            return res;
+        }
+
+        return res;
+    }
+
     void test_sign(const char *hash)
     {
         EC_KEY *keys[3];

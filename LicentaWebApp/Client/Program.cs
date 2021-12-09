@@ -26,6 +26,7 @@ namespace LicentaWebApp.Client
             builder.Services.AddScoped<IUploadFileService, UploadFileService>();
             builder.Services.AddTransient<IUserViewModel, UserViewModel>();
             builder.Services.AddTransient<ILoginViewModel, LoginViewModel>();
+            builder.Services.AddTransient<IGenerateKeyViewModel,GenerateKeyViewModel>();
 
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
             
