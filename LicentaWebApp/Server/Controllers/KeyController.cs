@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
@@ -35,12 +34,9 @@ namespace LicentaWebApp.Server.Controllers
                 currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
                 currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             }
-
-            var keysName =  await _context.Users.Join(_context.Keys, 
-                u => u.Id, 
-                keys => keys.UserId, 
-                (u, keys) => keys.Name).ToListAsync();
-
+            
+            var keysName = _context.Keys.Where(keys => keys.UserId == currentUser.Id).Select(key => key.Name).ToList();
+            
             if (keysName.Contains(k.Name))
                 return BadRequest("Key name already used!");
             

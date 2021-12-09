@@ -26,11 +26,12 @@
     private async Task OnClickFunction()
     {
         var result = await _generateKeyViewModel.GenerateKey();
-        Console.WriteLine(result.RequestMessage.Content.ToString());
+        
+        
         if (result.IsSuccessStatusCode)
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-            _snackbar.Add("Key generated successfully", Severity.Normal);
+            _snackbar.Add("Key generated successfully", Severity.Success);
         }
         else
         {
