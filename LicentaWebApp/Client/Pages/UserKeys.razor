@@ -1,0 +1,47 @@
+@page "/UserKeys"
+@using LicentaWebApp.Client.ViewModels
+@inject IKeyViewModel _keyViewModel
+<h3>UserKeys</h3>
+
+
+@if (_keyViewModel.Keys.Any())
+{
+    <MudGrid Spacing="2" Justify="Justify.FlexStart">
+        @foreach (var k in _keyViewModel.Keys)
+        {
+            <MudItem xs="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText>@k.Name</MudText>
+                        @if (@k.Description != null)
+                        {
+                            <MudText Typo="Typo.body2">@k.Description</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2">No description</MudText>
+                        }
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary">Actions</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+else
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7"/>
+}
+
+
+@code {
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _keyViewModel.InitializeKeys();
+    }
+
+}

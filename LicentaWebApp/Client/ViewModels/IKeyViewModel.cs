@@ -1,15 +1,20 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Threading.Tasks;
+using LicentaWebApp.Shared.Models;
 
 namespace LicentaWebApp.Client.ViewModels
 {
-    public interface IGenerateKeyViewModel
+    public interface IKeyViewModel
     {
         [Required]
         public string Name { get; set; }
         public string Description { get; set; }
 
+        public List<Key> Keys { get; set; }
         public Task<HttpResponseMessage> GenerateKey();
+
+        public Task InitializeKeys();
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
@@ -55,6 +56,21 @@ namespace LicentaWebApp.Server.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Success");
+        }
+
+        [HttpGet]
+        [Route("getKeys")]
+        public async Task<List<Key>> GetUserKeys()
+        {
+            var currentUser = new User();
+            if (User.Identity is {IsAuthenticated: true})
+            {
+                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
+
+
+            return await _context.Keys.Where(k => k.UserId == currentUser.Id).ToListAsync();
         }
     }
 }

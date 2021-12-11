@@ -1,18 +1,18 @@
 @page "/GenerateKey"
 @inject HttpClient _httpClient
-@inject IGenerateKeyViewModel _generateKeyViewModel
+@inject IKeyViewModel _keyViewModel
 @inject ISnackbar _snackbar
 @using LicentaWebApp.Client.ViewModels
 
 <div style="max-width: 400px;">
-    <EditForm Model="@_generateKeyViewModel" OnValidSubmit="OnClickFunction">
+    <EditForm Model="@_keyViewModel" OnValidSubmit="OnClickFunction">
         <DataAnnotationsValidator />
         <MudCard>
             <MudCardContent>
                 <MudTextField Label="Key Name" HelperText="Used for differentiating your keys"
-                              @bind-Value="_generateKeyViewModel.Name" For="@(() => _generateKeyViewModel.Name)" />
+                              @bind-Value="_keyViewModel.Name" For="@(() => _keyViewModel.Name)" />
                 <MudTextField Label="Key description" Class="mt-3"
-                              @bind-Value="_generateKeyViewModel.Description" For="@(() => _generateKeyViewModel.Description)" />
+                              @bind-Value="_keyViewModel.Description" For="@(() => _keyViewModel.Description)" />
             </MudCardContent>
             <MudCardActions>
                 <MudButton ButtonType="ButtonType.Submit"  Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Generate</MudButton>
@@ -25,7 +25,7 @@
 
     private async Task OnClickFunction()
     {
-        var result = await _generateKeyViewModel.GenerateKey();
+        var result = await _keyViewModel.GenerateKey();
         
         
         if (result.IsSuccessStatusCode)
