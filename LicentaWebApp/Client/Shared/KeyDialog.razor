@@ -1,0 +1,38 @@
+@using LicentaWebApp.Shared.Models
+@inject ISnackbar _snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3 mb-n1"/>
+            Delete key?
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField Value="@Key.Name" Label="Key Name" ReadOnly="true"/>
+        <MudTextField Value="@Key.Description" Label="Description" ReadOnly="true"/>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Error" OnClick="DeleteKey">Delete Key</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Key Key { get; set; } = new Key();
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void DeleteKey()
+    {
+    //In a real world scenario this bool would probably be a service to delete the item from api/database
+        _snackbar.Add("Key Deleted", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(Key.Id));
+    }
+}

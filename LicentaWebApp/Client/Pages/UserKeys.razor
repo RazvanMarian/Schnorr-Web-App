@@ -1,7 +1,8 @@
 @page "/UserKeys"
 @using LicentaWebApp.Client.ViewModels
+@using LicentaWebApp.Shared.Models
 @inject IKeyViewModel _keyViewModel
-<h3>UserKeys</h3>
+@inject IDialogService _dialogService
 
 
 @if (_keyViewModel.Keys.Any())
@@ -23,7 +24,9 @@
                         }
                     </MudCardContent>
                     <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary">Actions</MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary">Rename</MudButton>
+                        <MudButton Variant="Variant.Text" OnClick="@(_ => DeleteKey(k))" 
+                                   Color="Color.Primary">Delete</MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
@@ -43,5 +46,19 @@ else
     {
         await _keyViewModel.InitializeKeys();
     }
+    async Task DeleteKey(Key key)
+    {
+        var parameters = new DialogParameters { ["key"]=key };
 
+        var dialog = _dialogService.Show<KeyDialog>("Delete Key", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            //In a real world scenario we would reload the data from the source here since we "removed" it in the dialog already.
+            Console.WriteLine("Key deleted!");
+        }
+    }
+
+    
 }
