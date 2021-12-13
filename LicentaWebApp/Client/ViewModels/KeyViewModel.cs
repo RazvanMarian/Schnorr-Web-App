@@ -39,6 +39,12 @@ namespace LicentaWebApp.Client.ViewModels
             Keys = await _httpClient.GetFromJsonAsync<List<Key>>("/key/getKeys");
         }
 
+        public async Task<HttpResponseMessage> DeleteKey(Key k)
+        {
+            var result = await _httpClient.DeleteAsync("key/deleteKey/" + k.Name);
+            return result;
+        }
+
         public static implicit operator KeyViewModel(Key key)
         {
             return new KeyViewModel

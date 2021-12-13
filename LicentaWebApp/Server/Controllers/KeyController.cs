@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -72,5 +73,29 @@ namespace LicentaWebApp.Server.Controllers
 
             return await _context.Keys.Where(k => k.UserId == currentUser.Id).ToListAsync();
         }
+
+        [HttpDelete]
+        [Route("deleteKey/{keyName}")]
+
+        public async Task<ActionResult<string>> DeleteKey(string keyName)
+        {
+            var currentUser = new User();
+            if (User.Identity is {IsAuthenticated: true})
+            {
+                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
+
+
+            var key = _context.Keys.FirstOrDefault(key1 => key1.UserId == currentUser.Id && key1.Name == keyName);
+
+            if (key == null) return BadRequest("Key doesnt exist!");
+            
+            _context.Keys.Remove(key);
+            await _context.SaveChangesAsync();
+            return Ok("Success");
+        }
+        
+        
     }
 }

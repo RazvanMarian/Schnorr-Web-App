@@ -1,5 +1,5 @@
 @using LicentaWebApp.Shared.Models
-@inject ISnackbar _snackbar
+
 
 <MudDialog>
     <TitleContent>
@@ -32,7 +32,7 @@
     private void DeleteKey()
     {
     //In a real world scenario this bool would probably be a service to delete the item from api/database
-        _snackbar.Add("Key Deleted", Severity.Success);
+        
         MudDialog.Close(DialogResult.Ok(Key.Id));
     }
 }

@@ -11,10 +11,11 @@ namespace LicentaWebApp.Client.ViewModels
         [Required]
         public string Name { get; set; }
         public string Description { get; set; }
-
         public List<Key> Keys { get; set; }
+        
         public Task<HttpResponseMessage> GenerateKey();
-
         public Task InitializeKeys();
+
+        public Task<HttpResponseMessage> DeleteKey(Key k);
     }
 }

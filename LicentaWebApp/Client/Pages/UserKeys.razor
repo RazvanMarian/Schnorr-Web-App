@@ -3,6 +3,7 @@
 @using LicentaWebApp.Shared.Models
 @inject IKeyViewModel _keyViewModel
 @inject IDialogService _dialogService
+@inject ISnackbar _snackbar
 
 
 @if (_keyViewModel.Keys.Any())
@@ -55,8 +56,19 @@ else
 
         if (!result.Cancelled)
         {
-            //In a real world scenario we would reload the data from the source here since we "removed" it in the dialog already.
-            Console.WriteLine("Key deleted!");
+            var res = await _keyViewModel.DeleteKey(key);
+            if (res.IsSuccessStatusCode)
+            {
+                _snackbar.Add("Key Deleted", Severity.Success);
+                //In a real world scenario we would reload the data from the source here since we "removed" it in the dialog already.
+                Console.WriteLine("Key deleted!");
+                await _keyViewModel.InitializeKeys();
+                StateHasChanged();
+            }
+            else
+            {
+                _snackbar.Add("Key could not be deleted!", Severity.Error);
+            }
         }
     }
 
