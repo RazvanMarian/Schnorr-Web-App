@@ -73,7 +73,7 @@
 @code {
 
     [Parameter]
-    public string KeyName { get; set; } = "empty";
+    public string KeyName { get; set; } = null;
     
     
     string _dragEnterStyle;
@@ -94,7 +94,7 @@
     {
         if (KeyName == null)
         {
-            Console.WriteLine(KeyName);
+            Console.WriteLine("Fara cheie");
             _uploadFileService.UploadHashFile(_file);
         }
         else

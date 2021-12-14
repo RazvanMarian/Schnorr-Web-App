@@ -44,7 +44,7 @@ namespace LicentaWebApp.Server.Controllers
         [Route("sign/file/{hash}")]
         public async Task<IActionResult> SignDocument([FromRoute] string hash,[FromBody] string keyName)
         {
-            
+            Console.WriteLine("Hash = " + hash);
             var currentUser = new User();
             if (User.Identity is {IsAuthenticated: true})
             {

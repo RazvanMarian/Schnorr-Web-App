@@ -11,14 +11,14 @@ extern "C"
         int res = Gen(&key);
         if (res != 0)
         {
-            std::cout << "Eroare la generarea cheii" << std::endl;
+            std::cout << "Eroare la generarea cheii!" << std::endl;
             return res;
         }
 
         res = Write_Schnorr_Private_Key(key, privateFilename);
         if (res != 0)
         {
-            std::cout << "Eroare la scrierea cheii in fisier" << std::endl;
+            std::cout << "Eroare la scrierea cheii in fisier!" << std::endl;
             return res;
         }
 
