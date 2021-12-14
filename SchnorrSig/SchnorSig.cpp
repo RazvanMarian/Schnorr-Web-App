@@ -66,4 +66,42 @@ extern "C"
 
         return;
     }
+
+    void Sign_Document_Test(const char *hash, const char *privateFilename, const char *publicFilename)
+    {
+        EC_KEY *sign_key;
+        EC_KEY *verify_key;
+        schnorr_signature sig;
+
+        int res = Read_Schnorr_Private_key(&sign_key, privateFilename);
+        if (res != 0)
+        {
+            std::cout << "Eroare la citirea cheii private" << std::endl;
+            return;
+        }
+
+        res = Schnorr_Sign(sign_key, hash, SHA256_DIGEST_LENGTH, sig);
+        if (res != 0)
+        {
+            std::cout << "Eroare la semnare" << std::endl;
+            return;
+        }
+
+        res = Read_Schnorr_Public_Key(&verify_key, publicFilename);
+        if (res != 0)
+        {
+            std::cout << "Eroare la citirea cheii private" << std::endl;
+            return;
+        }
+
+        res = Verify_Sign(verify_key, hash, SHA256_DIGEST_LENGTH, sig);
+
+        if (res != 0)
+        {
+            std::cout << "Eroare la verificare" << std::endl;
+            return;
+        }
+
+        std::cout << "Semnare verificare ok cu cheia de la calea" << privateFilename << std::endl;
+    }
 }

@@ -20,14 +20,14 @@ namespace LicentaWebApp.Client.Services
         }
         public async Task UploadHashFile(IBrowserFile file)
         {
-            SHA256 Sha256 = SHA256.Create();
+            SHA256 sha256 = SHA256.Create();
             
             if (file != null)
             {
                 var ms = new MemoryStream();
                 await file.OpenReadStream().CopyToAsync(ms);
                 var buffer = ms.ToArray();
-                var hash = Sha256.ComputeHash(buffer);
+                var hash = sha256.ComputeHash(buffer);
                 for (int i = 0; i < hash.Length; i++)
                 {
                     Console.Write($"{hash[i]:X2}");
@@ -37,6 +37,26 @@ namespace LicentaWebApp.Client.Services
                 await _httpClient.PostAsJsonAsync("upload/uploadHash", hash);
             }
 
+        }
+
+        public async Task UploadHashWithKey(IBrowserFile file, string keyName)
+        {
+            SHA256 sha256 = SHA256.Create();
+            
+            if (file != null)
+            {
+                var ms = new MemoryStream();
+                await file.OpenReadStream().CopyToAsync(ms);
+                var buffer = ms.ToArray();
+                var hash = sha256.ComputeHash(buffer);
+                for (int i = 0; i < hash.Length; i++)
+                {
+                    Console.Write($"{hash[i]:X2}");
+                    if ((i % 4) == 3) Console.Write(" ");
+                }
+                var hashString =  BitConverter.ToString(hash).Replace("-", "").ToLower();
+                await _httpClient.PostAsJsonAsync("upload/sign/file/" +  hashString, keyName);
+            }
         }
     }
 }

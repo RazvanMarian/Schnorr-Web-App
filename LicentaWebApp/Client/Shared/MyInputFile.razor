@@ -71,11 +71,16 @@
 </MudGrid>
 
 @code {
+
+    [Parameter]
+    public string KeyName { get; set; } = "empty";
+    
+    
     string _dragEnterStyle;
     string _fileType;
     IBrowserFile _file;
-    String _fileName = null;
-    Boolean _show = true;
+    string _fileName = null;
+    bool _show = true;
 
     void OnInputFileChanged(InputFileChangeEventArgs e)
     {
@@ -87,7 +92,16 @@
 
     void OnClickFunction()
     {
-        _uploadFileService.UploadHashFile(_file);
+        if (KeyName == null)
+        {
+            Console.WriteLine(KeyName);
+            _uploadFileService.UploadHashFile(_file);
+        }
+        else
+        {
+            Console.WriteLine(KeyName);
+            _uploadFileService.UploadHashWithKey(_file,KeyName);
+        }
         _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
         _snackbar.Add("File uploaded", Severity.Normal);
         _fileName = null;

@@ -9,5 +9,7 @@ namespace LicentaWebApp.Client.Services
     public interface IUploadFileService
     {
         Task UploadHashFile(IBrowserFile file);
+
+        public Task UploadHashWithKey(IBrowserFile file, string keyName);
     }
 }

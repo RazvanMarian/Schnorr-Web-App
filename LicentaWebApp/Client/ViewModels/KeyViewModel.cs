@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
@@ -29,7 +28,6 @@ namespace LicentaWebApp.Client.ViewModels
         
         public async Task<HttpResponseMessage> GenerateKey()
         {
-            Console.WriteLine(Name);
             var result = await _httpClient.PostAsJsonAsync<Key>("key/generate", this);
             return result;
         }
