@@ -7,28 +7,42 @@
 
 <div style="max-width: 400px;">
     <EditForm Model="@_keyViewModel" OnValidSubmit="OnClickFunction">
-        <DataAnnotationsValidator />
+        <DataAnnotationsValidator/>
         <MudCard>
             <MudCardContent>
                 <MudTextField Label="Key Name" HelperText="Used for differentiating your keys"
-                              @bind-Value="_keyViewModel.Name" For="@(() => _keyViewModel.Name)" />
+                              @bind-Value="_keyViewModel.Name" For="@(() => _keyViewModel.Name)"/>
                 <MudTextField Label="Key description" Class="mt-3"
-                              @bind-Value="_keyViewModel.Description" For="@(() => _keyViewModel.Description)" />
+                              @bind-Value="_keyViewModel.Description" For="@(() => _keyViewModel.Description)"/>
             </MudCardContent>
-            <MudCardActions>
-                <MudButton ButtonType="ButtonType.Submit"  Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Generate</MudButton>
+            <MudCardActions Style="justify-content: center">
+                <MudButton Disabled="@_processing" OnClick="OnClickFunction" ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled" Color="Color.Primary">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                        <MudText Class="ms-2">Processing</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Generate</MudText>
+                    }
+                </MudButton>
+
             </MudCardActions>
         </MudCard>
     </EditForm>
 </div>
 
 @code {
+    private bool _processing = false;
 
     private async Task OnClickFunction()
     {
+        _processing = true;
         var result = await _keyViewModel.GenerateKey();
         
-        
+
         if (result.IsSuccessStatusCode)
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
@@ -39,6 +53,7 @@
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
             _snackbar.Add("Key generation failed!", Severity.Error);
         }
+        _processing = false;
         _keyViewModel.Name = null;
         _keyViewModel.Description = null;
     }

@@ -90,17 +90,17 @@
         _show = false;
     }
 
-    void OnClickFunction()
+    public async Task OnClickFunction()
     {
         if (KeyName == null)
         {
             Console.WriteLine("Fara cheie");
-            _uploadFileService.UploadHashFile(_file);
+            await _uploadFileService.UploadHashFile(_file);
         }
         else
         {
             Console.WriteLine(KeyName);
-            _uploadFileService.UploadHashWithKey(_file,KeyName);
+            await _uploadFileService.UploadHashWithKey(_file,KeyName);
         }
         _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
         _snackbar.Add("File uploaded", Severity.Normal);
