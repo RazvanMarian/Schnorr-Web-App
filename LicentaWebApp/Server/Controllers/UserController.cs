@@ -28,7 +28,6 @@ namespace LicentaWebApp.Server.Controllers
         public async Task<ActionResult<User>> LoginUser(User user)
         {
             user.Password = Utility.Encode(user.Password);
-            Console.WriteLine(user.Password);
             User loggedInUser = await _context.Users.Where(
                 u => u.EmailAddress == user.EmailAddress && u.Password == user.Password).FirstOrDefaultAsync();
             

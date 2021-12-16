@@ -1,7 +1,36 @@
 ﻿@page "/"
-<MudText Typo=Typo.h2>Salutare</MudText>
-<MyInputFile></MyInputFile>
+<MudCarousel Style="height:400px;" ShowArrows="@_arrows" ShowDelimiters="@_delimiters" AutoCycle="@_autocycle" TData="object">
+    <MudCarouselItem Transition="_transition" Color="@Color.Primary">
+        <div class="d-flex" style="height:100%">
+            <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />
+        </div>
+    </MudCarouselItem>
+    <MudCarouselItem Transition="_transition" Color="@Color.Secondary">
+        <div class="d-flex" style="height:100%">
+            <MudIcon Class="mx-auto my-auto" Icon="@Icons.Filled.Analytics" Size="@Size.Large" />
+        </div>
+    </MudCarouselItem>
+    <MudCarouselItem Transition="_transition">
+        <div class="d-flex" style="height:100%">
+            <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Color="@Color.Primary" Size="@Size.Large" />
+        </div>
+    </MudCarouselItem>
+</MudCarousel>
+<MudSelect @bind-Value="_transition" Label="Transition" Class="ma-2">
+    <MudSelectItem Value="@Transition.Fade">Fade</MudSelectItem>
+    <MudSelectItem Value="@Transition.Slide">Slide</MudSelectItem>
+    <MudSelectItem Value="@Transition.None">None</MudSelectItem>
+</MudSelect>
+<MudSwitch @bind-Checked="@_arrows" Color="Color.Primary">Show Arrows</MudSwitch>
+<MudSwitch @bind-Checked="@_delimiters" Color="Color.Primary">Show Delimiters</MudSwitch>
+<MudSwitch @bind-Checked="@_autocycle" Color="Color.Primary">Auto Cycle (Default: 5 secs)</MudSwitch>
 
+@code{ 
+    private bool _arrows = true;
+    private bool _delimiters = true;
+    private bool _autocycle = true;
+    private Transition _transition = Transition.Slide;
+}
 @code {
 
 

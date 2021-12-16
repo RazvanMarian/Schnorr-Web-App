@@ -8,6 +8,7 @@ namespace LicentaWebApp.Client.ViewModels
 {
     public class UserViewModel:IUserViewModel
     {
+        public int Id { get; set; }
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
@@ -45,6 +46,7 @@ namespace LicentaWebApp.Client.ViewModels
         {
             return new UserViewModel
             {
+                Id=user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName
             };
@@ -54,6 +56,7 @@ namespace LicentaWebApp.Client.ViewModels
         {
             return new User
             {
+                Id = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName
             };

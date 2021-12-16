@@ -5,6 +5,7 @@ namespace LicentaWebApp.Client.ViewModels
 {
     public interface IUserViewModel
     {
+        public int Id { get; set; }
         public string FirstName { get; set; }
 
         public string LastName { get; set; }

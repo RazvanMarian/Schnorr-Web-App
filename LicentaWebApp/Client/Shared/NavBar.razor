@@ -4,15 +4,23 @@
     </MudDrawerHeader>
 
     <MudNavMenu Class="mud-width-full">
-        <MudDivider Class="my-2" />
-        <MudNavLink Href="/" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
-        <MudNavLink Href="/users" Icon="@Icons.Filled.People">Users</MudNavLink>
-        <MudNavLink Href="/GenerateKey" Icon="@Icons.Filled.VpnKey">Generate key</MudNavLink>
-        <MudNavLink Href="/UserKeys" Icon="@Icons.Filled.Lock">My keys</MudNavLink>
-        <MudNavLink Href="/Sign" Icon="@Icons.Filled.DocumentScanner">Sign a document</MudNavLink>
+        <MudDivider Class="my-2"/>
+        <AuthorizeView>
+            <NotAuthorized>
+                <MudNavLink Href="/" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
+            </NotAuthorized>
 
+            <Authorized>
+                <MudNavLink Href="/" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>
+                <MudNavLink Href="/users" Icon="@Icons.Filled.People">Users</MudNavLink>
+                <MudNavLink Href="/GenerateKey" Icon="@Icons.Filled.VpnKey">Generate key</MudNavLink>
+                <MudNavLink Href="/UserKeys" Icon="@Icons.Filled.Lock">My keys</MudNavLink>
+                <MudNavLink Href="/Sign" Icon="@Icons.Filled.DocumentScanner">Sign a document</MudNavLink>
+            </Authorized>
+        </AuthorizeView>
         <MudNavGroup Title="Settings" Icon="@Icons.Filled.Settings" Expanded="false">
-            <MudNavLink Href="/security" Icon="@Icons.Filled.Security" IconColor="Color.Info">Security
+            <MudNavLink Href="/security" Icon="@Icons.Filled.Security" IconColor="Color.Info">
+                Security
             </MudNavLink>
         </MudNavGroup>
 
@@ -23,5 +31,5 @@
 
     [Parameter]
     public bool Open { get; set; } = true;
-    
+
 }

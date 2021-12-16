@@ -4,6 +4,7 @@
 @inject IKeyViewModel _keyViewModel
 @inject IDialogService _dialogService
 @inject ISnackbar _snackbar
+@attribute [Authorize]
 
 
 @if (_keyViewModel.Keys.Any())
@@ -41,12 +42,13 @@ else
 
 
 @code {
-
-
+    
     protected override async Task OnInitializedAsync()
     {
         await _keyViewModel.InitializeKeys();
     }
+    
+    
     async Task DeleteKey(Key key)
     {
         var parameters = new DialogParameters { ["key"]=key };
