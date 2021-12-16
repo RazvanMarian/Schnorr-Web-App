@@ -39,6 +39,8 @@
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
             _snackbar.Add("Key generation failed!", Severity.Error);
         }
+        _keyViewModel.Name = null;
+        _keyViewModel.Description = null;
     }
 
 }

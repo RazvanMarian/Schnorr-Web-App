@@ -43,9 +43,11 @@ namespace LicentaWebApp.Server.Controllers
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
                 //Sign In User
                 await HttpContext.SignInAsync(claimsPrincipal);
+                
+                return await Task.FromResult(loggedInUser);
             }
-            
-            return await Task.FromResult(loggedInUser);
+
+            return BadRequest("Error login");
         }
 
         [HttpGet]
@@ -56,6 +58,7 @@ namespace LicentaWebApp.Server.Controllers
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             }
             
             return await Task.FromResult(currentUser);
@@ -75,5 +78,13 @@ namespace LicentaWebApp.Server.Controllers
         {
             return await _context.Users.ToListAsync();
         }
+        
+        [HttpGet]
+        [Route("getuser/{id}")]
+        public async Task<User> GetUserById(int id)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        }
+        
     }
 }

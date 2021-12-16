@@ -18,14 +18,16 @@ namespace LicentaWebApp.Client
         
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            User currentUser = await _httpClient.GetFromJsonAsync<User>("user/getcurrentuser");
+            var currentUser = await _httpClient.GetFromJsonAsync<User>("user/getcurrentuser");
 
             if (currentUser != null && currentUser.EmailAddress != null)
             {
                 //create a claim
+                var claimId = new Claim(ClaimTypes.NameIdentifier, currentUser.Id.ToString());
+                //create a claim
                 var claim = new Claim(ClaimTypes.Name, currentUser.EmailAddress);
                 //create a claimsIdentity
-                var claimsIdentity = new ClaimsIdentity(new[] {claim}, "serverAuth");
+                var claimsIdentity = new ClaimsIdentity(new[] {claimId,claim}, "serverAuth");
                 //create a claimsPrincipal
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 

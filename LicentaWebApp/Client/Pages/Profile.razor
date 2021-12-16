@@ -1,0 +1,39 @@
+@page "/Profile"
+@attribute [Authorize]
+@using LicentaWebApp.Client.ViewModels
+@using System.Security.Claims
+@inject IUserViewModel _userViewModel
+
+
+<MudText Typo=Typo.h2>Salutare</MudText>
+
+@if (_userViewModel != null)
+{
+    <MudText Typo="Typo.h5">@_userViewModel.FirstName @_userViewModel.LastName</MudText>
+}
+else
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7"/>
+}
+
+
+@code {
+    [CascadingParameter]
+    protected Task<AuthenticationState> AuthState { get; set; }
+    
+    
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState;
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            var claim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
+            if (claim != null) await _userViewModel.GetUser(int.Parse(claim.Value));
+        }
+    }
+
+}

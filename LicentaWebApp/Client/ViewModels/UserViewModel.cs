@@ -41,6 +41,19 @@ namespace LicentaWebApp.Client.ViewModels
                 }
             }
         }
+
+        public async Task GetUser(int id)
+        {
+            var user = await _httpClient.GetFromJsonAsync<User>("/user/getuser/" + id);
+            LoadCurrentObject(user);
+        }
+
+        private void LoadCurrentObject(UserViewModel user)
+        {
+            this.Id = user.Id;
+            this.FirstName = user.FirstName;
+            this.LastName = user.LastName;
+        }
         
         public static implicit operator UserViewModel(User user)
         {

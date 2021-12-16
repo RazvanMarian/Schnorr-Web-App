@@ -3,10 +3,10 @@
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <p>Hey! You're not allowed in here.</p>
+                    <RedirectToLogin/>
                 </NotAuthorized>
                 <Authorizing>
-                    <p>Just checking with the boss you can come in.</p>
+                    <MudText Align="Align.Center" Typo="Typo.h1"> Loading... </MudText>
                 </Authorizing>
             </AuthorizeRouteView>
         </Found>

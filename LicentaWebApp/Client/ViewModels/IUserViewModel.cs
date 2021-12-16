@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LicentaWebApp.Shared.Models;
 
 namespace LicentaWebApp.Client.ViewModels
 {
@@ -13,5 +14,8 @@ namespace LicentaWebApp.Client.ViewModels
         public List<UserViewModel> UserList { get; set; }
 
         public Task InitializeUserList();
+
+        public Task GetUser(int id);
+        
     }
 }

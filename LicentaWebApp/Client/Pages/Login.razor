@@ -2,6 +2,7 @@
 @using LicentaWebApp.Client.ViewModels
 @inject ILoginViewModel _loginViewModel
 @inject NavigationManager _navigationManager
+@inject ISnackbar _snackbar
 
 <div style="max-width: 400px;">
     <EditForm Model="@_loginViewModel" OnValidSubmit="LoginUser">
@@ -18,58 +19,33 @@
             </MudCardActions>
         </MudCard>
         <MudText Typo="Typo.body2" Align="Align.Center" Class="my-4">
-            Fill out the form correctly to see the success message.
+            Hopefully you did not forget your password!
         </MudText>
 
-        <MudExpansionPanels>
-            <MudExpansionPanel Text="Show Validation Summary">
-                @if (_success)
-                {
-                    <MudText Color="Color.Success">Success</MudText>
-                }
-                else
-                {
-                    <MudText Color="@Color.Error">
-                        <ValidationSummary />
-                    </MudText>
-                }
-            </MudExpansionPanel>
-        </MudExpansionPanels>
     </EditForm>
 </div>
 
 @code {
-    // readonly RegisterAccountForm _model = new RegisterAccountForm();
-    // bool _success;
-    //
-    // public class RegisterAccountForm
-    // {
-    //
-    //     [Required]
-    //     [EmailAddress]
-    //     public string Email { get; set; }
-    //
-    //     [Required]
-    //     [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
-    //     public string Password { get; set; }
-    //     
-    // }
     
-    bool _success;
-
     private async Task LoginUser(EditContext context)
     {
-        await _loginViewModel.LoginUser();
-        _navigationManager.NavigateTo("/",true);
-        _success = true;
-         StateHasChanged();
+        var result = await _loginViewModel.LoginUser();
+        if (result.IsSuccessStatusCode)
+        {
+            _navigationManager.NavigateTo("/", true);
+            
+        }
+        else
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Add("Username or password are wrong!", Severity.Error);
+            _loginViewModel.Password = "";
+            _loginViewModel.EmailAddress = "";
+            
+        }
+        StateHasChanged();
 
     }
     
-    // private void OnValidSubmit(EditContext context)
-    // {
-    //     _success = true;
-    //     StateHasChanged();
-    // }
 
 }
