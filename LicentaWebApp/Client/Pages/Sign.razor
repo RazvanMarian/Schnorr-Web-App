@@ -7,7 +7,7 @@
 
 <MudGrid>
     <MudItem xs="12" sm="6" md="4">
-        <MudSelect Label="Select fast-food" @bind-Value="SelectedKey" HelperText="Make sure to select a key"
+        <MudSelect Label="Select a key" @bind-Value="SelectedKey"
                    Placeholder="Please select a key" AdornmentIcon="@Icons.Material.Filled.VpnKey" AdornmentColor="Color.Primary">
             @foreach (var key in _keyViewModel.Keys)
             {

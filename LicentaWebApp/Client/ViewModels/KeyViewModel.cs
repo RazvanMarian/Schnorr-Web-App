@@ -43,6 +43,12 @@ namespace LicentaWebApp.Client.ViewModels
             return result;
         }
 
+        public async Task<HttpResponseMessage> RenameKey(Key k)
+        {
+            var result = await _httpClient.PostAsJsonAsync("key/renameKey", k);
+            return result;
+        }
+
         public static implicit operator KeyViewModel(Key key)
         {
             return new KeyViewModel

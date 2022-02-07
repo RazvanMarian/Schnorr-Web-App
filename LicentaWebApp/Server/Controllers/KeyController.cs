@@ -76,7 +76,6 @@ namespace LicentaWebApp.Server.Controllers
 
         [HttpDelete]
         [Route("deleteKey/{keyName}")]
-
         public async Task<ActionResult<string>> DeleteKey(string keyName)
         {
             var currentUser = new User();
@@ -96,6 +95,29 @@ namespace LicentaWebApp.Server.Controllers
             return Ok("Success");
         }
         
+        [HttpPost]
+        [Route("renameKey")]
+        public async Task<ActionResult<string>> RenameKey(Key k)
+        {
+            var currentUser = new User();
+            if (User.Identity is {IsAuthenticated: true})
+            {
+                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
+
+
+            var key = _context.Keys.FirstOrDefault(key1 => key1.UserId == currentUser.Id && key1.Id == k.Id);
+            if (key == null) return BadRequest("Key doesn't exist!");
+            
+            if (key.Name == k.Name && key.Description == k.Description)
+                return BadRequest("There is nothing new to this key!");
+
+            key.Name = k.Name;
+            key.Description = k.Description;
+            await _context.SaveChangesAsync();
+            return Ok("Success");
+        }
         
     }
 }

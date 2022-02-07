@@ -21,7 +21,11 @@
         
         <AuthorizeView>
             <Authorized>
-                <MudText>Salutare @context.User.Identity.Name</MudText>
+                <MudText>Salutare
+                    @{
+                        System.Diagnostics.Debug.Assert(context.User.Identity != null, "context.User.Identity != null");
+                    }
+                    @context.User.Identity.Name</MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" OnClick="LogoutUser"/>
             </Authorized>
             <NotAuthorized>
@@ -32,11 +36,11 @@
         
         @if (_currentTheme == _darkTheme)
         {
-            <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@((e) => DarkMode())"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@(_ => DarkMode())"></MudIconButton>
         }
         else
         {
-            <MudIconButton Icon="@Icons.Material.Filled.ModeNight" OnClick="@((e) => DarkMode())"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.ModeNight" OnClick="@(_ => DarkMode())"></MudIconButton>
         }
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
             Link="https://github.com/RazvanMarian/Schnorr-Web-App" Target="_blank" />
@@ -59,9 +63,7 @@
     {
         _currentTheme = _darkTheme;
     }
-    
     MudTheme _currentTheme = new MudTheme();
-
     readonly MudTheme _defaultTheme = new MudTheme()
     {
         Palette = new Palette()

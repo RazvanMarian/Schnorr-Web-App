@@ -5,6 +5,8 @@
 @inject ISnackbar _snackbar
 @using LicentaWebApp.Client.ViewModels
 
+
+<MudText Typo="Typo.h3">Generate a key </MudText>
 <div style="max-width: 400px;">
     <EditForm Model="@_keyViewModel" OnValidSubmit="OnClickFunction">
         <DataAnnotationsValidator/>

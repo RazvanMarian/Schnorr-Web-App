@@ -1,0 +1,61 @@
+@using LicentaWebApp.Shared.Models
+
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3 mb-n1"/>
+            Modify the following fields
+        </MudText>
+    </TitleContent>
+    
+    <DialogContent>
+        <MudTextField Value="@Name" @bind-Text="@Name" Label="Key Name" Required="true"/>
+        <MudTextField Value="@Description" @bind-Text="Description" Label="Description"/>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Default" OnClick="RenameKey">Rename</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Key Key { get; set; } = new Key();
+
+    private string Name { get; set; }
+
+    private string Description { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Name = Key.Name;
+        Description = Key.Description;
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void RenameKey()
+    {
+        if (Name == "")
+        {
+            MudDialog.Cancel();
+            return;
+        }
+
+        if (Name == Key.Name && Description == Key.Description)
+        {
+            MudDialog.Cancel();
+            return;
+        }
+        
+        Key.Name = Name;
+        Key.Description = Description;
+        MudDialog.Close(DialogResult.Ok(Key));
+    }
+}

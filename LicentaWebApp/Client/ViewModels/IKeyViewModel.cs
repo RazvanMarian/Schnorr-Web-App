@@ -17,5 +17,7 @@ namespace LicentaWebApp.Client.ViewModels
         public Task InitializeKeys();
 
         public Task<HttpResponseMessage> DeleteKey(Key k);
+
+        public Task<HttpResponseMessage> RenameKey(Key k);
     }
 }
