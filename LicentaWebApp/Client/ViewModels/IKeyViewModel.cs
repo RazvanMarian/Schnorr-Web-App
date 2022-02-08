@@ -19,5 +19,7 @@ namespace LicentaWebApp.Client.ViewModels
         public Task<HttpResponseMessage> DeleteKey(Key k);
 
         public Task<HttpResponseMessage> RenameKey(Key k);
+
+        public Task<string> GenerateCertificate(Key k);
     }
 }

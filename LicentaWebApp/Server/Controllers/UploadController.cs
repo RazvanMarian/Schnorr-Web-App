@@ -14,11 +14,11 @@ namespace LicentaWebApp.Server.Controllers
     [ApiController]
     public class UploadController : ControllerBase
     {
-        
-        [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
+        private const string ImportPath = "../../SchnorrSig/schnorrlib.dll";
+        [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
         private static extern void test_sign(string str);
         
-        [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
         private static extern void Sign_Document_Test(string hash, string privateFilename, string publicFilename);
         
         private readonly UserContext _context;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
@@ -47,6 +48,13 @@ namespace LicentaWebApp.Client.ViewModels
         {
             var result = await _httpClient.PostAsJsonAsync("key/renameKey", k);
             return result;
+        }
+
+        public async Task<string> GenerateCertificate(Key k)
+        {
+            var result = await _httpClient.GetAsync("cert/create-cert/" + k.Name);
+            var base64 = result.Content.ReadAsStringAsync().Result;
+            return base64;
         }
 
         public static implicit operator KeyViewModel(Key key)

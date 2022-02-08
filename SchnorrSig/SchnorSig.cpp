@@ -1,6 +1,7 @@
 #include "Signature.cpp"
 #include "Generate.cpp"
 #include "IO.cpp"
+#include "Certificates.cpp"
 
 extern "C"
 {
@@ -43,7 +44,7 @@ extern "C"
             res = Gen(&(keys[i]));
             if (res != 0)
             {
-                std::cout << "Eroare la generarea cheii" << std::endl;
+                std::cout << "Eroare la generarea cheii!" << std::endl;
                 return;
             }
         }
@@ -76,14 +77,14 @@ extern "C"
         int res = Read_Schnorr_Private_key(&sign_key, privateFilename);
         if (res != 0)
         {
-            std::cout << "Eroare la citirea cheii private" << std::endl;
+            std::cout << "Eroare la citirea cheii private!" << std::endl;
             return;
         }
 
         res = Schnorr_Sign(sign_key, hash, SHA256_DIGEST_LENGTH, sig);
         if (res != 0)
         {
-            std::cout << "Eroare la semnare" << std::endl;
+            std::cout << "Eroare la semnare!" << std::endl;
             return;
         }
 
@@ -102,6 +103,35 @@ extern "C"
             return;
         }
 
-        std::cout << "Semnare verificare ok cu cheia de la calea" << privateFilename << std::endl;
+        std::cout << "Semnare verificare ok cu cheia de la calea!" << privateFilename << std::endl;
+    }
+
+    int Generate_Certificate(const char *privateFilename, const char *publicFilename)
+    {
+        EC_KEY *private_key;
+        EC_KEY *public_key;
+
+        int res = Read_Schnorr_Private_key(&private_key, privateFilename);
+        if (res != 0)
+        {
+            std::cout << "Eroare la citirea cheii private!" << std::endl;
+            return 1;
+        }
+
+        res = Read_Schnorr_Public_Key(&public_key, publicFilename);
+        if (res != 0)
+        {
+            std::cout << "Eroare la citirea cheii private!" << std::endl;
+            return 1;
+        }
+
+        res = Create_Certificate(private_key, public_key);
+        if (res != 0)
+        {
+            std::cout << "Eroare la creare certificat!" << std::endl;
+            return 1;
+        }
+
+        return 0;
     }
 }

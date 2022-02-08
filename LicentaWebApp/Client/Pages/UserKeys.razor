@@ -4,6 +4,7 @@
 @inject IKeyViewModel _keyViewModel
 @inject IDialogService _dialogService
 @inject ISnackbar _snackbar
+@inject IJSRuntime _jsRuntime
 @attribute [Authorize]
 
 
@@ -12,9 +13,10 @@
     <MudGrid Spacing="2" Justify="Justify.FlexStart">
         @foreach (var k in _keyViewModel.Keys)
         {
-            <MudItem xs="3">
+            <MudItem xs="3" Style="min-width: 20rem">
                 <MudCard>
                     <MudCardContent>
+                        <MudIcon Icon="@Icons.Filled.VpnKey"></MudIcon>
                         <MudText>@k.Name</MudText>
                         @if (@k.Description != null)
                         {
@@ -26,9 +28,15 @@
                         }
                     </MudCardContent>
                     <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(_ => RenameKey(k))">Rename</MudButton>
-                        <MudButton Variant="Variant.Text" OnClick="@(_ => DeleteKey(k))" 
-                                   Color="Color.Primary">Delete</MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(_ => ExportKey(k))">
+                            Export
+                        </MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(_ => RenameKey(k))">
+                            Rename
+                        </MudButton>
+                        <MudButton Variant="Variant.Text" OnClick="@(_ => DeleteKey(k))" Color="Color.Primary">
+                            Delete
+                        </MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
@@ -98,8 +106,22 @@ else if(_initialized)
             }
             else
             {
-                _snackbar.Add("Key could not be renamed!", Severity.Error);
+                _snackbar.Add("Key could not be renamed !", Severity.Error);
             }
+        }
+    }
+    
+    async Task ExportKey(Key key)
+    {
+        var res = await _keyViewModel.GenerateCertificate(key);
+        if (res!="ERROR")
+        {
+            await _jsRuntime.InvokeVoidAsync("downloadFile", "application/x-pem-file",res,"cert.pem");
+            _snackbar.Add("Key exported!", Severity.Success);
+        }
+        else
+        {
+            _snackbar.Add("Key could not be exported!", Severity.Error);
         }
     }
 }
