@@ -26,7 +26,7 @@ extern "C"
         res = Write_Schnorr_Public_Key(key, publicFilename);
         if (res != 0)
         {
-            std::cout << "Eroare la scrierea cheii in fisier" << std::endl;
+            std::cout << "Eroare la scrierea cheii in fisier!" << std::endl;
             return res;
         }
 
@@ -91,7 +91,7 @@ extern "C"
         res = Read_Schnorr_Public_Key(&verify_key, publicFilename);
         if (res != 0)
         {
-            std::cout << "Eroare la citirea cheii private" << std::endl;
+            std::cout << "Eroare la citirea cheii private!" << std::endl;
             return;
         }
 
@@ -99,7 +99,7 @@ extern "C"
 
         if (res != 0)
         {
-            std::cout << "Eroare la verificare" << std::endl;
+            std::cout << "Eroare la verificare!" << std::endl;
             return;
         }
 
@@ -131,6 +131,9 @@ extern "C"
             std::cout << "Eroare la creare certificat!" << std::endl;
             return 1;
         }
+
+        EC_KEY_free(private_key);
+        EC_KEY_free(public_key);
 
         return 0;
     }
