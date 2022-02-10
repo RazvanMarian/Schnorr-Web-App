@@ -3,9 +3,10 @@
 @using LicentaWebApp.Client.ViewModels
 @inject IKeyViewModel _keyViewModel
 
-<h3>Sign</h3>
+<div style="margin: auto; justify-content: center; max-width: 50%">
+    <h3>Sign</h3>
 
-<MudGrid>
+
     <MudItem xs="12" sm="6" md="4">
         <MudSelect Label="Select a key" @bind-Value="SelectedKey"
                    Placeholder="Please select a key" AdornmentIcon="@Icons.Material.Filled.VpnKey" AdornmentColor="Color.Primary">
@@ -15,13 +16,14 @@
             }
         </MudSelect>
     </MudItem>
-</MudGrid>
 
-<MyInputFile KeyName="@SelectedKey"></MyInputFile>
+
+    <MyInputFile KeyName="@SelectedKey"></MyInputFile>
+</div>
 
 @code {
     private string SelectedKey { get; set; } = null;
-    
+
     protected override async Task OnInitializedAsync()
     {
         await _keyViewModel.InitializeKeys();

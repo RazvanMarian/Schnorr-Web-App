@@ -1,21 +1,25 @@
-@page "/login"
 @using LicentaWebApp.Client.ViewModels
 @inject ILoginViewModel _loginViewModel
 @inject NavigationManager _navigationManager
 @inject ISnackbar _snackbar
 
-<div style="max-width: 400px;">
+<div style="max-width: 400px; margin: auto">
+
+    <img src="logo.png" alt="" style="margin-left: auto; margin-right: auto; display: block;  padding-bottom: 1rem"/>
     <EditForm Model="@_loginViewModel" OnValidSubmit="LoginUser">
-        <DataAnnotationsValidator />
+
+        <DataAnnotationsValidator/>
         <MudCard>
             <MudCardContent>
                 <MudTextField Label="Email" Class="mt-3"
-                              @bind-Value="_loginViewModel.EmailAddress" For="@(() => _loginViewModel.EmailAddress)" />
+                              @bind-Value="_loginViewModel.EmailAddress" For="@(() => _loginViewModel.EmailAddress)"/>
                 <MudTextField Label="Password" HelperText="I hope you did not forget your password.." Class="mt-3"
-                              @bind-Value="_loginViewModel.Password" For="@(() => _loginViewModel.Password)" InputType="InputType.Password" />
+                              @bind-Value="_loginViewModel.Password" For="@(() => _loginViewModel.Password)"
+                              InputType="InputType.Password"/>
             </MudCardContent>
-            <MudCardActions> 
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Login</MudButton>
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                           Class="ml-auto" Style="margin: auto">Login</MudButton>
             </MudCardActions>
         </MudCard>
         <MudText Typo="Typo.body2" Align="Align.Center" Class="my-4">

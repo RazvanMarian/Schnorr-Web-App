@@ -2,9 +2,9 @@
 @inject NavigationManager _navigationManager
 @inject HttpClient _httpClient
 
-<MudThemeProvider Theme="_currentTheme" />
-<MudDialogProvider />
-<MudSnackbarProvider />
+<MudThemeProvider Theme="_currentTheme"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
 <style>
     .mud-nav-link-text {
@@ -12,58 +12,68 @@
     }
 </style>
 
-<MudLayout>
-    <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
-                       OnClick="() => { _open = !_open; }"/>
-        <MudSpacer />
-        
-        
-        <AuthorizeView>
-            <Authorized>
-                <MudText>Salutare
+<AuthorizeView>
+    <Authorized>
+        <MudLayout>
+            <MudAppBar Elevation="1">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                               OnClick="() => { _open = !_open; }"/>
+                <MudSpacer/>
+                
+                <MudText>
+                    Salutare
                     @{
                         System.Diagnostics.Debug.Assert(context.User.Identity != null, "context.User.Identity != null");
                     }
-                    @context.User.Identity.Name</MudText>
+                    @context.User.Identity.Name
+                </MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" OnClick="LogoutUser"/>
-            </Authorized>
-            <NotAuthorized>
-                <MudIconButton Icon="@Icons.Material.Filled.Login" Color="Color.Inherit" OnClick="LoginUser"/>
-            </NotAuthorized>
-        </AuthorizeView>
-        
-        
-        @if (_currentTheme == _darkTheme)
-        {
-            <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@(_ => DarkMode())"></MudIconButton>
-        }
-        else
-        {
-            <MudIconButton Icon="@Icons.Material.Filled.ModeNight" OnClick="@(_ => DarkMode())"></MudIconButton>
-        }
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
-            Link="https://github.com/RazvanMarian/Schnorr-Web-App" Target="_blank" />
 
-    </MudAppBar>
 
-    <NavBar Open="@_open"/>
+                @if (_currentTheme == _darkTheme)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@(_ => DarkMode())"></MudIconButton>
+                }
+                else
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.ModeNight" OnClick="@(_ => DarkMode())"></MudIconButton>
+                }
+                <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
+                               Link="https://github.com/RazvanMarian/Schnorr-Web-App" Target="_blank"/>
 
-    <MudMainContent Class="pt-16 px-16">
-        <MudContainer Class="mt-6">
-            @Body
-        </MudContainer>
-    </MudMainContent>
-</MudLayout>
+            </MudAppBar>
+
+            <NavBar Open="@_open"/>
+
+            <MudMainContent Class="pt-16 px-16">
+                <MudContainer Class="mt-6">
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </Authorized>
+    <NotAuthorized>
+        <MudLayout>
+            <MudMainContent Class="pt-16 px-16">
+                <MudContainer Class="mt-6">
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </NotAuthorized>
+</AuthorizeView>
 
 
 @code {
     bool _open = true;
+
     protected override void OnInitialized()
     {
         _currentTheme = _darkTheme;
     }
+
     MudTheme _currentTheme = new MudTheme();
+
     readonly MudTheme _defaultTheme = new MudTheme()
     {
         Palette = new Palette()
@@ -96,7 +106,6 @@
             LinesDefault = "rgba(255,255,255, 0.12)",
             LinesInputs = "rgba(255,255,255, 0.3)",
             TextDisabled = "rgba(255,255,255, 0.2)"
-
         }
     };
 
@@ -115,5 +124,5 @@
         await _httpClient.GetAsync("user/logoutuser");
         _navigationManager.NavigateTo("/", true);
     }
-    
+
 }

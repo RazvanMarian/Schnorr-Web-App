@@ -6,8 +6,8 @@
 @using LicentaWebApp.Client.ViewModels
 
 
-<MudText Typo="Typo.h3">Generate a key </MudText>
-<div style="max-width: 400px;">
+<div style="max-width: 400px; margin: auto">
+    <MudText Typo="Typo.h3">Generate a key </MudText>
     <EditForm Model="@_keyViewModel" OnValidSubmit="OnClickFunction">
         <DataAnnotationsValidator/>
         <MudCard>
@@ -43,7 +43,7 @@
     {
         _processing = true;
         var result = await _keyViewModel.GenerateKey();
-        
+
 
         if (result.IsSuccessStatusCode)
         {
