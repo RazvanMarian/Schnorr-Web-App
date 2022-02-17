@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -42,7 +43,7 @@ namespace LicentaWebApp.Server.Controllers
         
         [HttpPost]
         [Route("sign/file/{hash}")]
-        public async Task<IActionResult> SignDocument([FromRoute] string hash,[FromBody] string keyName)
+        public async Task<ActionResult<string>> SignDocument([FromRoute] string hash,[FromBody] string keyName)
         {
             var currentUser = new User();
             if (User.Identity is {IsAuthenticated: true})
@@ -56,9 +57,16 @@ namespace LicentaWebApp.Server.Controllers
             if (key == null) return BadRequest("No key named like this!");
             
             Sign_Document_Test(hash, key.PrivateKeyPath, key.PublicKeyPath);
-            
-            
-            return Ok("Success");
+            var filePath = "/home/razvan/signatures/signature.plain";
+
+            using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                var memoryStream = new MemoryStream();
+                await fileInput.CopyToAsync(memoryStream);
+
+                var buffer = memoryStream.ToArray();
+                return await Task.FromResult(Convert.ToBase64String(buffer));
+            }
         }
     }
 }

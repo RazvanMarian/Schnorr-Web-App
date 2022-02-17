@@ -1,6 +1,4 @@
-#include "Signature.cpp"
-#include "Generate.cpp"
-#include "IO.cpp"
+#include <openssl/schnorr.h>
 #include "Certificates.cpp"
 
 extern "C"
@@ -19,7 +17,7 @@ extern "C"
         res = Write_Schnorr_Private_Key(key, privateFilename);
         if (res != 0)
         {
-            std::cout << "Eroare la scrierea cheii in fisier!" << std::endl;
+            std::cout << "Eroare la scrierea cheii in fisier !" << std::endl;
             return res;
         }
 
@@ -49,7 +47,7 @@ extern "C"
             }
         }
 
-        schnorr_signature sig;
+        schnorr_signature *sig;
         res = Schnorr_Multiple_Sign(keys, nr_semnatari, hash, SHA256_DIGEST_LENGTH, sig);
         if (res != 0)
         {
@@ -72,7 +70,7 @@ extern "C"
     {
         EC_KEY *sign_key;
         EC_KEY *verify_key;
-        schnorr_signature sig;
+        schnorr_signature *sig;
 
         int res = Read_Schnorr_Private_key(&sign_key, privateFilename);
         if (res != 0)
@@ -88,6 +86,21 @@ extern "C"
             return;
         }
 
+        res = Write_Schnorr_Signature(sig, "/home/razvan/signatures/signature.plain");
+        if (res != 0)
+        {
+            std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
+            return;
+        }
+        schnorr_signature *aux_sig;
+
+        res = Read_Schnorr_Signature(aux_sig, "/home/razvan/signatures/signature.plain");
+        if (res != 0)
+        {
+            std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
+            return;
+        }
+
         res = Read_Schnorr_Public_Key(&verify_key, publicFilename);
         if (res != 0)
         {
@@ -95,7 +108,7 @@ extern "C"
             return;
         }
 
-        res = Verify_Sign(verify_key, hash, SHA256_DIGEST_LENGTH, sig);
+        res = Verify_Sign(verify_key, hash, SHA256_DIGEST_LENGTH, aux_sig);
 
         if (res != 0)
         {

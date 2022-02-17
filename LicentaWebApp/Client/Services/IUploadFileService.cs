@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace LicentaWebApp.Client.Services
@@ -10,6 +11,6 @@ namespace LicentaWebApp.Client.Services
     {
         Task UploadHashFile(IBrowserFile file);
 
-        public Task UploadHashWithKey(IBrowserFile file, string keyName);
+        public Task<string> UploadHashWithKey(IBrowserFile file, string keyName);
     }
 }

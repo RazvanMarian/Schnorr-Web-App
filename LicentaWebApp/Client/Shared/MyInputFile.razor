@@ -2,6 +2,7 @@
 @inject HttpClient _httpClient
 @inject ISnackbar _snackbar
 @inject IUploadFileService _uploadFileService
+@inject IJSRuntime _jsRuntime
 
 
 
@@ -12,21 +13,16 @@
         justify-content: center;
         transition: all .4s;
         height: 80px;
-        width: 33%;
+        width: 100%;
     }
 
     .drag-drop-input {
         position: absolute;
-        width: 23%;
+        width: 33%;
         height: 28%;
         opacity: 0;
         cursor: pointer;
         z-index: 2;
-    }
-
-    .button-container {
-        width: 33%;
-        padding-top: 1rem;
     }
 
     .drag-enter {
@@ -58,13 +54,18 @@
         }
     </MudPaper>
 
-    <MudGrid Justify="Justify.Center" Class="button-container">
+    <MudGrid Justify="Justify.Center" Style="padding-top: 1rem;" Spacing="2">
         <MudItem>
-            <MudButton OnClick="OnClickFunction"
-                Disabled="@_show" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
+            <MudButton OnClick="OnClickFunction" Disabled="@_show" Color="Color.Primary" Variant="Variant.Filled"
+                       Style="width: 6rem">
+                Upload
+            </MudButton>
         </MudItem>
         <MudItem>
-            <MudButton OnClick="Clear" Color="Color.Primary" Disabled="@(_show)" Variant="Variant.Filled">Clear</MudButton>
+        <MudButton OnClick="Clear" Color="Color.Primary" Disabled="@(_show)" Variant="Variant.Filled"
+                       Style="width: 6rem">
+                Clear
+            </MudButton>
         </MudItem>
     </MudGrid>
 </MudGrid>
@@ -72,7 +73,7 @@
 @code {
 
     [Parameter]
-    public string KeyName { get; set; } = null;
+    public string KeyName { get; set; }
     
     
     string _dragEnterStyle;
@@ -99,10 +100,14 @@
         else
         {
             Console.WriteLine(KeyName);
-            await _uploadFileService.UploadHashWithKey(_file,KeyName);
+            var result  = await _uploadFileService.UploadHashWithKey(_file,KeyName);
+            if (result!=null)
+            {
+                await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream",result,"signature.plain");
+            }
         }
         _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-        _snackbar.Add("File uploaded", Severity.Normal);
+        _snackbar.Add("File uploaded", Severity.Success);
         _fileName = null;
         _show = true;
     }

@@ -3,19 +3,15 @@
 @using LicentaWebApp.Client.ViewModels
 @inject IKeyViewModel _keyViewModel
 
-<div style="margin: auto; justify-content: center; max-width: 50%">
+<div style="margin: auto; justify-content: center; width: 33%">
     <h3>Sign</h3>
-
-
-    <MudItem xs="12" sm="6" md="4">
-        <MudSelect Label="Select a key" @bind-Value="SelectedKey"
-                   Placeholder="Please select a key" AdornmentIcon="@Icons.Material.Filled.VpnKey" AdornmentColor="Color.Primary">
-            @foreach (var key in _keyViewModel.Keys)
-            {
-                <MudSelectItem Value="@key.Name">@key.Name</MudSelectItem>
-            }
-        </MudSelect>
-    </MudItem>
+    <MudSelect Label="Select a key" @bind-Value="SelectedKey"
+               Placeholder="Please select a key" AdornmentIcon="@Icons.Material.Filled.VpnKey" AdornmentColor="Color.Primary">
+        @foreach (var key in _keyViewModel.Keys)
+        {
+            <MudSelectItem Value="@key.Name">@key.Name</MudSelectItem>
+        }
+    </MudSelect>
 
 
     <MyInputFile KeyName="@SelectedKey"></MyInputFile>
