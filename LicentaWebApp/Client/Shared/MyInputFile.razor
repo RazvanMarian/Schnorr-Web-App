@@ -103,7 +103,8 @@
             var result  = await _uploadFileService.UploadHashWithKey(_file,KeyName);
             if (result!=null)
             {
-                await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream",result,"signature.plain");
+                await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream",result,
+                    "signature.plain");
             }
         }
         _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;

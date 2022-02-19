@@ -10,8 +10,11 @@ namespace LicentaWebApp.Client.ViewModels
 {
     public class KeyViewModel: IKeyViewModel
     {
+        [MaxLength(20)]
         [Required]
         public string Name { get; set; }
+        
+        [MaxLength(30)]
         public string Description { get; set; }
 
         public List<Key> Keys { get; set; } = new List<Key>();

@@ -37,14 +37,30 @@
 </div>
 
 @code {
-    private bool _processing = false;
+    private bool _processing;
 
     private async Task OnClickFunction()
     {
         _processing = true;
+        if (_keyViewModel.Name == null)
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Add("You have to give a name to your key!", Severity.Error);_processing = false;
+            _processing = false;
+            return;
+        }
+        
+        if (_keyViewModel.Name.Length > 20 || _keyViewModel.Description?.Length > 30)
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Add("Your key name is too long!", Severity.Error);_processing = false;
+            _processing = false;
+            _keyViewModel.Name = null;
+            _keyViewModel.Description = null;
+            return;
+        }
+   
         var result = await _keyViewModel.GenerateKey();
-
-
         if (result.IsSuccessStatusCode)
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
@@ -55,6 +71,7 @@
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
             _snackbar.Add("Key generation failed!", Severity.Error);
         }
+        
         _processing = false;
         _keyViewModel.Name = null;
         _keyViewModel.Description = null;
