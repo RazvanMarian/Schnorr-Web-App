@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using DataAccessLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -14,6 +15,7 @@ namespace LicentaWebApp.Server.Controllers
 {
     [Route("key")]
     [ApiController]
+    [Authorize]
     public class KeyController : ControllerBase
     {
         [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]

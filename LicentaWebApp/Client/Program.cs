@@ -5,7 +5,10 @@ using MudBlazor.Services;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Blazored.LocalStorage;
+using LicentaWebApp.Client.Handlers;
 using LicentaWebApp.Client.ViewModels;
+using LicentaWebApp.Shared.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 
 
@@ -22,15 +25,39 @@ namespace LicentaWebApp.Client
             builder.Services.AddAuthorizationCore();
             
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            
+            AddHttpClients(builder);
+            
             builder.Services.AddMudServices();
-            builder.Services.AddScoped<IUploadFileService, UploadFileService>();
-            builder.Services.AddTransient<IUserViewModel, UserViewModel>();
-            builder.Services.AddTransient<ILoginViewModel, LoginViewModel>();
-            builder.Services.AddTransient<IKeyViewModel,KeyViewModel>();
-
+            builder.Services.AddBlazoredLocalStorage();
+            
+            builder.Services.AddTransient<CustomAuthorizationHandler>();
+            
+            
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
             
             await builder.Build().RunAsync();
+        }
+
+        private static void AddHttpClients(WebAssemblyHostBuilder builder)
+        {
+            //transactional named http clients
+            builder.Services.AddHttpClient<IKeyViewModel,KeyViewModel>
+                    ("KeyViewModel", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+                .AddHttpMessageHandler<CustomAuthorizationHandler>();
+
+            builder.Services.AddHttpClient<IUserViewModel, UserViewModel>
+                    ("UserViewModel", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+                .AddHttpMessageHandler<CustomAuthorizationHandler>();
+
+            builder.Services.AddHttpClient<IUploadFileService, UploadFileService>
+                    ("UploadFileService", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+                .AddHttpMessageHandler<CustomAuthorizationHandler>();
+
+            //authentication http clients
+            builder.Services.AddHttpClient<ILoginViewModel, LoginViewModel>
+                ("LoginViewModelClient", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
+            
         }
     }
 }

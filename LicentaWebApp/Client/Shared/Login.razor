@@ -1,12 +1,15 @@
 @using LicentaWebApp.Client.ViewModels
+@using LicentaWebApp.Shared
+@using Blazored.LocalStorage
 @inject ILoginViewModel _loginViewModel
 @inject NavigationManager _navigationManager
 @inject ISnackbar _snackbar
+@inject ILocalStorageService _localStorageService
 
 <div style="max-width: 400px; margin: auto">
 
     <img src="logo.png" alt="" style="margin-left: auto; margin-right: auto; display: block;  padding-bottom: 1rem"/>
-    <EditForm Model="@_loginViewModel" OnValidSubmit="LoginUser">
+    <EditForm Model="@_loginViewModel" OnValidSubmit="AuthenticateJwt">
 
         <DataAnnotationsValidator/>
         <MudCard>
@@ -31,24 +34,21 @@
 
 @code {
     
-    private async Task LoginUser(EditContext context)
+    
+    private async Task AuthenticateJwt()
     {
-        var result = await _loginViewModel.LoginUser();
-        if (result.IsSuccessStatusCode)
+        var authenticationResponse = await _loginViewModel.AuthenticateJwt();
+
+        if (authenticationResponse.Token != string.Empty)
         {
-            _navigationManager.NavigateTo("/", true);
-            
+            await _localStorageService.SetItemAsync("jwt_token", authenticationResponse.Token);
+            _navigationManager.NavigateTo("/",true);
         }
         else
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
             _snackbar.Add("Username or password are wrong!", Severity.Error);
-            _loginViewModel.Password = "";
-            _loginViewModel.EmailAddress = "";
-            
         }
-        StateHasChanged();
-
     }
     
 

@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using DataAccessLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ namespace LicentaWebApp.Server.Controllers
 {
     [Route("cert")]
     [ApiController]
+    [Authorize]
     public class CertificateController : ControllerBase
     {
         private const string ImportPath = "../../SchnorrSig/schnorrlib.dll";

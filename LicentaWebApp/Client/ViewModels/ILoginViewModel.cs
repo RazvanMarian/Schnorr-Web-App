@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Threading.Tasks;
+using LicentaWebApp.Shared;
 
 namespace LicentaWebApp.Client.ViewModels
 {
@@ -9,7 +10,8 @@ namespace LicentaWebApp.Client.ViewModels
         [EmailAddress]
         public string EmailAddress { get; set; }
         public string Password { get; set; }
-
-        public Task<HttpResponseMessage> LoginUser();
+        
+        
+        public Task<AuthenticationResponse> AuthenticateJwt();
     }
 }

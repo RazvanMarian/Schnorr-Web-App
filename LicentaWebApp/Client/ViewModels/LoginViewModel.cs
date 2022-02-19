@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using LicentaWebApp.Shared;
 using LicentaWebApp.Shared.Models;
 
 namespace LicentaWebApp.Client.ViewModels
@@ -22,11 +23,20 @@ namespace LicentaWebApp.Client.ViewModels
             _httpClient = httpClient;
         }
 
-        public async Task<HttpResponseMessage> LoginUser()
+        public async Task<AuthenticationResponse> AuthenticateJwt()
         {
-            return await _httpClient.PostAsJsonAsync<User>("user/loginuser", this);
-        }
+            var authenticationRequest = new AuthenticationRequest
+            {
+                EmailAddress = this.EmailAddress,
+                Password = this.Password
+            };
 
+            var httpMessageResponse =
+                await _httpClient.
+                    PostAsJsonAsync<AuthenticationRequest>($"user/authenticate", authenticationRequest);
+            
+            return await httpMessageResponse.Content.ReadFromJsonAsync<AuthenticationResponse>();
+        }
         public static implicit operator LoginViewModel(User user)
         {
             return new LoginViewModel

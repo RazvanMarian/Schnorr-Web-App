@@ -1,76 +1,122 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLayer.Models;
 using LicentaWebApp.Shared;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using Utility = LicentaWebApp.Shared.Utility;
 
 
 namespace LicentaWebApp.Server.Controllers
 {
     [Route("user")]
     [ApiController]
+    
     public class UserController : ControllerBase
     {
         private readonly UserContext _context;
-        public UserController(UserContext context)
+
+        private readonly IConfiguration _configuration;
+        public UserController(UserContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
-        [HttpPost]
-        [Route("loginuser")]
-        public async Task<ActionResult<User>> LoginUser(User user)
+        private string GenerateJwtToken(User user)
         {
-            user.Password = Utility.Encode(user.Password);
-            User loggedInUser = await _context.Users.Where(
-                u => u.EmailAddress == user.EmailAddress && u.Password == user.Password).FirstOrDefaultAsync();
-            
+            var secretKey = _configuration["JWTSettings:SecretKey"];
+            var key = Encoding.ASCII.GetBytes(secretKey);
+
+            var claimEmail = new Claim(ClaimTypes.Email, user.EmailAddress);
+            var claimNameIdentifier = new Claim(ClaimTypes.NameIdentifier, user.Id.ToString());
+
+            var claimsIdentity = new ClaimsIdentity(new[] {claimEmail, claimNameIdentifier},
+                "serverAuth");
+
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = claimsIdentity,
+                Expires = DateTime.UtcNow.AddDays(3),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
+        }
+
+        [HttpPost("authenticate")]
+        public async Task<ActionResult<AuthenticationResponse>> AuthenticateJwt(
+            AuthenticationRequest authenticationRequest)
+        {
+            var token = string.Empty;
+
+            authenticationRequest.Password = Utility.Encode(authenticationRequest.Password);
+            var loggedInUser = await _context.Users.Where(
+                u => u.EmailAddress == authenticationRequest.EmailAddress && 
+                     u.Password == authenticationRequest.Password).FirstOrDefaultAsync();
+
             if (loggedInUser != null)
             {
-                //create a claim
-                var claimId = new Claim(ClaimTypes.NameIdentifier, loggedInUser.Id.ToString());
-                //create a claim
-                var claim = new Claim(ClaimTypes.Name, loggedInUser.EmailAddress);
-                //create a claimsIdentity
-                var claimsIdentity = new ClaimsIdentity(new[] {claimId,claim}, "serverAuth");
-                //create a claimsPrincipal
-                var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-                //Sign In User
-                await HttpContext.SignInAsync(claimsPrincipal);
-                
-                return await Task.FromResult(loggedInUser);
+                token = GenerateJwtToken(loggedInUser);
             }
 
-            return BadRequest("Error login");
+            return await Task.FromResult(new AuthenticationResponse() {Token = token});
         }
 
-        [HttpGet]
-        [Route("getcurrentuser")]
-        public async Task<ActionResult<User>> GetCurrentUser()
+        [HttpPost("getuserbyjwt")]
+        public async Task<ActionResult<User>> GetUserByJwt([FromBody] string jwtToken)
         {
-            User currentUser = new User();
-            if (User.Identity != null && User.Identity.IsAuthenticated)
+            try
             {
-                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
-                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var secretKey = _configuration["JWTSettings:SecretKey"];
+                var key = Encoding.ASCII.GetBytes(secretKey);
+
+                var tokenValidatorParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                var principle = tokenHandler.ValidateToken(jwtToken, tokenValidatorParameters,
+                    out var securityToken);
+                var jwtSecurityToken = (JwtSecurityToken) securityToken;
+
+                if (jwtSecurityToken != null &&
+                    jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                        StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var userId = principle.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    return await _context.Users.Where(u => u.Id == Convert.ToInt64(userId)).FirstOrDefaultAsync();
+                }
             }
-            
-            return await Task.FromResult(currentUser);
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
+
+            return null;
         }
         
-        [HttpGet]
-        [Route("logoutuser")]
-        public async Task<ActionResult<string>> LogOutUser()
-        {
-            await HttpContext.SignOutAsync();
-            return "Success";
-        }
         
         [HttpGet]
         [Route("getusers")]

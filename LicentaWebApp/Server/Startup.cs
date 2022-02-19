@@ -1,3 +1,5 @@
+using System;
+using System.Text;
 using DataAccessLayer.DataAccess;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LicentaWebApp.Server
 {
@@ -32,6 +36,26 @@ namespace LicentaWebApp.Server
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             }).AddCookie();
+
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(jwtBearerOptions =>
+                {
+                    jwtBearerOptions.RequireHttpsMetadata = true;
+                    jwtBearerOptions.SaveToken = true;
+                    jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey =
+                            new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWTSettings:SecretKey"])),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,6 +80,7 @@ namespace LicentaWebApp.Server
             app.UseRouting();
 
             app.UseAuthentication();
+            app.UseAuthorization();
             
             app.UseEndpoints(endpoints =>
             {

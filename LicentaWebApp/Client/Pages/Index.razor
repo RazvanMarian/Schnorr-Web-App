@@ -43,22 +43,6 @@
     {
         _navigationManager.NavigateTo("/Sign");
     }
-
-    private async Task LoginUser(EditContext context)
-    {
-        var result = await _loginViewModel.LoginUser();
-        if (result.IsSuccessStatusCode)
-        {
-            _navigationManager.NavigateTo("/", true);
-        }
-        else
-        {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-            _snackbar.Add("Username or password are wrong!", Severity.Error);
-            _loginViewModel.Password = "";
-            _loginViewModel.EmailAddress = "";
-        }
-        StateHasChanged();
-    }
+    
 
 }

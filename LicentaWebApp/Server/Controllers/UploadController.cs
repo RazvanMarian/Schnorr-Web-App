@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using DataAccessLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -13,6 +14,7 @@ namespace LicentaWebApp.Server.Controllers
 {
     [Route("upload")]
     [ApiController]
+    [Authorize]
     public class UploadController : ControllerBase
     {
         private const string ImportPath = "../../SchnorrSig/schnorrlib.dll";

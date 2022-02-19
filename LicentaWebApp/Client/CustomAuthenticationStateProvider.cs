@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Blazored.LocalStorage;
 using LicentaWebApp.Shared.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -11,14 +12,16 @@ namespace LicentaWebApp.Client
     {
         private readonly HttpClient _httpClient;
 
-        public CustomAuthenticationStateProvider(HttpClient httpClient)
+        private readonly ILocalStorageService _localStorageService;
+        public CustomAuthenticationStateProvider(HttpClient httpClient, ILocalStorageService localStorageService)
         {
             _httpClient = httpClient;
+            _localStorageService = localStorageService;
         }
         
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var currentUser = await _httpClient.GetFromJsonAsync<User>("user/getcurrentuser");
+            var currentUser = await GetUserByJwtAsync(); //_httpClient.GetFromJsonAsync<User>("user/getcurrentuser");
 
             if (currentUser != null && currentUser.EmailAddress != null)
             {
@@ -37,6 +40,29 @@ namespace LicentaWebApp.Client
             {
                 return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
             }
+        }
+
+        public async Task<User> GetUserByJwtAsync()
+        {
+            var jwtToken = await _localStorageService.GetItemAsStringAsync("jwt_token");
+            if (jwtToken == null)
+                return null;
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "user/getuserbyjwt");
+            requestMessage.Content = new StringContent(jwtToken);
+
+            requestMessage.Content.Headers.ContentType
+                = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            var response = await _httpClient.SendAsync(requestMessage);
+
+            var responseStatusCode = response.StatusCode;
+            var returnedUser = await response.Content.ReadFromJsonAsync<User>();
+
+            if (returnedUser != null)
+                return await Task.FromResult(returnedUser);
+            
+            return null;
         }
     }
 }
