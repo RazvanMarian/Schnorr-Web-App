@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/home/razvan/myopenssl/include/**"
+                "/home/razvan/myopenssl/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

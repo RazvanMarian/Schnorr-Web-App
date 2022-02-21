@@ -10,7 +10,7 @@ extern "C"
         int res = Gen(&key);
         if (res != 0)
         {
-            std::cout << "Eroare la generarea cheii!" << std::endl;
+            std::cout << "Eroare la generarea cheii !" << std::endl;
             return res;
         }
 
@@ -47,7 +47,7 @@ extern "C"
             }
         }
 
-        schnorr_signature *sig;
+        schnorr_signature *sig = Schnorr_SIG_new();
         res = Schnorr_Multiple_Sign(keys, nr_semnatari, hash, SHA256_DIGEST_LENGTH, sig);
         if (res != 0)
         {
@@ -70,7 +70,7 @@ extern "C"
     {
         EC_KEY *sign_key;
         EC_KEY *verify_key;
-        schnorr_signature *sig;
+        schnorr_signature *sig = Schnorr_SIG_new();
 
         int res = Read_Schnorr_Private_key(&sign_key, privateFilename);
         if (res != 0)
@@ -117,6 +117,7 @@ extern "C"
         }
 
         std::cout << "Semnare verificare ok cu cheia de la calea!" << privateFilename << std::endl;
+        //Schnorr_SIG_free(sig);
     }
 
     int Generate_Certificate(const char *privateFilename, const char *publicFilename)
