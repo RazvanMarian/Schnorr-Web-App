@@ -27,15 +27,16 @@ namespace LicentaWebApp.Shared.Models
         public int DarkTheme { get; set; }
 
         public DateTime CreatedDate { get; set; }
-
-        [Required]
-        public List<Address> Addresses { get; set; } = new List<Address>();
-
+        
         [Required]
         [MaxLength(100)]
         [EmailAddress]
         public string EmailAddress { get; set; }
-
+        
         public List<Key> Keys { get; set; } = new List<Key>();
+
+        [Required]
+        public Company Company { get; set; } = new Company();
+
     }
 }

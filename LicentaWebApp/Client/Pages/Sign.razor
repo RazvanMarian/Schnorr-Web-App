@@ -6,6 +6,7 @@
 <div style="margin: auto; justify-content: center; width: 33%">
     <h3>Sign</h3>
     <MudSelect Label="Select a key" @bind-Value="SelectedKey"
+               AnchorOrigin="Origin.BottomCenter"
                Placeholder="Please select a key" AdornmentIcon="@Icons.Material.Filled.VpnKey" AdornmentColor="Color.Primary">
         @foreach (var key in _keyViewModel.Keys)
         {

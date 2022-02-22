@@ -1,0 +1,30 @@
+@page "/SignMultipleUsers"
+@using LicentaWebApp.Client.ViewModels
+@using LicentaWebApp.Shared.Models
+@inject IUserViewModel _userViewModel
+
+<MudSelect T="string" 
+           Label="Other signers" 
+           MultiSelection="true" 
+           AnchorOrigin="Origin.BottomCenter"
+           @bind-Value="Value" 
+           @bind-SelectedValues="Options">
+    @foreach (var user in CompanyUsers)
+    {
+        <MudSelectItem T="string" Value="@user.LastName">@user.FirstName @user.LastName</MudSelectItem>
+    }
+</MudSelect>
+
+
+@code {
+
+    private string Value { get; set; } = "Nothing selected";
+    private IEnumerable<string> Options { get; set; } = new HashSet<string>();
+    private List<User> CompanyUsers { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CompanyUsers = await _userViewModel.GetCompanyUsers();
+    }
+
+}

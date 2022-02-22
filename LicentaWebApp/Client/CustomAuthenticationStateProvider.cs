@@ -1,9 +1,11 @@
+using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using LicentaWebApp.Shared.Models;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace LicentaWebApp.Client
@@ -36,10 +38,8 @@ namespace LicentaWebApp.Client
 
                 return new AuthenticationState(claimsPrincipal);
             }
-            else
-            {
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-            }
+
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
 
         public async Task<User> GetUserByJwtAsync()
@@ -56,12 +56,12 @@ namespace LicentaWebApp.Client
 
             var response = await _httpClient.SendAsync(requestMessage);
 
-            var responseStatusCode = response.StatusCode;
             var returnedUser = await response.Content.ReadFromJsonAsync<User>();
 
             if (returnedUser != null)
                 return await Task.FromResult(returnedUser);
             
+            await _localStorageService.ClearAsync();
             return null;
         }
     }

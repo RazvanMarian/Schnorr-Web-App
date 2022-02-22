@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LicentaWebApp.Shared.Models
 {
@@ -26,6 +27,8 @@ namespace LicentaWebApp.Shared.Models
         
         [DefaultValue("active")]
         public string State { get; set; }
-
+        
+        [ForeignKey("PK_Keys")]
+        public int UserId { get; set; }
     }
 }

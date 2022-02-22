@@ -119,10 +119,24 @@ namespace LicentaWebApp.Server.Controllers
         
         
         [HttpGet]
-        [Route("getusers")]
+        [Route("getcompanyusers")]
         public async Task<List<User>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            var currentUser = new User();
+            if (User.Identity is {IsAuthenticated: true})
+            {
+                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
+
+            var companyId = await _context.Users
+                .Where(u => u.Id == currentUser.Id)
+                .Select(u => u.Company.Id).FirstOrDefaultAsync();
+            
+            
+            return await _context.Users
+                .Where(u =>u.Company.Id == companyId && u.Id != currentUser.Id)
+                .ToListAsync(); 
         }
         
         [HttpGet]

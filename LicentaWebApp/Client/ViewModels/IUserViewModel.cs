@@ -10,11 +10,8 @@ namespace LicentaWebApp.Client.ViewModels
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
-        
-        public List<UserViewModel> UserList { get; set; }
 
-        public Task InitializeUserList();
-
+        public Task<List<User>> GetCompanyUsers();
         public Task GetUser(int id);
         
     }

@@ -3,6 +3,7 @@
 @using LicentaWebApp.Client.ViewModels
 @using System.Security.Claims
 @inject IUserViewModel _userViewModel
+@inject NavigationManager _navigationManager
 
 
 <MudText Typo=Typo.h2>Salutare</MudText>
@@ -33,7 +34,10 @@ else
         {
             var claim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
             if (claim != null) await _userViewModel.GetUser(int.Parse(claim.Value));
+            return;
         }
+        
+        _navigationManager.NavigateTo("/",true);
     }
 
 }

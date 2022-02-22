@@ -15,7 +15,7 @@ namespace LicentaWebApp.Server.Controllers
     [Route("upload")]
     [ApiController]
     [Authorize]
-    public class UploadController : ControllerBase
+    public class FileController : ControllerBase
     {
         private const string ImportPath = "../../SchnorrSig/schnorrlib.dll";
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
@@ -25,7 +25,7 @@ namespace LicentaWebApp.Server.Controllers
         private static extern void Sign_Document_Test(string hash, string privateFilename, string publicFilename);
         
         private readonly UserContext _context;
-        public UploadController(UserContext context)
+        public FileController(UserContext context)
         {
             _context = context;
         }

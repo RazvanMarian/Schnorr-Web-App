@@ -10,11 +10,8 @@ namespace LicentaWebApp.Client.ViewModels
     {
         public int Id { get; set; }
         public string FirstName { get; set; }
-
         public string LastName { get; set; }
-
-        public List<UserViewModel> UserList { get; set; } = new List<UserViewModel>();
-       
+        public Company Company { get; set; }
 
         private readonly HttpClient _httpClient;
 
@@ -27,19 +24,13 @@ namespace LicentaWebApp.Client.ViewModels
         {
             _httpClient = httpClient;
         }
-        
-        public async Task InitializeUserList()
-        {
-            var users = await _httpClient.GetFromJsonAsync<List<User>>("user/getusers");
 
-            if (users != null)
-            {
-                foreach (var u in users)
-                {
-                    UserViewModel us = u;
-                    UserList.Add(us);
-                }
-            }
+        public Task<List<User>> GetCompanyUsers()
+        {
+            var companyUserList = _httpClient
+                .GetFromJsonAsync<List<User>>("/user/getcompanyusers");
+
+            return companyUserList;
         }
 
         public async Task GetUser(int id)
@@ -53,6 +44,7 @@ namespace LicentaWebApp.Client.ViewModels
             this.Id = user.Id;
             this.FirstName = user.FirstName;
             this.LastName = user.LastName;
+            this.Company = user.Company;
         }
         
         public static implicit operator UserViewModel(User user)
@@ -61,7 +53,8 @@ namespace LicentaWebApp.Client.ViewModels
             {
                 Id=user.Id,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                Company = user.Company
             };
         }
 
@@ -71,7 +64,8 @@ namespace LicentaWebApp.Client.ViewModels
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                Company = user.Company
             };
         }
     }

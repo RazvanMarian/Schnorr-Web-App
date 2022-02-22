@@ -39,7 +39,10 @@ namespace LicentaWebApp.Server.Controllers
                 currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             }
             
-            var keysName = _context.Keys.Where(keys => keys.UserId == currentUser.Id).Select(key => key.Name).ToList();
+            var keysName = _context.Keys
+                .Where(keys => keys.UserId == currentUser.Id)
+                .Select(key => key.Name)
+                .ToList();
             
             if (keysName.Contains(k.Name))
                 return BadRequest("Key name already used!");
