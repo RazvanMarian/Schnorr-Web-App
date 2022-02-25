@@ -1,0 +1,32 @@
+<MudIconButton OnClick="ToggleOpen">
+    <MudBadge Content="3" Color="Color.Primary" Overlap="true">
+        <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default"/>
+    </MudBadge>
+    <MudPopover Open="_isOpen" OverflowBehavior="OverflowBehavior.FilpOnOpen" AnchorOrigin="Origin.BottomCenter"
+                TransformOrigin="Origin.TopCenter">
+
+        <MudList Clickable="true" Style="min-width: 15rem">
+            <MudListSubheader>
+                Notifications
+            </MudListSubheader>
+            <MudListItem>
+                Notificare 1
+            </MudListItem>
+            <MudListItem>
+                Notificare 2
+            </MudListItem>
+        </MudList>
+
+    </MudPopover>
+</MudIconButton>
+
+
+@code{
+    private bool _isOpen = false;
+
+    private void ToggleOpen()
+    {
+        _isOpen = !_isOpen;
+    }
+
+}

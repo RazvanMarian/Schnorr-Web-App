@@ -21,15 +21,17 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
                                OnClick="() => { _open = !_open; }"/>
                 <MudSpacer/>
-                
+
                 <MudText>
                     Salutare
                     @{
-                        System.Diagnostics.Debug.Assert(context.User.Identity != null, "context.User.Identity != null");
+                        System.Diagnostics.Debug.Assert(context.User.Identity != null, 
+                            "context.User.Identity != null");
                     }
                     @context.User.Identity.Name
                 </MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" OnClick="LogoutUser"/>
+
+                <NotificationButton/>
 
 
                 @if (_currentTheme == _darkTheme)
@@ -42,7 +44,9 @@
                 }
                 <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
                                Link="https://github.com/RazvanMarian/Schnorr-Web-App" Target="_blank"/>
-
+                <MudTooltip Text="Log out">
+                    <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" OnClick="LogoutUser"/>
+                </MudTooltip>
             </MudAppBar>
 
             <NavBar Open="@_open"/>
@@ -115,7 +119,7 @@
     {
         _currentTheme = _currentTheme == _defaultTheme ? _darkTheme : _defaultTheme;
     }
-    
+
     private async Task LogoutUser()
     {
         await _localStorageService.RemoveItemAsync("jwt_token");
