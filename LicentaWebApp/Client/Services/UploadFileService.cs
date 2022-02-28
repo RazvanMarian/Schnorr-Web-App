@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace LicentaWebApp.Client.Services
@@ -46,9 +48,16 @@ namespace LicentaWebApp.Client.Services
             {
                 return null;
             }
+
+            const long maxFileSize = 1024 * 1024 * 1024;
             var ms = new MemoryStream();
-            await file.OpenReadStream().CopyToAsync(ms);
+            await file.OpenReadStream(maxFileSize).CopyToAsync(ms);
             var buffer = ms.ToArray();
+            byte[] pdf = { 0x25, 0x50 , 0x44, 0x46};
+            
+            if (!buffer.Take(4).SequenceEqual(pdf))
+                return null;
+            
             var hash = sha256.ComputeHash(buffer);
             var hashString =  BitConverter.ToString(hash).Replace("-", "").ToLower();
             

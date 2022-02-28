@@ -101,10 +101,18 @@
         {
             Console.WriteLine(KeyName);
             var result  = await _uploadFileService.UploadHashWithKey(_file,KeyName);
-            if (result!=null)
+            if (result != null)
             {
                 await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream",result,
                     "signature.plain");
+            }
+            else
+            {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                _snackbar.Add("File could not be uploaded!", Severity.Error); 
+                _fileName = null;
+                _show = true;
+                return;
             }
         }
         _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
