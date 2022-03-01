@@ -10,5 +10,7 @@ namespace DataAccessLayer.DataAccess
         public DbSet<User> Users { get; set; }
         public DbSet<Key> Keys { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<NotificationUserStatus> NotificationsUserStatus { get; set; }
     }
 }

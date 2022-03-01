@@ -5,8 +5,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
+using LicentaWebApp.Shared.Models;
 
 namespace LicentaWebApp.Client.Services
 {
@@ -65,6 +65,12 @@ namespace LicentaWebApp.Client.Services
                 await _httpClient.PostAsJsonAsync("upload/sign/file/" +  hashString, keyName);
             
             return !result.IsSuccessStatusCode ? null : result.Content.ReadAsStringAsync().Result;
+        }
+
+        public async Task<HttpResponseMessage> MultipleSignFile(MultipleSignPayload payload)
+        {
+            var res = await _httpClient.PostAsJsonAsync("upload/multiple-sign", payload);
+            return res;
         }
     }
 }

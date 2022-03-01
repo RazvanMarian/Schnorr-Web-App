@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using LicentaWebApp.Shared.Models;
 
 namespace LicentaWebApp.Client.Services
 {
@@ -12,5 +13,7 @@ namespace LicentaWebApp.Client.Services
         Task UploadHashFile(IBrowserFile file);
 
         public Task<string> UploadHashWithKey(IBrowserFile file, string keyName);
+
+        public Task<HttpResponseMessage> MultipleSignFile(MultipleSignPayload payload);
     }
 }

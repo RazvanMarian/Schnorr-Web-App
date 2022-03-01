@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace DataAccessLayer.Models
+namespace LicentaWebApp.Shared.Models
 {
     public class User
     {
@@ -34,8 +34,7 @@ namespace DataAccessLayer.Models
         public string EmailAddress { get; set; }
         
         public List<Key> Keys { get; set; } = new List<Key>();
-
-        [Required]
+        
         public Company Company { get; set; } = new Company();
 
         public List<Notification> Notifications { get; set; } = new List<Notification>();

@@ -1,5 +1,5 @@
 <MudIconButton OnClick="ToggleOpen">
-    <MudBadge Content="3" Color="Color.Primary" Overlap="true">
+    <MudBadge Content="@NotificationsNumber" Color="Color.Primary" Overlap="true">
         <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default"/>
     </MudBadge>
     <MudPopover Open="_isOpen" OverflowBehavior="OverflowBehavior.FilpOnOpen" AnchorOrigin="Origin.BottomCenter"
@@ -23,6 +23,9 @@
 
 @code{
     private bool _isOpen = false;
+    
+    [Parameter]
+    public int NotificationsNumber { get; set; }
 
     private void ToggleOpen()
     {

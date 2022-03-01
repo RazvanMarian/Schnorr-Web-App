@@ -4,6 +4,7 @@ using DataAccessLayer.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(UserContext))]
-    partial class UserContextModelSnapshot : ModelSnapshot
+    [Migration("20220301151113_UpdateNotification")]
+    partial class UpdateNotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,18 +107,15 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("IdInitiator")
+                    b.Property<int?>("InitiatorId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("InitiatorId");
 
                     b.ToTable("Notifications");
                 });
@@ -210,9 +209,11 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Models.Notification", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.User", null)
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId");
+                    b.HasOne("DataAccessLayer.Models.User", "Initiator")
+                        .WithMany()
+                        .HasForeignKey("InitiatorId");
+
+                    b.Navigation("Initiator");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Models.NotificationUserStatus", b =>
@@ -247,8 +248,6 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("DataAccessLayer.Models.User", b =>
                 {
                     b.Navigation("Keys");
-
-                    b.Navigation("Notifications");
                 });
 #pragma warning restore 612, 618
         }

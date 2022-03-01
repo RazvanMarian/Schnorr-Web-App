@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using LicentaWebApp.Client.Handlers;
 using LicentaWebApp.Client.ViewModels;
-using LicentaWebApp.Shared.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 
 
@@ -48,6 +47,10 @@ namespace LicentaWebApp.Client
 
             builder.Services.AddHttpClient<IUserViewModel, UserViewModel>
                     ("UserViewModel", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+                .AddHttpMessageHandler<CustomAuthorizationHandler>();
+            
+            builder.Services.AddHttpClient<INotificationViewModel, NotificationViewModel>
+                    ("NotificationViewModel", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<CustomAuthorizationHandler>();
 
             builder.Services.AddHttpClient<IUploadFileService, UploadFileService>

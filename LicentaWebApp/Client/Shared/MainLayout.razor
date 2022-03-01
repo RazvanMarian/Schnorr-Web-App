@@ -1,8 +1,12 @@
 ﻿@using Blazored.LocalStorage
+@using LicentaWebApp.Client.ViewModels
+@using System.Security.Claims
 @inherits LayoutComponentBase
 @inject NavigationManager _navigationManager
 @inject HttpClient _httpClient
 @inject ILocalStorageService _localStorageService
+@inject INotificationViewModel _notificationViewModel
+@inject IUserViewModel _userViewModel
 
 <MudThemeProvider Theme="_currentTheme"/>
 <MudDialogProvider/>
@@ -31,7 +35,7 @@
                     @context.User.Identity.Name
                 </MudText>
 
-                <NotificationButton/>
+                <NotificationButton NotificationsNumber="@NotificationNumber"/>
 
 
                 @if (_currentTheme == _darkTheme)
@@ -72,12 +76,34 @@
 
 @code {
     bool _open = true;
-
+    int NotificationNumber { get; set; } = 0;
+    
+    [CascadingParameter]
+    protected Task<AuthenticationState> AuthState { get; set; }
+    
     protected override void OnInitialized()
     {
         _currentTheme = _darkTheme;
     }
-    
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState;
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            var res = await _notificationViewModel.GetNotifications();
+
+            if (res != null)
+                foreach (var notification in res)
+                {
+                    Console.WriteLine(notification.FileName);
+                    NotificationNumber++;
+                }
+        }
+
+    }
 
 
     MudTheme _currentTheme = new MudTheme();

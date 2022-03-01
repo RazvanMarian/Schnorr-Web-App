@@ -4,6 +4,7 @@ using DataAccessLayer.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(UserContext))]
-    partial class UserContextModelSnapshot : ModelSnapshot
+    [Migration("20220301140132_AddNotifications")]
+    partial class AddNotifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,18 +107,15 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("IdInitiator")
+                    b.Property<int?>("InitiatorId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("InitiatorId");
 
                     b.ToTable("Notifications");
                 });
@@ -129,21 +128,13 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("NotificationId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("NotifiedUserId")
                         .HasColumnType("int");
-
-                    b.Property<string>("SelectedKeyName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("NotificationId");
 
                     b.HasIndex("NotifiedUserId");
 
@@ -210,17 +201,15 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Models.Notification", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.User", null)
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId");
+                    b.HasOne("DataAccessLayer.Models.User", "Initiator")
+                        .WithMany()
+                        .HasForeignKey("InitiatorId");
+
+                    b.Navigation("Initiator");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Models.NotificationUserStatus", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.Notification", null)
-                        .WithMany("UserStatusList")
-                        .HasForeignKey("NotificationId");
-
                     b.HasOne("DataAccessLayer.Models.User", "NotifiedUser")
                         .WithMany()
                         .HasForeignKey("NotifiedUserId");
@@ -239,16 +228,9 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Models.Notification", b =>
-                {
-                    b.Navigation("UserStatusList");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Models.User", b =>
                 {
                     b.Navigation("Keys");
-
-                    b.Navigation("Notifications");
                 });
 #pragma warning restore 612, 618
         }
