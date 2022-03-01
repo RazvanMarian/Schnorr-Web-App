@@ -119,6 +119,7 @@ namespace LicentaWebApp.Server.Controllers
         
         
         [HttpGet]
+        [Authorize]
         [Route("getcompanyusers")]
         public async Task<List<User>> GetUsers()
         {
