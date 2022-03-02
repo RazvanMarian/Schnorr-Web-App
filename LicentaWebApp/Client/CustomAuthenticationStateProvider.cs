@@ -23,7 +23,7 @@ namespace LicentaWebApp.Client
         
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var currentUser = await GetUserByJwtAsync(); //_httpClient.GetFromJsonAsync<User>("user/getcurrentuser");
+            var currentUser = await GetUserByJwtAsync();
 
             if (currentUser != null && currentUser.EmailAddress != null)
             {
@@ -44,24 +44,31 @@ namespace LicentaWebApp.Client
 
         public async Task<User> GetUserByJwtAsync()
         {
-            var jwtToken = await _localStorageService.GetItemAsStringAsync("jwt_token");
-            if (jwtToken == null)
+            try
+            {
+                var jwtToken = await _localStorageService.GetItemAsStringAsync("jwt_token");
+                if (jwtToken == null)
+                    return null;
+
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, "user/getuserbyjwt");
+                requestMessage.Content = new StringContent(jwtToken);
+
+                requestMessage.Content.Headers.ContentType
+                    = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                var response = await _httpClient.SendAsync(requestMessage);
+                var returnedUser = await response.Content.ReadFromJsonAsync<User>();
+
+                if (returnedUser != null)
+                    return await Task.FromResult(returnedUser);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                await _localStorageService.ClearAsync();
                 return null;
-
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "user/getuserbyjwt");
-            requestMessage.Content = new StringContent(jwtToken);
-
-            requestMessage.Content.Headers.ContentType
-                = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-
-            var response = await _httpClient.SendAsync(requestMessage);
-
-            var returnedUser = await response.Content.ReadFromJsonAsync<User>();
-
-            if (returnedUser != null)
-                return await Task.FromResult(returnedUser);
+            }
             
-            await _localStorageService.ClearAsync();
             return null;
         }
     }
