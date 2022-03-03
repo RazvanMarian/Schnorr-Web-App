@@ -1,12 +1,10 @@
 ﻿@using Blazored.LocalStorage
 @using LicentaWebApp.Client.ViewModels
-@using System.Security.Claims
+@using LicentaWebApp.Shared.Models
 @inherits LayoutComponentBase
 @inject NavigationManager _navigationManager
-@inject HttpClient _httpClient
 @inject ILocalStorageService _localStorageService
 @inject INotificationViewModel _notificationViewModel
-@inject IUserViewModel _userViewModel
 
 <MudThemeProvider Theme="_currentTheme"/>
 <MudDialogProvider/>
@@ -29,13 +27,13 @@
                 <MudText>
                     Salutare
                     @{
-                        System.Diagnostics.Debug.Assert(context.User.Identity != null, 
+                        System.Diagnostics.Debug.Assert(context.User.Identity != null,
                             "context.User.Identity != null");
                     }
                     @context.User.Identity.Name
                 </MudText>
 
-                <NotificationButton NotificationsNumber="@NotificationNumber"/>
+                <NotificationButton Notifications="@Notifications" NotificationsNumber="@NotificationNumber"/>
 
 
                 @if (_currentTheme == _darkTheme)
@@ -76,11 +74,13 @@
 
 @code {
     bool _open = true;
-    int NotificationNumber { get; set; } = 0;
-    
+    int NotificationNumber { get; set; }
+
+    List<Notification> Notifications { get; set; } = new();
+
     [CascadingParameter]
     protected Task<AuthenticationState> AuthState { get; set; }
-    
+
     protected override void OnInitialized()
     {
         _currentTheme = _darkTheme;
@@ -90,25 +90,23 @@
     {
         var authState = await AuthState;
         var user = authState.User;
-
+    
         if (user.Identity != null && user.Identity.IsAuthenticated)
         {
-            var res = await _notificationViewModel.GetNotifications();
-
-            if (res != null)
-                foreach (var notification in res)
+            Notifications = await _notificationViewModel.GetNotifications();
+    
+            if (Notifications != null)
+                foreach (var notification in Notifications)
                 {
-                    Console.WriteLine(notification.FileName);
                     NotificationNumber++;
                 }
         }
-
     }
 
 
-    MudTheme _currentTheme = new MudTheme();
+    MudTheme _currentTheme = new();
 
-    readonly MudTheme _defaultTheme = new MudTheme()
+    readonly MudTheme _defaultTheme = new()
     {
         Palette = new Palette()
         {
@@ -116,7 +114,7 @@
         }
     };
 
-    readonly MudTheme _darkTheme = new MudTheme()
+    readonly MudTheme _darkTheme = new()
     {
         Palette = new Palette()
         {

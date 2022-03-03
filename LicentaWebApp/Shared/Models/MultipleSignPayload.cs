@@ -10,7 +10,8 @@ public class MultipleSignPayload
     
     public string FileName { get; set; }
     
-    public string FileContent { get; set; }
+    public byte[] FileContent { get; set; }
     
     public string UserKeyName { get; set; }
+    
 }

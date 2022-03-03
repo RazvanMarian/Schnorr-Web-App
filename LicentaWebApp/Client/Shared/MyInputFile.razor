@@ -1,4 +1,5 @@
 @using System.IO
+@using LicentaWebApp.Shared.Models
 @inject HttpClient _httpClient
 @inject ISnackbar _snackbar
 @inject IUploadFileService _uploadFileService
@@ -74,8 +75,14 @@
 
     [Parameter]
     public string KeyName { get; set; }
-    
-    
+
+    [Parameter]
+    public IEnumerable<string> Options { get; set; } = new HashSet<string>();
+
+    [Parameter]
+    public List<User> CompanyUsers { get; set; } = new();
+
+
     string _dragEnterStyle;
     string _fileType;
     IBrowserFile _file;
@@ -94,29 +101,62 @@
     {
         if (KeyName == null)
         {
-            Console.WriteLine("Fara cheie");
-            await _uploadFileService.UploadHashFile(_file);
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("You did not select a key!", Severity.Error);
+            return;
         }
-        else
+        
+        if (!Options.Any())
         {
-            Console.WriteLine(KeyName);
             var result  = await _uploadFileService.UploadHashWithKey(_file,KeyName);
             if (result != null)
             {
-                await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream",result,
+                await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
                     "signature.plain");
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                _snackbar.Add("File uploaded", Severity.Success);
+                _fileName = null;
+                _show = true;
+                return;
             }
             else
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-                _snackbar.Add("File could not be uploaded!", Severity.Error); 
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                _snackbar.Add("File could not be uploaded!", Severity.Error);
                 _fileName = null;
                 _show = true;
                 return;
             }
         }
-        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-        _snackbar.Add("File uploaded", Severity.Success);
+
+
+        var payload = new MultipleSignPayload();
+        foreach (var email in Options)
+        {
+            foreach (var user in CompanyUsers.Where(user => email == user.EmailAddress))
+            {
+                payload.Users.Add(user);
+            }
+        }
+
+        //payload.FileContent = "file content";
+ 
+        payload.UserKeyName = KeyName;
+        payload.FileName = _fileName;
+
+        var res = await _uploadFileService.MultipleSignFile(_file, payload);
+
+        if (res.IsSuccessStatusCode)
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("Request was sent!", Severity.Success);
+        }
+        else
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("Request for signing could not be sent!", Severity.Error);
+        }
+
         _fileName = null;
         _show = true;
     }

@@ -32,7 +32,6 @@ namespace LicentaWebApp.Client
             
             builder.Services.AddTransient<CustomAuthorizationHandler>();
             
-            
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
             
             await builder.Build().RunAsync();

@@ -1,35 +1,52 @@
-<MudIconButton OnClick="ToggleOpen">
-    <MudBadge Content="@NotificationsNumber" Color="Color.Primary" Overlap="true">
-        <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default"/>
-    </MudBadge>
-    <MudPopover Open="_isOpen" OverflowBehavior="OverflowBehavior.FilpOnOpen" AnchorOrigin="Origin.BottomCenter"
-                TransformOrigin="Origin.TopCenter">
+@using LicentaWebApp.Shared.Models
+@* <MudIconButton OnClick="ToggleOpen"> *@
+@*     <MudBadge Content="@NotificationsNumber" Color="Color.Primary" Overlap="true"> *@
+@*         <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default"/> *@
+@*     </MudBadge> *@
+@*     <MudPopover Open="_isOpen" OverflowBehavior="OverflowBehavior.FilpOnOpen" AnchorOrigin="Origin.BottomCenter" *@
+@*                 TransformOrigin="Origin.TopCenter"> *@
+@* *@
+@*         <MudList Clickable="true" Style="min-width: 15rem"> *@
+@*             <MudListSubheader> *@
+@*                 Notifications *@
+@*             </MudListSubheader> *@
+@*             @foreach (var notification in Notifications) *@
+@*             { *@
+@*                 <MudListItem> *@
+@*                     @notification.FileName @notification.CreatedAt.TimeOfDay *@
+@*                 </MudListItem> *@
+@*             } *@
+@*         </MudList> *@
+@* *@
+@*     </MudPopover> *@
+@* </MudIconButton> *@
 
-        <MudList Clickable="true" Style="min-width: 15rem">
-            <MudListSubheader>
-                Notifications
-            </MudListSubheader>
-            <MudListItem>
-                Notificare 1
-            </MudListItem>
-            <MudListItem>
-                Notificare 2
-            </MudListItem>
-        </MudList>
+<MudBadge Content="@NotificationsNumber" Color="Color.Primary" Overlap="true">
+    <MudMenu Icon="@Icons.Material.Outlined.Notifications" Color="Color.Default"
+             MaxHeight="200" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
 
-    </MudPopover>
-</MudIconButton>
-
+        @foreach (var notification in Notifications)
+        {
+            <MudMenuItem>
+                @notification.FileName @notification.CreatedAt.TimeOfDay
+            </MudMenuItem>
+        }
+    </MudMenu>
+</MudBadge>
 
 @code{
     private bool _isOpen = false;
-    
+
     [Parameter]
     public int NotificationsNumber { get; set; }
+
+    [Parameter]
+    public List<Notification> Notifications { get; set; } = new();
 
     private void ToggleOpen()
     {
         _isOpen = !_isOpen;
     }
+    
 
 }

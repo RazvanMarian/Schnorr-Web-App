@@ -9,11 +9,12 @@ public class Notification
 
     public int IdInitiator { get; set; }
 
+    public string SelectedKey { get; set; }
     public int Status { get; set; }
     
     public DateTime CreatedAt { get; set; }
     
-    public string FileContent { get; set; }
+    public string FilePath{ get; set; }
     
     public string FileName { get; set; }
 

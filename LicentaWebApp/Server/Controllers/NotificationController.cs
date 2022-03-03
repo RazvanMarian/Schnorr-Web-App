@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -25,7 +24,7 @@ public class NotificationController : ControllerBase
     
     [HttpGet]
     [Route("get-notifications")]
-    public async Task<List<Notification>> Create_Certificate(string keyName)
+    public async Task<List<Notification>> GetNotifications(string keyName)
     {
         var currentUser = new User();
         if (User.Identity is {IsAuthenticated: true})
@@ -44,8 +43,6 @@ public class NotificationController : ControllerBase
             
         }
         
-        
-
         return notifications;
     }
     

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -58,7 +57,11 @@ namespace LicentaWebApp.Server.Controllers
             k.PublicKeyPath = publicFilename;
             k.State = "active";
             var user = await _context.Users.Where(u => u.Id == currentUser.Id).FirstOrDefaultAsync();
-            user.Keys.Add(k);
+            if (user != null) user.Keys.Add(k);
+            else
+            {
+                return BadRequest("Error");
+            }
             await _context.SaveChangesAsync();
 
             return Ok("Success");

@@ -10,7 +10,6 @@ using DataAccessLayer.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLayer.Models;
 using LicentaWebApp.Shared;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;

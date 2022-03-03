@@ -12,9 +12,10 @@ public class NotificationViewModel :INotificationViewModel
     private readonly HttpClient _httpClient;
     public int Id { get; set; }
     public int IdInitiator { get; set; }
+    public string SelectedKey { get; set; }
     public int Status { get; set; }
     public DateTime CreatedAt { get; set; }
-    public string FileContent { get; set; }
+    public string FilePath { get; set; }
     public string FileName { get; set; }
     public List<NotificationUserStatus> UserStatusList { get; set; }
     
@@ -39,9 +40,10 @@ public class NotificationViewModel :INotificationViewModel
         {
             Id = notification.Id,
             IdInitiator = notification.IdInitiator,
+            SelectedKey=notification.SelectedKey,
             Status = notification.Status,
             CreatedAt = notification.CreatedAt,
-            FileContent = notification.FileContent,
+            FilePath = notification.FilePath,
             FileName = notification.FileName,
             UserStatusList = notification.UserStatusList
         };
@@ -53,9 +55,10 @@ public class NotificationViewModel :INotificationViewModel
         {
             Id = notificationViewModel.Id,
             IdInitiator = notificationViewModel.IdInitiator,
+            SelectedKey = notificationViewModel.SelectedKey,
             Status = notificationViewModel.Status,
             CreatedAt = notificationViewModel.CreatedAt,
-            FileContent = notificationViewModel.FileContent,
+            FilePath = notificationViewModel.FilePath,
             FileName = notificationViewModel.FileName,
             UserStatusList = notificationViewModel.UserStatusList
         };

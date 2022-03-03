@@ -18,27 +18,7 @@ namespace LicentaWebApp.Client.Services
         {
             _httpClient = httpClient;
         }
-        public async Task UploadHashFile(IBrowserFile file)
-        {
-            
-            var sha256 = SHA256.Create();
-            
-            if (file != null)
-            {
-                var ms = new MemoryStream();
-                await file.OpenReadStream().CopyToAsync(ms);
-                var buffer = ms.ToArray();
-                var hash = sha256.ComputeHash(buffer);
-                for (int i = 0; i < hash.Length; i++)
-                {
-                    Console.Write($"{hash[i]:X2}");
-                    if ((i % 4) == 3) Console.Write(" ");
-                }
-                
-                await _httpClient.PostAsJsonAsync("upload/uploadHash", hash);
-            }
-
-        }
+        
 
         public async Task<string> UploadHashWithKey(IBrowserFile file, string keyName)
         {
@@ -67,8 +47,31 @@ namespace LicentaWebApp.Client.Services
             return !result.IsSuccessStatusCode ? null : result.Content.ReadAsStringAsync().Result;
         }
 
-        public async Task<HttpResponseMessage> MultipleSignFile(MultipleSignPayload payload)
+        public async Task<HttpResponseMessage> MultipleSignFile(IBrowserFile file,MultipleSignPayload payload)
         {
+            
+            var sha256 = SHA256.Create();
+            
+            if (file == null)
+            {
+                return null;
+            }
+
+            const long maxFileSize = 1024 * 1024 * 128;
+            var ms = new MemoryStream();
+            await file.OpenReadStream(maxFileSize).CopyToAsync(ms);
+            ms.Close();
+            
+            payload.FileContent = ms.ToArray();
+            byte[] pdf = { 0x25, 0x50 , 0x44, 0x46};
+            if (!payload.FileContent.Take(4).SequenceEqual(pdf))
+                return null;
+            
+            var hash = sha256.ComputeHash(payload.FileContent);
+            var hashString =  BitConverter.ToString(hash).Replace("-", "").ToLower();
+            payload.FileHash = hashString;
+            Console.WriteLine("I'm here");
+            
             var res = await _httpClient.PostAsJsonAsync("upload/multiple-sign", payload);
             return res;
         }

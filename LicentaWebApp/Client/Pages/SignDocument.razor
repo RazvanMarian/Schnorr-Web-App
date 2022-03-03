@@ -1,0 +1,48 @@
+@page "/Sign-Document"
+@using LicentaWebApp.Client.ViewModels
+@using LicentaWebApp.Shared.Models
+@inject IUserViewModel _userViewModel
+@inject ISnackbar _snackbar
+@inject IKeyViewModel _keyViewModel
+
+<div style="margin: auto; justify-content: center; width: 33%">
+    <MudSelect Label="Select a key" @bind-Value="SelectedKey"
+               AnchorOrigin="Origin.BottomCenter"
+               Placeholder="Please select a key" AdornmentIcon="@Icons.Material.Filled.VpnKey" AdornmentColor="Color.Primary">
+        @foreach (var key in _keyViewModel.Keys)
+        {
+            <MudSelectItem Value="@key.Name">@key.Name</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudSelect T="string"
+               Label="Other signers"
+               MultiSelection="true"
+               AnchorOrigin="Origin.BottomCenter"
+               @bind-SelectedValues="Options">
+        @foreach (var user in CompanyUsers)
+        {
+            <MudSelectItem T="string" Value="@user.EmailAddress">
+                @user.FirstName @user.LastName - @user.EmailAddress
+            </MudSelectItem>
+        }
+    </MudSelect>
+
+    <MyInputFile KeyName="@SelectedKey" Options="@Options" CompanyUsers="@CompanyUsers"/>
+
+</div>
+
+
+@code {
+
+    private string SelectedKey { get; set; }
+    private IEnumerable<string> Options { get; set; } = new HashSet<string>();
+    private List<User> CompanyUsers { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CompanyUsers = await _userViewModel.GetCompanyUsers();
+        await _keyViewModel.InitializeKeys();
+    }
+    
+}

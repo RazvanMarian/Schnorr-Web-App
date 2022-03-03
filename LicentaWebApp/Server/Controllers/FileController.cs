@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using LicentaWebApp.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Notification = DataAccessLayer.Models.Notification;
 using NotificationUserStatus = DataAccessLayer.Models.NotificationUserStatus;
@@ -29,9 +30,12 @@ namespace LicentaWebApp.Server.Controllers
         private static extern void Sign_Document_Test(string hash, string privateFilename, string publicFilename);
         
         private readonly UserContext _context;
-        public FileController(UserContext context)
+        
+        private readonly IWebHostEnvironment _environment;
+        public FileController(UserContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
         
         [HttpPost]
@@ -81,6 +85,7 @@ namespace LicentaWebApp.Server.Controllers
         {
             if (payload.Users == null)
                 return await Task.FromResult<ActionResult<string>>(BadRequest("Failed"));
+            Console.WriteLine("aici;");
             
             var currentUser = new User();
             if (User.Identity is {IsAuthenticated: true})
@@ -94,31 +99,38 @@ namespace LicentaWebApp.Server.Controllers
             
             foreach (var user in payload.Users)
             {
-               Console.WriteLine(user.Id);
                var notificationUserStatus = new NotificationUserStatus
                {
                    NotifiedUserId = user.Id,
                    Status = 2,
                    SelectedKeyName = null
                };
-
+            
                notification.UserStatusList.Add(notificationUserStatus);
-
-                _context.SaveChanges();
+            
+                await _context.SaveChangesAsync();
                 
             }
             
             notification.IdInitiator = currentUser.Id;
             notification.CreatedAt = DateTime.Now;
             notification.Status = 2;
-            notification.FileContent = payload.FileContent;
+            notification.FilePath = payload.FileName;
             notification.FileName = payload.FileName;
+            notification.SelectedKey = payload.UserKeyName;
+            
+            var path=$"{_environment.WebRootPath}/{payload.FileName}";
+            var fs = System.IO.File.Create(path);
+            fs.Write(payload.FileContent, 0, 
+                payload.FileContent.Length);
+            fs.Close();
+            
             
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
             foreach (var user in payload.Users)
             {
-
+            
                 var u = await _context.Users.Where(x => x.Id == user.Id).FirstOrDefaultAsync();
                 u?.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
