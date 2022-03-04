@@ -31,11 +31,9 @@ namespace LicentaWebApp.Server.Controllers
         
         private readonly UserContext _context;
         
-        private readonly IWebHostEnvironment _environment;
-        public FileController(UserContext context, IWebHostEnvironment environment)
+        public FileController(UserContext context)
         {
             _context = context;
-            _environment = environment;
         }
         
         [HttpPost]
@@ -55,27 +53,34 @@ namespace LicentaWebApp.Server.Controllers
         [Route("sign/file/{hash}")]
         public async Task<ActionResult<string>> SignDocument([FromRoute] string hash,[FromBody] string keyName)
         {
-            var currentUser = new User();
-            if (User.Identity is {IsAuthenticated: true})
+            try
             {
-                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
-                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var currentUser = new User();
+                if (User.Identity is {IsAuthenticated: true})
+                {
+                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
+
+                var key = await _context.Keys.FirstOrDefaultAsync(k => k.UserId == currentUser.Id && k.Name == keyName);
+
+                if (key == null) return BadRequest("No key named like this!");
+
+                Sign_Document_Test(hash, key.PrivateKeyPath, key.PublicKeyPath);
+                var filePath = "/home/razvan/signatures/signature.plain";
+
+                using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    var memoryStream = new MemoryStream();
+                    await fileInput.CopyToAsync(memoryStream);
+
+                    var buffer = memoryStream.ToArray();
+                    return await Task.FromResult(Convert.ToBase64String(buffer));
+                }
             }
-
-            var key = await _context.Keys.FirstOrDefaultAsync(k => k.UserId == currentUser.Id && k.Name == keyName);
-
-            if (key == null) return BadRequest("No key named like this!");
-            
-            Sign_Document_Test(hash, key.PrivateKeyPath, key.PublicKeyPath);
-            var filePath = "/home/razvan/signatures/signature.plain";
-
-            using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            catch(Exception ex)
             {
-                var memoryStream = new MemoryStream();
-                await fileInput.CopyToAsync(memoryStream);
-
-                var buffer = memoryStream.ToArray();
-                return await Task.FromResult(Convert.ToBase64String(buffer));
+                return StatusCode(500, $"Internal server error :{ex}");
             }
         }
 
@@ -83,61 +88,59 @@ namespace LicentaWebApp.Server.Controllers
         [Route("multiple-sign")]
         public async Task<ActionResult<string>> MultipleSignDocument(MultipleSignPayload payload)
         {
-            if (payload.Users == null)
-                return await Task.FromResult<ActionResult<string>>(BadRequest("Failed"));
-            Console.WriteLine("aici;");
-            
-            var currentUser = new User();
-            if (User.Identity is {IsAuthenticated: true})
+            try
             {
-                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
-                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            }
-            
-            
-            var notification = new Notification();
-            
-            foreach (var user in payload.Users)
-            {
-               var notificationUserStatus = new NotificationUserStatus
-               {
-                   NotifiedUserId = user.Id,
-                   Status = 2,
-                   SelectedKeyName = null
-               };
-            
-               notification.UserStatusList.Add(notificationUserStatus);
-            
+                if (payload.Users == null)
+                    return await Task.FromResult<ActionResult<string>>(BadRequest("Failed"));
+
+
+                var currentUser = new User();
+                if (User.Identity is {IsAuthenticated: true})
+                {
+                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
+
+
+                var notification = new Notification();
+                var notificationUserStatusList = payload.Users
+                    .Select(user => new NotificationUserStatus
+                        {NotifiedUserId = user.Id, Status = 2, SelectedKeyName = null})
+                    .ToList();
+
+                notification.UserStatusList.AddRange(notificationUserStatusList);
+
+                var path = $"/home/razvan/temp_files/{payload.FileName}";
+                var fs = System.IO.File.Create(path);
+                fs.Write(payload.FileContent, 0,
+                    payload.FileContent.Length);
+                fs.Close();
+
+                notification.IdInitiator = currentUser.Id;
+                notification.CreatedAt = DateTime.Now;
+                notification.Status = 2;
+                notification.FilePath = path;
+                notification.FileName = payload.FileName;
+                notification.SelectedKey = payload.UserKeyName;
+                _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
-                
+
+
+                foreach (var user in payload.Users)
+                {
+
+                    var u = await _context.Users.Where(x => x.Id == user.Id).FirstOrDefaultAsync();
+                    u?.Notifications.Add(notification);
+                    await _context.SaveChangesAsync();
+                }
+
+
+                return await Task.FromResult<ActionResult<string>>(Ok("Success!"));
             }
-            
-            notification.IdInitiator = currentUser.Id;
-            notification.CreatedAt = DateTime.Now;
-            notification.Status = 2;
-            notification.FilePath = payload.FileName;
-            notification.FileName = payload.FileName;
-            notification.SelectedKey = payload.UserKeyName;
-            
-            var path=$"{_environment.WebRootPath}/{payload.FileName}";
-            var fs = System.IO.File.Create(path);
-            fs.Write(payload.FileContent, 0, 
-                payload.FileContent.Length);
-            fs.Close();
-            
-            
-            _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync();
-            foreach (var user in payload.Users)
+            catch (Exception ex)
             {
-            
-                var u = await _context.Users.Where(x => x.Id == user.Id).FirstOrDefaultAsync();
-                u?.Notifications.Add(notification);
-                await _context.SaveChangesAsync();
+                return StatusCode(500, $"Internal server error: {ex}");
             }
-            
- 
-            return await Task.FromResult<ActionResult<string>>(Ok("Success!"));
         }
     }
 }
