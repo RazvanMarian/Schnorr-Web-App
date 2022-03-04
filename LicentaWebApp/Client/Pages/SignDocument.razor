@@ -1,36 +1,119 @@
 @page "/Sign-Document"
-@using LicentaWebApp.Client.ViewModels
 @using LicentaWebApp.Shared.Models
-@inject IUserViewModel _userViewModel
+@inject ViewModels.IUserViewModel _userViewModel
 @inject ISnackbar _snackbar
-@inject IKeyViewModel _keyViewModel
+@inject ViewModels.IKeyViewModel _keyViewModel
+@using System.IO
+@inject HttpClient _httpClient
+@inject IUploadFileService _uploadFileService
+@inject IJSRuntime _jsRuntime
 
-<div style="margin: auto; justify-content: center; width: 33%">
-    <MudSelect Label="Select a key" @bind-Value="SelectedKey"
-               AnchorOrigin="Origin.BottomCenter"
-               Placeholder="Please select a key" AdornmentIcon="@Icons.Material.Filled.VpnKey" AdornmentColor="Color.Primary">
-        @foreach (var key in _keyViewModel.Keys)
-        {
-            <MudSelectItem Value="@key.Name">@key.Name</MudSelectItem>
-        }
-    </MudSelect>
+<style>
+    .drag-drop-zone {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .4s;
+        height: 80px;
+        width: 100%;
+    }
 
-    <MudSelect T="string"
-               Label="Other signers"
-               MultiSelection="true"
-               AnchorOrigin="Origin.BottomCenter"
-               @bind-SelectedValues="Options">
-        @foreach (var user in CompanyUsers)
-        {
-            <MudSelectItem T="string" Value="@user.EmailAddress">
-                @user.FirstName @user.LastName - @user.EmailAddress
-            </MudSelectItem>
-        }
-    </MudSelect>
+    .drag-drop-input {
+        position: absolute;
+        width: 33%;
+        height: 28%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 2;
+    }
 
-    <MyInputFile KeyName="@SelectedKey" Options="@Options" CompanyUsers="@CompanyUsers"/>
+    .drag-enter {
+        box-shadow: var(--mud-elevation-10);
+    }
 
-</div>
+    .list {
+        padding: 2em;
+        min-width: 100%;
+    }
+</style>
+
+<MudGrid style="margin: auto; justify-content: center; width: 33%">
+    <MudItem xs="12">
+        <MudSelect Label="Select a key" @bind-Value="SelectedKey"
+                   AnchorOrigin="Origin.BottomCenter"
+                   Placeholder="Please select a key" AdornmentIcon="@Icons.Material.Filled.VpnKey" AdornmentColor="Color.Primary">
+            @foreach (var key in _keyViewModel.Keys)
+            {
+                <MudSelectItem Value="@key.Name">@key.Name</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect T="string"
+                   Label="Other signers"
+                   MultiSelection="true"
+                   AnchorOrigin="Origin.BottomCenter"
+                   @bind-SelectedValues="Options">
+            @foreach (var user in CompanyUsers)
+            {
+                <MudSelectItem T="string" Value="@user.EmailAddress">
+                    @user.FirstName @user.LastName - @user.EmailAddress
+                </MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    
+    <MudItem xs="12">
+        <MudPaper @ondragenter="@(() => _dragEnterStyle = "drag-enter")" @ondragleave="@(() => _dragEnterStyle = null)"
+                  @ondragend="@(() => _dragEnterStyle = null)" Class=@("drag-drop-zone " + _dragEnterStyle)>
+
+            <InputFile OnChange="OnInputFileChanged" multiple class="drag-drop-input"/>
+
+            @if (_fileName == null)
+            {
+                <MudText Typo="Typo.h6">Upload file</MudText>
+            }
+            else
+            {
+                <MudItem @key="@_file">
+                    <MudChip Color="Color.Dark" Style="width:60px; overflow:hidden;" Text="@_fileType"/>
+                    @_fileName
+                </MudItem>
+            }
+        </MudPaper>
+
+        <MudGrid Justify="Justify.Center" Style="padding-top: 1rem;" Spacing="2">
+
+
+            <MudItem>
+                <MudButton OnClick="OnClickFunction" Disabled="@_show" Color="Color.Primary" Variant="Variant.Filled"
+                           Style="width: 6rem">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                    }
+                    else
+                    {
+                        <MudText>Upload</MudText>
+                    }
+                </MudButton>
+            </MudItem>
+            <MudItem>
+                <MudButton OnClick="Clear" Color="Color.Primary" Disabled="@(_show)" Variant="Variant.Filled"
+                           Style="width: 6rem">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                    }
+                    else
+                    {
+                        <MudText>Clear</MudText>
+                    }
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+
+</MudGrid>
 
 
 @code {
@@ -39,10 +122,100 @@
     private IEnumerable<string> Options { get; set; } = new HashSet<string>();
     private List<User> CompanyUsers { get; set; } = new();
 
+    bool _processing;
+    string _dragEnterStyle;
+    string _fileType;
+    IBrowserFile _file;
+    string _fileName;
+    bool _show = true;
+
     protected override async Task OnInitializedAsync()
     {
         CompanyUsers = await _userViewModel.GetCompanyUsers();
         await _keyViewModel.InitializeKeys();
     }
-    
+
+    void OnInputFileChanged(InputFileChangeEventArgs e)
+    {
+        _file = e.File;
+        _fileName = _file.Name;
+        _fileType = Path.GetExtension(_file.Name);
+        _show = false;
+    }
+
+    private async Task OnClickFunction()
+    {
+        
+        _show = true;
+        _processing = true;
+
+        if (SelectedKey == null)
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("You did not select a key!", Severity.Error);
+            _processing = false;
+            return;
+        }
+
+        if (!Options.Any())
+        {
+            var result = await _uploadFileService.UploadHashWithKey(_file, SelectedKey);
+            if (result != null)
+            {
+                await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
+                    "signature.plain");
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                _snackbar.Add("File uploaded", Severity.Success);
+                _fileName = null;
+                _processing = false;
+
+            }
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("File could not be uploaded!", Severity.Error);
+        }
+        else
+        {
+            var payload = new MultipleSignPayload();
+            foreach (var email in Options)
+            {
+                foreach (var user in CompanyUsers.Where(user => email == user.EmailAddress))
+                {
+                    payload.Users.Add(user);
+                }
+            }
+
+
+            payload.UserKeyName = SelectedKey;
+            payload.FileName = _fileName;
+
+            var res = await _uploadFileService.MultipleSignFile(_file, payload);
+
+            if (res.IsSuccessStatusCode)
+            {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                _snackbar.Add("Request was sent!", Severity.Success);
+            }
+            else
+            {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                _snackbar.Add("Request for signing could not be sent!", Severity.Error);
+            }
+
+        }
+        
+        _fileName = null;
+        _processing = false;
+        SelectedKey = "";
+        Options = Enumerable.Empty<string>();
+    }
+
+    void Clear()
+    {
+        _fileName = null;
+        _show = true;
+        _dragEnterStyle = null;
+        Options = Enumerable.Empty<string>();
+        SelectedKey = "";
+    }
+
 }

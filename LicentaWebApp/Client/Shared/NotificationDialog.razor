@@ -1,0 +1,21 @@
+@using LicentaWebApp.Shared.Models
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-column py-1">
+            <MudText>@Note.CreatedAt</MudText>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Close">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    
+    [Parameter]
+    public Notification Note { get; set; }
+
+    void Close() => MudDialog.Close(DialogResult.Ok(true));
+    
+}

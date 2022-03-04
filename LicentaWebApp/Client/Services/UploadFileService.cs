@@ -49,29 +49,23 @@ namespace LicentaWebApp.Client.Services
 
         public async Task<HttpResponseMessage> MultipleSignFile(IBrowserFile file,MultipleSignPayload payload)
         {
-            
-            var sha256 = SHA256.Create();
-            
             if (file == null)
             {
                 return null;
             }
 
-            const long maxFileSize = 1024 * 1024 * 128;
             var ms = new MemoryStream();
-            await file.OpenReadStream(maxFileSize).CopyToAsync(ms);
+            await file.OpenReadStream(file.Size).CopyToAsync(ms);
             ms.Close();
+            
+            Console.WriteLine("Am citit fisierul");
             
             payload.FileContent = ms.ToArray();
             byte[] pdf = { 0x25, 0x50 , 0x44, 0x46};
             if (!payload.FileContent.Take(4).SequenceEqual(pdf))
                 return null;
-            
-            var hash = sha256.ComputeHash(payload.FileContent);
-            var hashString =  BitConverter.ToString(hash).Replace("-", "").ToLower();
-            payload.FileHash = hashString;
-            Console.WriteLine("I'm here");
-            
+
+            Console.WriteLine("Am trimis request-ul");
             var res = await _httpClient.PostAsJsonAsync("upload/multiple-sign", payload);
             return res;
         }

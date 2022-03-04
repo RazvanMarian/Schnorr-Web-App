@@ -1,25 +1,5 @@
 @using LicentaWebApp.Shared.Models
-@* <MudIconButton OnClick="ToggleOpen"> *@
-@*     <MudBadge Content="@NotificationsNumber" Color="Color.Primary" Overlap="true"> *@
-@*         <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default"/> *@
-@*     </MudBadge> *@
-@*     <MudPopover Open="_isOpen" OverflowBehavior="OverflowBehavior.FilpOnOpen" AnchorOrigin="Origin.BottomCenter" *@
-@*                 TransformOrigin="Origin.TopCenter"> *@
-@* *@
-@*         <MudList Clickable="true" Style="min-width: 15rem"> *@
-@*             <MudListSubheader> *@
-@*                 Notifications *@
-@*             </MudListSubheader> *@
-@*             @foreach (var notification in Notifications) *@
-@*             { *@
-@*                 <MudListItem> *@
-@*                     @notification.FileName @notification.CreatedAt.TimeOfDay *@
-@*                 </MudListItem> *@
-@*             } *@
-@*         </MudList> *@
-@* *@
-@*     </MudPopover> *@
-@* </MudIconButton> *@
+@inject IDialogService _dialogService
 
 <MudBadge Content="@NotificationsNumber" Color="Color.Primary" Overlap="true">
     <MudMenu Icon="@Icons.Material.Outlined.Notifications" Color="Color.Default"
@@ -27,12 +7,14 @@
 
         @foreach (var notification in Notifications)
         {
-            <MudMenuItem>
+            <MudMenuItem OnClick="@(_ => OpenNotification(@notification))">
                 @notification.FileName @notification.CreatedAt.TimeOfDay
             </MudMenuItem>
         }
     </MudMenu>
 </MudBadge>
+
+
 
 @code{
     private bool _isOpen = false;
@@ -47,6 +29,17 @@
     {
         _isOpen = !_isOpen;
     }
-    
+
+
+    private void OpenNotification(Notification notification)
+    {
+        DialogOptions dialogOptions = new DialogOptions();
+        dialogOptions.FullWidth = true;
+        dialogOptions.CloseButton = true;
+        dialogOptions.NoHeader = false;
+        var parameters = new DialogParameters { ["Note"]=notification };
+        _dialogService.Show<NotificationDialog>("Options Dialog",parameters,dialogOptions);
+        StateHasChanged();
+    }
 
 }
