@@ -58,7 +58,7 @@ namespace LicentaWebApp.Server.Controllers
                 var currentUser = new User();
                 if (User.Identity is {IsAuthenticated: true})
                 {
-                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Email);
                     currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 }
 
@@ -97,10 +97,11 @@ namespace LicentaWebApp.Server.Controllers
                 var currentUser = new User();
                 if (User.Identity is {IsAuthenticated: true})
                 {
-                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Email);
                     currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                    currentUser.FirstName = User.FindFirstValue(ClaimTypes.Surname);
+                    currentUser.LastName = User.FindFirstValue(ClaimTypes.Name);
                 }
-
 
                 var notification = new Notification();
                 var notificationUserStatusList = payload.Users
@@ -117,6 +118,9 @@ namespace LicentaWebApp.Server.Controllers
                 fs.Close();
 
                 notification.IdInitiator = currentUser.Id;
+                notification.InitiatorFirstName = currentUser.FirstName;
+                notification.InitiatorLastName = currentUser.LastName;
+                notification.InitiatorEmailAddress = currentUser.EmailAddress;
                 notification.CreatedAt = DateTime.Now;
                 notification.Status = 2;
                 notification.FilePath = path;

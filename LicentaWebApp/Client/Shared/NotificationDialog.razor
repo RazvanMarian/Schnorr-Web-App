@@ -2,13 +2,17 @@
 <MudDialog>
     <DialogContent>
         <div class="d-flex flex-column py-1">
-            <MudText>@Note.CreatedAt</MudText>
+            <MudText>You we're asked to sign the following document by Marian Razvan</MudText>
         </div>
+        
+        <embed src="temporary_files/Garantie.pdf" type="application/pdf" width="100%" height="400px"/>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Primary" OnClick="Close">Ok</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Close" Variant="Variant.Filled">Ok</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Close" Variant="Variant.Filled">Approved</MudButton>
     </DialogActions>
 </MudDialog>
+
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }

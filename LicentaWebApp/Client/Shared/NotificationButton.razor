@@ -1,19 +1,33 @@
 @using LicentaWebApp.Shared.Models
+@using System.Threading
 @inject IDialogService _dialogService
 
-<MudBadge Content="@NotificationsNumber" Color="Color.Primary" Overlap="true">
-    <MudMenu Icon="@Icons.Material.Outlined.Notifications" Color="Color.Default"
-             MaxHeight="200" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
 
+<MudMenu MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+    <ActivatorContent>
+        <MudBadge Overlap="true" Content="NotificationsNumber" Color="Color.Primary">
+            <MudIconButton Icon="@Icons.Material.Outlined.Notifications"></MudIconButton>
+        </MudBadge>
+    </ActivatorContent>
+
+    <ChildContent>
         @foreach (var notification in Notifications)
         {
-            <MudMenuItem OnClick="@(_ => OpenNotification(@notification))">
-                @notification.FileName @notification.CreatedAt.TimeOfDay
+            <MudMenuItem OnClick="@(_ => OpenNotification(@notification))" Style="max-width: 240px">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText>@notification.InitiatorFirstName @notification.InitiatorLastName sent you a signature request</MudText>
+                        <MudText Typo="Typo.body2">@notification.FileName</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudText>Created at: @notification.CreatedAt</MudText>
+                    </MudCardActions>
+                </MudCard>
             </MudMenuItem>
+            <MudDivider/>
         }
-    </MudMenu>
-</MudBadge>
-
+    </ChildContent>
+</MudMenu>
 
 
 @code{
@@ -37,8 +51,8 @@
         dialogOptions.FullWidth = true;
         dialogOptions.CloseButton = true;
         dialogOptions.NoHeader = false;
-        var parameters = new DialogParameters { ["Note"]=notification };
-        _dialogService.Show<NotificationDialog>("Options Dialog",parameters,dialogOptions);
+        var parameters = new DialogParameters {["Note"] = notification};
+        _dialogService.Show<NotificationDialog>($"Request created at: {notification.CreatedAt}", parameters, dialogOptions);
         StateHasChanged();
     }
 

@@ -39,8 +39,11 @@ namespace LicentaWebApp.Server.Controllers
 
             var claimEmail = new Claim(ClaimTypes.Email, user.EmailAddress);
             var claimNameIdentifier = new Claim(ClaimTypes.NameIdentifier, user.Id.ToString());
+            var claimFirstName = new Claim(ClaimTypes.Surname, user.FirstName);
+            var claimLastName = new Claim(ClaimTypes.Name, user.LastName);
 
-            var claimsIdentity = new ClaimsIdentity(new[] {claimEmail, claimNameIdentifier},
+            var claimsIdentity = new ClaimsIdentity(new[] 
+                    {claimEmail, claimNameIdentifier, claimFirstName, claimLastName},
                 "serverAuth");
 
 
@@ -120,7 +123,7 @@ namespace LicentaWebApp.Server.Controllers
         [HttpGet]
         [Authorize]
         [Route("getcompanyusers")]
-        public async Task<List<User>> GetUsers()
+        public async Task<List<User>> GetCompanyUsers()
         {
             var currentUser = new User();
             if (User.Identity is {IsAuthenticated: true})

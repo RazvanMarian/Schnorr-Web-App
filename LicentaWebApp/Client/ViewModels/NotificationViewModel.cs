@@ -7,40 +7,46 @@ using LicentaWebApp.Shared.Models;
 
 namespace LicentaWebApp.Client.ViewModels;
 
-public class NotificationViewModel :INotificationViewModel
+public class NotificationViewModel : INotificationViewModel
 {
     private readonly HttpClient _httpClient;
     public int Id { get; set; }
     public int IdInitiator { get; set; }
+    public string InitiatorFirstName { get; set; }
+    public string InitiatorLastName { get; set; }
+    public string InitiatorEmailAddress { get; set; }
     public string SelectedKey { get; set; }
     public int Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public string FilePath { get; set; }
     public string FileName { get; set; }
     public List<NotificationUserStatus> UserStatusList { get; set; }
-    
+
     public NotificationViewModel()
     {
-
     }
+
     public NotificationViewModel(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
-    
+
     public async Task<List<Notification>> GetNotifications()
     {
         var res = await _httpClient.GetFromJsonAsync<List<Notification>>("/notification/get-notifications");
         return res;
     }
-    
+
     public static implicit operator NotificationViewModel(Notification notification)
     {
         return new NotificationViewModel()
         {
             Id = notification.Id,
             IdInitiator = notification.IdInitiator,
-            SelectedKey=notification.SelectedKey,
+            InitiatorFirstName = notification.InitiatorFirstName,
+            InitiatorLastName = notification.InitiatorLastName,
+            InitiatorEmailAddress = notification.InitiatorEmailAddress,
+            SelectedKey = notification.SelectedKey,
             Status = notification.Status,
             CreatedAt = notification.CreatedAt,
             FilePath = notification.FilePath,
@@ -55,6 +61,9 @@ public class NotificationViewModel :INotificationViewModel
         {
             Id = notificationViewModel.Id,
             IdInitiator = notificationViewModel.IdInitiator,
+            InitiatorFirstName = notificationViewModel.InitiatorFirstName,
+            InitiatorLastName = notificationViewModel.InitiatorLastName,
+            InitiatorEmailAddress = notificationViewModel.InitiatorEmailAddress,
             SelectedKey = notificationViewModel.SelectedKey,
             Status = notificationViewModel.Status,
             CreatedAt = notificationViewModel.CreatedAt,
