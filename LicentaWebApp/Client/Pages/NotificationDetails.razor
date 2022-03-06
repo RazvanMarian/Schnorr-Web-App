@@ -1,0 +1,74 @@
+@page "/Notification/{NotificationId}"
+@using LicentaWebApp.Shared.Models
+@inject ViewModels.INotificationViewModel _notificationViewModel
+@inject IDialogService _dialogService
+
+<MudGrid Spacing="4" Style="height: 90vh">
+    <MudItem xs="12" Style="height: 80%">
+        @if (Notification != null)
+        {
+            <div class="d-flex flex-column py-1">
+                <MudText>You we're asked to sign the following document by Marian Razvan created on @Notification.CreatedAt</MudText>
+            </div>
+        }
+        else
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7"/>
+        }
+        <embed src="temporary_files/Garantie.pdf" type="application/pdf" width="100%" height="100%"/>
+    </MudItem>
+
+    <MudGrid Justify="Justify.Center" Style="padding-top: 1rem;" Spacing="2">
+        <MudItem>
+            <MudButton OnClick="Sign" Color="Color.Primary" Variant="Variant.Filled"
+                       Style="width: 6rem">
+                Sign
+            </MudButton>
+        </MudItem>
+        
+        <MudItem>
+            <MudButton OnClick="Deny" Color="Color.Primary" Variant="Variant.Filled" Style="width: 6rem">
+                Deny
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudGrid>
+
+@code {
+
+    [Parameter]
+    public string NotificationId { get; set; }
+
+    private Notification Notification { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Notification = await _notificationViewModel.GetNotificationById(int.Parse(NotificationId));
+        StateHasChanged();
+    }
+
+    private async Task Sign()
+    {
+        var parameter = new DialogParameters { ["Action"]="SIGN" };
+        var dialog = _dialogService.Show<NotificationDialog>("Sign",parameter);
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var key = result.Data.ToString();
+            Console.WriteLine(key);
+        }
+    }
+    
+    private async Task Deny()
+    {
+        var parameter = new DialogParameters { ["Action"]="DENY" };
+        var dialog = _dialogService.Show<NotificationDialog>("Deny",parameter);
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var reason = result.Data.ToString();
+            Console.WriteLine(reason);
+        }
+    }
+
+}

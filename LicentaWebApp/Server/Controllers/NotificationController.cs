@@ -45,5 +45,14 @@ public class NotificationController : ControllerBase
         
         return notifications;
     }
+
+    [HttpGet]
+    [Route("get-notification/{id}")]
+    public async Task<Notification> GetNotificationById(int id)
+    {
+        var notification = await _context.Notifications.FirstOrDefaultAsync(n => n.Id == id);
+
+        return notification;
+    }
     
 }

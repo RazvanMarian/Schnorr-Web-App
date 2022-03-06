@@ -1,25 +1,90 @@
 @using LicentaWebApp.Shared.Models
-<MudDialog>
-    <DialogContent>
-        <div class="d-flex flex-column py-1">
-            <MudText>You we're asked to sign the following document by Marian Razvan</MudText>
-        </div>
-        
-        <embed src="temporary_files/Garantie.pdf" type="application/pdf" width="100%" height="400px"/>
-    </DialogContent>
-    <DialogActions>
-        <MudButton Color="Color.Primary" OnClick="Close" Variant="Variant.Filled">Ok</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Close" Variant="Variant.Filled">Approved</MudButton>
-    </DialogActions>
-</MudDialog>
+@inject ViewModels.IKeyViewModel _keyViewModel
+
+@if (Action == "SIGN")
+{
+    <MudDialog>
+        <TitleContent>
+            Choose the key you want to sign with
+        </TitleContent>
+        <DialogContent>
+            <MudSelect Label="Select a key" @bind-Value="SelectedKey"
+                       AnchorOrigin="Origin.BottomCenter"
+                       Placeholder="Please select a key"
+                       AdornmentIcon="@Icons.Material.Filled.VpnKey"
+                       AdornmentColor="Color.Primary">
+                @foreach (var key in _keyViewModel.Keys)
+                {
+                    <MudSelectItem Value="@key.Name">@key.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Sign">Sign</MudButton>
+            <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
+else if(Action == "DENY")
+{
+    <MudDialog>
+        <TitleContent>
+            Give us a reason for refusing to sign the document
+        </TitleContent>
+        <DialogContent>
+            <MudTextField @bind-Value="@RefuseReason" T="string" Label="Write your reason here" 
+                          Variant="Variant.Text" Text="@RefuseReason" Lines="5" />
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Deny">Deny</MudButton>
+            <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
+else
+{
+    <MudDialog>
+        <TitleContent>
+            No action provided
+        </TitleContent>
+        <DialogActions>
+            <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
 
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
     
     [Parameter]
-    public Notification Note { get; set; }
+    public string Action { get; set; }
 
-    void Close() => MudDialog.Close(DialogResult.Ok(true));
+    private string SelectedKey { get; set; }
+
+    private string RefuseReason { get; set; }
     
+    private void Sign()
+    {
+        MudDialog.Close(DialogResult.Ok(SelectedKey));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _keyViewModel.InitializeKeys();
+    }
+
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Deny()
+    {
+        MudDialog.Close(DialogResult.Ok(RefuseReason));
+    }
+
 }

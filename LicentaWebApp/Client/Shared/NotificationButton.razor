@@ -1,6 +1,7 @@
 @using LicentaWebApp.Shared.Models
 @using System.Threading
 @inject IDialogService _dialogService
+@inject NavigationManager _navigationManager
 
 
 <MudMenu MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
@@ -47,13 +48,7 @@
 
     private void OpenNotification(Notification notification)
     {
-        DialogOptions dialogOptions = new DialogOptions();
-        dialogOptions.FullWidth = true;
-        dialogOptions.CloseButton = true;
-        dialogOptions.NoHeader = false;
-        var parameters = new DialogParameters {["Note"] = notification};
-        _dialogService.Show<NotificationDialog>($"Request created at: {notification.CreatedAt}", parameters, dialogOptions);
-        StateHasChanged();
+        _navigationManager.NavigateTo($"/Notification/{notification.Id}");
     }
 
 }
