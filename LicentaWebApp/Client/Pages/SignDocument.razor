@@ -170,8 +170,11 @@
                 _processing = false;
 
             }
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("File could not be uploaded!", Severity.Error);
+            else
+            {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                _snackbar.Add("File could not be uploaded!", Severity.Error);
+            }
         }
         else
         {

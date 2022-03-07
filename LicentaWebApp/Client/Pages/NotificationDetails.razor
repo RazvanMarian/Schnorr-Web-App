@@ -2,6 +2,8 @@
 @using LicentaWebApp.Shared.Models
 @inject ViewModels.INotificationViewModel _notificationViewModel
 @inject IDialogService _dialogService
+@inject NavigationManager _navigationManager
+@inject ISnackbar _snackbar
 
 <MudGrid Spacing="4" Style="height: 90vh">
     <MudItem xs="12" Style="height: 80%">
@@ -15,7 +17,14 @@
         {
             <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7"/>
         }
-        <embed src="temporary_files/Garantie.pdf" type="application/pdf" width="100%" height="100%"/>
+        @if (Notification != null)
+        {
+            <embed src="@Notification.FilePath" type="application/pdf" width="100%" height="100%"/>
+        }
+        else
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7"/>
+        }
     </MudItem>
 
     <MudGrid Justify="Justify.Center" Style="padding-top: 1rem;" Spacing="2">
@@ -55,7 +64,16 @@
         if (!result.Cancelled)
         {
             var key = result.Data.ToString();
-            Console.WriteLine(key);
+            var res = await _notificationViewModel.AcceptNotification(Notification.Id, key);
+            if (res.IsSuccessStatusCode)
+            {
+                _navigationManager.NavigateTo("/",true);
+            }
+            else
+            {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                _snackbar.Add("The request could not be accepted!", Severity.Error);
+            }
         }
     }
     
@@ -67,7 +85,12 @@
         if (!result.Cancelled)
         {
             var reason = result.Data.ToString();
-            Console.WriteLine(reason);
+            var res = await _notificationViewModel.DenyNotification(Notification.Id, reason);
+
+            if (res.IsSuccessStatusCode)
+            {
+                _navigationManager.NavigateTo("/",true);
+            }
         }
     }
 

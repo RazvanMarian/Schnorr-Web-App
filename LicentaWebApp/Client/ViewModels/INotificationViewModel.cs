@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using LicentaWebApp.Shared.Models;
 
@@ -20,4 +21,6 @@ public interface INotificationViewModel
     public List<NotificationUserStatus> UserStatusList { get; set; }
     public Task<List<Notification>> GetNotifications();
     public Task<Notification> GetNotificationById(int id);
+    public Task<HttpResponseMessage> DenyNotification(int notificationId, string refuseReason);
+    public Task<HttpResponseMessage> AcceptNotification(int notificationId, string SelectedKey);
 }

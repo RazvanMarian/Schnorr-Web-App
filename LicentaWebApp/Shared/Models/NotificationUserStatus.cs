@@ -9,4 +9,6 @@ public class NotificationUserStatus
     public int Status { get; set; }
     
     public string SelectedKeyName { get; set; }
+    
+    public string RefuseReason { get; set; }
 }

@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using LicentaWebApp.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Notification = DataAccessLayer.Models.Notification;
 using NotificationUserStatus = DataAccessLayer.Models.NotificationUserStatus;
@@ -23,35 +22,36 @@ namespace LicentaWebApp.Server.Controllers
     public class FileController : ControllerBase
     {
         private const string ImportPath = "../../SchnorrSig/schnorrlib.dll";
+
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
         private static extern void test_sign(string str);
-        
+
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
         private static extern void Sign_Document_Test(string hash, string privateFilename, string publicFilename);
-        
+
         private readonly UserContext _context;
-        
+
         public FileController(UserContext context)
         {
             _context = context;
         }
-        
+
         [HttpPost]
         [Route("uploadHash")]
         public async Task<IActionResult> PostHash(byte[] hashP)
         {
-            var hash =  BitConverter.ToString(hashP).Replace("-", "").ToLower();
+            var hash = BitConverter.ToString(hashP).Replace("-", "").ToLower();
 
             test_sign(hash);
             Console.WriteLine("Dupa test!");
             await Task.Delay(500);
             return Ok();
         }
-        
-        
+
+
         [HttpPost]
         [Route("sign/file/{hash}")]
-        public async Task<ActionResult<string>> SignDocument([FromRoute] string hash,[FromBody] string keyName)
+        public async Task<ActionResult<string>> SignDocument([FromRoute] string hash, [FromBody] string keyName)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace LicentaWebApp.Server.Controllers
                     return await Task.FromResult(Convert.ToBase64String(buffer));
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error :{ex}");
             }
@@ -111,28 +111,31 @@ namespace LicentaWebApp.Server.Controllers
 
                 notification.UserStatusList.AddRange(notificationUserStatusList);
 
-                var path = $"/home/razvan/temp_files/{payload.FileName}";
-                var fs = System.IO.File.Create(path);
-                fs.Write(payload.FileContent, 0,
-                    payload.FileContent.Length);
-                fs.Close();
 
                 notification.IdInitiator = currentUser.Id;
                 notification.InitiatorFirstName = currentUser.FirstName;
                 notification.InitiatorLastName = currentUser.LastName;
                 notification.InitiatorEmailAddress = currentUser.EmailAddress;
                 notification.CreatedAt = DateTime.Now;
-                notification.Status = 2;
-                notification.FilePath = path;
+                notification.Status = payload.Users.Count;
+
                 notification.FileName = payload.FileName;
                 notification.SelectedKey = payload.UserKeyName;
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
 
+                var path = "/home/razvan/temp_files/notification" + notification.Id + "/"
+                           + notification.FileName;
+                Directory.CreateDirectory("/home/razvan/temp_files/notification"+ notification.Id);
+                var fs = System.IO.File.Create(path);
+                fs.Write(payload.FileContent, 0,
+                    payload.FileContent.Length);
+                fs.Close();
 
+                notification.FilePath = "/temp_files/notification" + notification.Id + "/"
+                    + notification.FileName;
                 foreach (var user in payload.Users)
                 {
-
                     var u = await _context.Users.Where(x => x.Id == user.Id).FirstOrDefaultAsync();
                     u?.Notifications.Add(notification);
                     await _context.SaveChangesAsync();

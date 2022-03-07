@@ -43,6 +43,31 @@ public class NotificationViewModel : INotificationViewModel
         return result;
     }
 
+    public async Task<HttpResponseMessage> DenyNotification(int notificationId, string refuseReason)
+    {
+        var payload = new DenyNotificationPayload
+        {
+            NotificationId = notificationId,
+            RefuseReason = refuseReason
+        };
+        var result = await _httpClient
+            .PostAsJsonAsync("notification/deny-notification", payload);
+        return result;
+    }
+
+    public async Task<HttpResponseMessage> AcceptNotification(int notificationId, string selectedKey)
+    {
+        var payload = new AcceptNotificationPayload
+        {
+            NotificationId = notificationId,
+            SelectedKey = selectedKey
+        };
+
+        var result = await _httpClient
+            .PostAsJsonAsync("notification/accept-notification", payload);
+        return result;
+    }
+
     public static implicit operator NotificationViewModel(Notification notification)
     {
         return new NotificationViewModel()

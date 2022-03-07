@@ -1,4 +1,3 @@
-@using LicentaWebApp.Shared.Models
 @inject ViewModels.IKeyViewModel _keyViewModel
 
 @if (Action == "SIGN")
@@ -75,8 +74,7 @@ else
     {
         await _keyViewModel.InitializeKeys();
     }
-
-
+    
     private void Cancel()
     {
         MudDialog.Cancel();
