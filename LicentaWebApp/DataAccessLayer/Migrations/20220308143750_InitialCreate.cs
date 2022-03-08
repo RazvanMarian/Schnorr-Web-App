@@ -74,10 +74,69 @@ namespace DataAccessLayer.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IdInitiator = table.Column<int>(type: "int", nullable: false),
+                    InitiatorFirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InitiatorLastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InitiatorEmailAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SelectedKey = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "NotificationsUserStatus",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NotifiedUserId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    SelectedKeyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefuseReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NotificationId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationsUserStatus", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_NotificationsUserStatus_Notifications_NotificationId",
+                        column: x => x.NotificationId,
+                        principalTable: "Notifications",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Keys_UserId",
                 table: "Keys",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_UserId",
+                table: "Notifications",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NotificationsUserStatus_NotificationId",
+                table: "NotificationsUserStatus",
+                column: "NotificationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_CompanyId",
@@ -89,6 +148,12 @@ namespace DataAccessLayer.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Keys");
+
+            migrationBuilder.DropTable(
+                name: "NotificationsUserStatus");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Users");

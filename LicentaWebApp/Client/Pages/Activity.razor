@@ -1,0 +1,88 @@
+@page "/Activity"
+@using LicentaWebApp.Shared.Models
+@using System.Security.Claims
+@inject ViewModels.INotificationViewModel _notificationViewModel
+@attribute [Authorize]
+
+@if (Notifications == null)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7"/>
+}
+else if (!Notifications.Any())
+{
+    <MudText Typo="Typo.h4">You don't have any activity yet</MudText>
+}
+else
+{
+    <MudText Typo="Typo.h6">Notifications you have to give the last approval</MudText>
+    <MudExpansionPanels Style="padding-bottom: 2rem">
+        @foreach (var notification in Notifications)
+        {
+            @if (notification.Status == 0)
+            {
+                <MudExpansionPanel Text="@notification.FileName">
+                    @notification.FileName - status : @notification.Status - creat at: @notification.CreatedAt, created by: @notification.InitiatorEmailAddress
+                </MudExpansionPanel>
+            }
+        }
+    </MudExpansionPanels>
+    
+    <MudDivider/>
+    
+    <MudText Typo="Typo.h6">Notifications you have started that are in pending</MudText>
+    <MudExpansionPanels Style="padding-top: 2rem; padding-bottom: 2rem">
+        @foreach (var notification in Notifications)
+        {
+            @if (notification.Status > 0 && notification.IdInitiator == UserId)
+            {
+                <MudExpansionPanel Text="@notification.FileName">
+                    @notification.FileName - status : @notification.Status - creat at: @notification.CreatedAt, created by: @notification.InitiatorEmailAddress
+                </MudExpansionPanel>
+            }
+        }
+    </MudExpansionPanels>
+    
+    <MudDivider/>
+    
+    <MudExpansionPanels Style="padding-top: 2rem">
+        <MudText Typo="Typo.h6">Notifications you have been involved in the past</MudText>
+        @foreach (var notification in Notifications)
+        {
+            @if (notification.Status < 0)
+            {
+                <MudExpansionPanel Text="@notification.FileName">
+                    @notification.FileName - status : @notification.Status - creat at: @notification.CreatedAt, created by: @notification.InitiatorEmailAddress
+                </MudExpansionPanel>
+            }
+        }
+    </MudExpansionPanels>
+}
+
+@code {
+    private List<Notification> Notifications { get; set; }
+    
+    private int UserId { get; set; }
+    
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationState;
+        var user = authState.User;
+
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            var claim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
+            if (claim != null) UserId = int.Parse(claim.Value);
+        }
+        
+        Notifications = await _notificationViewModel.GetAllNotifications();
+        
+        foreach (var notification in Notifications)
+        {
+            Console.WriteLine(notification.FileName);
+        }
+    }
+
+}

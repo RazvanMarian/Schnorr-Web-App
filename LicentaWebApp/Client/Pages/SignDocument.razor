@@ -4,9 +4,9 @@
 @inject ISnackbar _snackbar
 @inject ViewModels.IKeyViewModel _keyViewModel
 @using System.IO
-@inject HttpClient _httpClient
 @inject IUploadFileService _uploadFileService
 @inject IJSRuntime _jsRuntime
+@attribute [Authorize]
 
 <style>
     .drag-drop-zone {

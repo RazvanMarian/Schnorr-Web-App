@@ -22,5 +22,6 @@ public interface INotificationViewModel
     public Task<List<Notification>> GetNotifications();
     public Task<Notification> GetNotificationById(int id);
     public Task<HttpResponseMessage> DenyNotification(int notificationId, string refuseReason);
-    public Task<HttpResponseMessage> AcceptNotification(int notificationId, string SelectedKey);
+    public Task<HttpResponseMessage> AcceptNotification(int notificationId, string selectedKey);
+    public Task<List<Notification>> GetAllNotifications();
 }

@@ -74,12 +74,14 @@ else if(_initialized)
             var res = await _keyViewModel.DeleteKey(key);
             if (res.IsSuccessStatusCode)
             {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("Key Deleted", Severity.Success);
                 await _keyViewModel.InitializeKeys();
                 StateHasChanged();
             }
             else
             {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("Key could not be deleted!", Severity.Error);
             }
         }
@@ -91,21 +93,22 @@ else if(_initialized)
 
         var dialog = _dialogService.Show<KeyRenameDialog>("Rename key", parameters);
         var result = await dialog.Result;
-        dynamic k = result.Data;
-        
-        
+
+
         if (!result.Cancelled)
         {
             
             var res = await _keyViewModel.RenameKey(key);
             if (res.IsSuccessStatusCode)
             {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("Key renamed", Severity.Success);
                 await _keyViewModel.InitializeKeys();
                 StateHasChanged();
             }
             else
             {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("Key could not be renamed !", Severity.Error);
             }
         }
@@ -117,10 +120,12 @@ else if(_initialized)
         if (res!="ERROR")
         {
             await _jsRuntime.InvokeVoidAsync("downloadFile", "application/x-pem-file",res,"cert.pem");
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("Key exported!", Severity.Success);
         }
         else
         {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("Key could not be exported!", Severity.Error);
         }
     }

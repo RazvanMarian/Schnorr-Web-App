@@ -68,6 +68,12 @@ public class NotificationViewModel : INotificationViewModel
         return result;
     }
 
+    public async Task<List<Notification>> GetAllNotifications()
+    {
+        var res = await _httpClient.GetFromJsonAsync<List<Notification>>("/notification/get-all-notifications");
+        return res;
+    }
+
     public static implicit operator NotificationViewModel(Notification notification)
     {
         return new NotificationViewModel()

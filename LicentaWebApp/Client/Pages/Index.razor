@@ -1,9 +1,7 @@
 ﻿@page "/"
-
-@using LicentaWebApp.Client.ViewModels
 @inject NavigationManager _navigationManager
-@inject ILoginViewModel _loginViewModel
 @inject ISnackbar _snackbar
+@attribute [Authorize]
 
 <AuthorizeView>
     <Authorized>

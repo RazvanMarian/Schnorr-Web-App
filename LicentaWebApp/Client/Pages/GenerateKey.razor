@@ -1,6 +1,5 @@
 @page "/Generate-Key"
 @attribute [Authorize]
-@inject HttpClient _httpClient
 @inject IKeyViewModel _keyViewModel
 @inject ISnackbar _snackbar
 @using LicentaWebApp.Client.ViewModels
@@ -18,7 +17,7 @@
                               @bind-Value="_keyViewModel.Description" For="@(() => _keyViewModel.Description)"/>
             </MudCardContent>
             <MudCardActions Style="justify-content: center">
-                <MudButton Disabled="@_processing" OnClick="OnClickFunction" ButtonType="ButtonType.Submit"
+                <MudButton Disabled="@_processing" ButtonType="ButtonType.Submit"
                            Variant="Variant.Filled" Color="Color.Primary">
                     @if (_processing)
                     {
@@ -44,7 +43,7 @@
         _processing = true;
         if (_keyViewModel.Name == null)
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("You have to give a name to your key!", Severity.Error);_processing = false;
             _processing = false;
             return;
@@ -52,7 +51,7 @@
         
         if (_keyViewModel.Name.Length > 20 || _keyViewModel.Description?.Length > 30)
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("Your key name is too long!", Severity.Error);_processing = false;
             _processing = false;
             _keyViewModel.Name = null;
@@ -63,12 +62,12 @@
         var result = await _keyViewModel.GenerateKey();
         if (result.IsSuccessStatusCode)
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("Key generated successfully!", Severity.Success);
         }
         else
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("Key generation failed!", Severity.Error);
         }
         

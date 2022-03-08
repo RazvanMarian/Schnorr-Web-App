@@ -4,6 +4,7 @@
 @inject IDialogService _dialogService
 @inject NavigationManager _navigationManager
 @inject ISnackbar _snackbar
+@attribute [Authorize]
 
 <MudGrid Spacing="4" Style="height: 90vh">
     <MudItem xs="12" Style="height: 80%">
@@ -71,7 +72,7 @@
             }
             else
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("The request could not be accepted!", Severity.Error);
             }
         }
