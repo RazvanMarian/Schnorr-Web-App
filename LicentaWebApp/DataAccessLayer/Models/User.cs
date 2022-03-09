@@ -9,7 +9,7 @@ namespace DataAccessLayer.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(64)]
+        [MaxLength(128)]
         public string Password { get; set; }
 
         [Required]
