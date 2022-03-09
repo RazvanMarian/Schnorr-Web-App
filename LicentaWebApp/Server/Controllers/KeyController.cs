@@ -9,7 +9,6 @@ using DataAccessLayer.DataAccess;
 using DataAccessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
 
 
 namespace LicentaWebApp.Server.Controllers

@@ -66,7 +66,7 @@ namespace LicentaWebApp.Client.Services
                 return null;
 
             Console.WriteLine("Am trimis request-ul");
-            var res = await _httpClient.PostAsJsonAsync("upload/multiple-sign", payload);
+            var res = await _httpClient.PostAsJsonAsync("upload/multiple-sign-request", payload);
             return res;
         }
     }

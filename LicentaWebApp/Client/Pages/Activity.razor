@@ -2,6 +2,7 @@
 @using LicentaWebApp.Shared.Models
 @using System.Security.Claims
 @inject ViewModels.INotificationViewModel _notificationViewModel
+@inject ISnackbar _snackbar
 @attribute [Authorize]
 
 @if (Notifications == null)
@@ -22,6 +23,7 @@ else
             {
                 <MudExpansionPanel Text="@notification.FileName">
                     @notification.FileName - status : @notification.Status - creat at: @notification.CreatedAt, created by: @notification.InitiatorEmailAddress
+                    <MudButton OnClick="() => OnClickFunction(notification.Id)" Variant="Variant.Filled" Color="Color.Default">Click me</MudButton>
                 </MudExpansionPanel>
             }
         }
@@ -82,6 +84,21 @@ else
         foreach (var notification in Notifications)
         {
             Console.WriteLine(notification.FileName);
+        }
+    }
+
+    private async Task OnClickFunction(int notificationId)
+    {
+        var res = await _notificationViewModel.MultipleSignFinish(notificationId);
+        if (res.IsSuccessStatusCode)
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("The document was signed!", Severity.Success);
+        }
+        else
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("The document could not be signed!", Severity.Error);
         }
     }
 

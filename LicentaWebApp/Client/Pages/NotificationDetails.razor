@@ -54,8 +54,13 @@
     protected override async Task OnInitializedAsync()
     {
         Notification = await _notificationViewModel.GetNotificationById(int.Parse(NotificationId));
-        StateHasChanged();
     }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Notification = await _notificationViewModel.GetNotificationById(int.Parse(NotificationId));
+    }
+
 
     private async Task Sign()
     {
@@ -68,7 +73,7 @@
             var res = await _notificationViewModel.AcceptNotification(Notification.Id, key);
             if (res.IsSuccessStatusCode)
             {
-                _navigationManager.NavigateTo("/",true);
+                _navigationManager.NavigateTo("/");
             }
             else
             {
@@ -90,7 +95,7 @@
 
             if (res.IsSuccessStatusCode)
             {
-                _navigationManager.NavigateTo("/",true);
+                _navigationManager.NavigateTo("/");
             }
         }
     }

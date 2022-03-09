@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -28,6 +29,9 @@ namespace LicentaWebApp.Server.Controllers
 
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
         private static extern void Sign_Document_Test(string hash, string privateFilename, string publicFilename);
+        
+        [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
+        private static extern void Multiple_Sign(string hash,string[] privateKeys, int signersNumber);
 
         private readonly UserContext _context;
 
@@ -85,8 +89,8 @@ namespace LicentaWebApp.Server.Controllers
         }
 
         [HttpPost]
-        [Route("multiple-sign")]
-        public async Task<ActionResult<string>> MultipleSignDocument(MultipleSignPayload payload)
+        [Route("multiple-sign-request")]
+        public async Task<ActionResult<string>> MultipleSignDocumentRequest(MultipleSignPayload payload)
         {
             try
             {
@@ -149,5 +153,51 @@ namespace LicentaWebApp.Server.Controllers
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
+
+
+        [HttpPost]
+        [Route("multiple-sign")]
+        public async Task<ActionResult<string>> MultipleSignDocument([FromBody]int notificationId)
+        {
+            try
+            {
+                Console.WriteLine(notificationId);
+                var notification = await _context.Notifications
+                    .Include(st => st.UserStatusList)
+                    .Where(n => n.Id == notificationId).FirstOrDefaultAsync();
+
+                if (notification == null)
+                {
+                    return BadRequest("error");
+                }
+
+                List<string> keys = new();
+                foreach (var status in notification.UserStatusList)
+                {
+                    var key = _context.Keys
+                        .FirstOrDefault(k =>
+                            k.UserId == status.NotifiedUserId && k.Name == status.SelectedKeyName);
+                    if (key == null)
+                        return BadRequest($"Error. The key {status.SelectedKeyName} doesn't exist!");
+
+                    if (!System.IO.File.Exists(key.PrivateKeyPath))
+                        return BadRequest("Error. The key file doesn't exist!");
+                    
+                    keys.Add(key.PrivateKeyPath);
+                }
+
+                foreach (var key in keys)
+                {
+                    Console.WriteLine(key);
+                }
+                //Multiple_Sign(keys.ToArray());
+                return Ok("Success");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+        
     }
 }
