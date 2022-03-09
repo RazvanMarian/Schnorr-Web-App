@@ -56,35 +56,41 @@ public class NotificationController : ControllerBase
     [Route("get-all-notifications")]
     public async Task<List<Notification>> GetAllNotifications(string keyName)
     {
-        var currentUser = new User();
-        if (User.Identity is {IsAuthenticated: true})
+        try
         {
-            currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
-            currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var currentUser = new User();
+            if (User.Identity is {IsAuthenticated: true})
+            {
+                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
+
+            //Notificari la care ai fost invitat sa participi si n ai raspuns inca 
+            var notificationUserStatus = await _context.NotificationsUserStatus
+                .Where(n => n.NotifiedUserId == currentUser.Id)
+                .ToListAsync();
+
+            List<Notification> notifications = new List<Notification>();
+            foreach (var n in notificationUserStatus)
+            {
+                var not = _context.Notifications.FirstOrDefault(x => x.UserStatusList.Contains(n) && x.Status != 0);
+                if (not != null)
+                    notifications.Add(not);
+            }
+
+            // notificari pornite de catre user-ul curent
+            var notificationsStarted = await _context.Notifications.AsQueryable()
+                .Where(n => n.IdInitiator == currentUser.Id).ToListAsync();
+
+            notifications.AddRange(notificationsStarted);
+
+
+            return notifications;
         }
-
-        //Notificari la care ai fost invitat sa participi si n ai raspuns inca 
-        var notificationUserStatus = await _context.NotificationsUserStatus
-            .Where(n => n.NotifiedUserId == currentUser.Id )
-            .ToListAsync();
-
-        List<Notification> notifications = new List<Notification>();
-        foreach (var n in notificationUserStatus)
+        catch (Exception)
         {
-            var not = _context.Notifications.FirstOrDefault(x => x.UserStatusList.Contains(n) && x.Status != 0);
-            if(not != null)
-                notifications.Add(not);
+            return null;
         }
-
-        // notificari pornite de catre user-ul curent
-        var notificationsStarted = await _context.Notifications.AsQueryable()
-            .Where(n => n.IdInitiator == currentUser.Id).
-            ToListAsync();
-        
-        notifications.AddRange(notificationsStarted);
-        
-
-        return notifications;
     }
 
 
@@ -92,102 +98,123 @@ public class NotificationController : ControllerBase
     [Route("get-notification/{id}")]
     public async Task<Notification> GetNotificationById(int id)
     {
-        var notification = await _context.Notifications.FirstOrDefaultAsync(n => n.Id == id);
+        try
+        {
+            var notification = await _context.Notifications.FirstOrDefaultAsync(n => n.Id == id);
 
-        return notification;
+            return notification;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     [HttpPost]
     [Route("accept-notification")]
     public async Task<ActionResult<string>> AcceptNotification(AcceptNotificationPayload payload)
     {
-        var currentUser = new User();
-        if (User.Identity is {IsAuthenticated: true})
+        try
         {
-            currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
-            currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        }
+            var currentUser = new User();
+            if (User.Identity is {IsAuthenticated: true})
+            {
+                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
 
-        if (string.IsNullOrEmpty(payload.SelectedKey))
+            if (string.IsNullOrEmpty(payload.SelectedKey))
+            {
+                return BadRequest("Error: The key was not selected!");
+            }
+
+            var notification = await _context
+                .Notifications
+                .Include(n => n.UserStatusList)
+                .FirstOrDefaultAsync(n => n.Id == payload.NotificationId);
+            if (notification == null)
+            {
+                return BadRequest("Error");
+            }
+
+            var notificationUserStatus = notification
+                .UserStatusList
+                .Find(n => n.NotifiedUserId == currentUser.Id);
+
+            if (notificationUserStatus == null)
+            {
+                return BadRequest("Error");
+            }
+
+
+            notificationUserStatus.Status = 0;
+            notificationUserStatus.SelectedKeyName = payload.SelectedKey;
+            notification.Status--;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("SUCCESS");
+        }
+        catch (Exception ex)
         {
-            return BadRequest("Error: The key was not selected!");
+            return StatusCode(500, $"Internal server error: {ex}");
         }
-
-        var notification = await _context
-            .Notifications
-            .Include(n => n.UserStatusList)
-            .FirstOrDefaultAsync(n => n.Id == payload.NotificationId);
-        if (notification == null)
-        {
-            return BadRequest("Error");
-        }
-
-        var notificationUserStatus = notification
-            .UserStatusList
-            .Find(n => n.NotifiedUserId == currentUser.Id);
-
-        if (notificationUserStatus == null)
-        {
-            return BadRequest("Error");
-        }
-
-
-        notificationUserStatus.Status = 0;
-        notificationUserStatus.SelectedKeyName = payload.SelectedKey;
-        notification.Status--;
-
-        await _context.SaveChangesAsync();
-
-        return Ok("SUCCESS");
     }
 
     [HttpPost]
     [Route("deny-notification")]
     public async Task<ActionResult<string>> DenyNotification(DenyNotificationPayload payload)
     {
-        var currentUser = new User();
-        if (User.Identity is {IsAuthenticated: true})
+        try
         {
-            currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
-            currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        }
+            var currentUser = new User();
+            if (User.Identity is {IsAuthenticated: true})
+            {
+                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
 
-        if (string.IsNullOrEmpty(payload.RefuseReason))
+            if (string.IsNullOrEmpty(payload.RefuseReason))
+            {
+                return BadRequest("Error: refuse reason can not be null!");
+            }
+
+            var notification = await _context
+                .Notifications
+                .Include(n => n.UserStatusList)
+                .FirstOrDefaultAsync(n => n.Id == payload.NotificationId);
+
+            if (notification == null)
+            {
+                return BadRequest("Error");
+            }
+
+            var notificationUserStatus = notification
+                .UserStatusList
+                .Find(n => n.NotifiedUserId == currentUser.Id);
+
+            if (notificationUserStatus == null)
+            {
+                return BadRequest("Error");
+            }
+
+
+            notificationUserStatus.Status = -1;
+            notificationUserStatus.RefuseReason = payload.RefuseReason;
+            notification.Status = -2;
+
+            await _context.SaveChangesAsync();
+            var directoryPath = "/home/razvan/temp_files/notification" + notification.Id;
+            if (Directory.Exists(directoryPath))
+            {
+                Directory.Delete(directoryPath, true);
+            }
+
+            return Ok("SUCCESS");
+        }
+        catch (Exception ex)
         {
-            return BadRequest("Error: refuse reason can not be null!");
+            return StatusCode(500, $"Internal server error: {ex}");
         }
-
-        var notification = await _context
-            .Notifications
-            .Include(n => n.UserStatusList)
-            .FirstOrDefaultAsync(n => n.Id == payload.NotificationId);
-
-        if (notification == null)
-        {
-            return BadRequest("Error");
-        }
-
-        var notificationUserStatus = notification
-            .UserStatusList
-            .Find(n => n.NotifiedUserId == currentUser.Id);
-
-        if (notificationUserStatus == null)
-        {
-            return BadRequest("Error");
-        }
-
-
-        notificationUserStatus.Status = -1;
-        notificationUserStatus.RefuseReason = payload.RefuseReason;
-        notification.Status = -2;
-
-        await _context.SaveChangesAsync();
-        var directoryPath = "/home/razvan/temp_files/notification" + notification.Id;
-        if (Directory.Exists(directoryPath))
-        {
-            Directory.Delete(directoryPath, true);
-        }
-
-        return Ok("SUCCESS");
     }
 }

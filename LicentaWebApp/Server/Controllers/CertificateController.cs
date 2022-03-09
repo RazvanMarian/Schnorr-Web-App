@@ -28,33 +28,39 @@ namespace LicentaWebApp.Server.Controllers
 
         [HttpGet]
         [Route("create-cert/{keyName}")]
-        public async Task<string> Create_Certificate(string keyName)
+        public async Task<ActionResult<string>> Create_Certificate(string keyName)
         {
-            var currentUser = new User();
-            if (User.Identity is {IsAuthenticated: true})
+            try
             {
-                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
-                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var currentUser = new User();
+                if (User.Identity is {IsAuthenticated: true})
+                {
+                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
+
+                var key = await _context.Keys.FirstOrDefaultAsync(k => k.UserId == currentUser.Id && k.Name == keyName);
+
+                if (key == null) return BadRequest("error");
+                var result = Generate_Certificate(key.PrivateKeyPath, key.PublicKeyPath);
+                if (result != 0)
+                    return BadRequest("error");
+
+                var filePath = "/home/razvan/certificates/cert.pem";
+
+                using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    var memoryStream = new MemoryStream();
+                    await fileInput.CopyToAsync(memoryStream);
+
+                    var buffer = memoryStream.ToArray();
+                    return Ok(Convert.ToBase64String(buffer));
+                }
             }
-
-            var key = await _context.Keys.FirstOrDefaultAsync(k => k.UserId == currentUser.Id && k.Name == keyName);
-
-            if (key == null) return "ERROR";
-            var result = Generate_Certificate(key.PrivateKeyPath, key.PublicKeyPath);
-            if (result != 0)
-                return "ERROR";
-
-            var filePath = "/home/razvan/certificates/cert.pem";
-
-            using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            catch (Exception ex)
             {
-                var memoryStream = new MemoryStream();
-                await fileInput.CopyToAsync(memoryStream);
-
-                var buffer = memoryStream.ToArray();
-                return Convert.ToBase64String(buffer);
+                return StatusCode(500, $"Internal server error: {ex}");
             }
-            
         }
     }
 }
