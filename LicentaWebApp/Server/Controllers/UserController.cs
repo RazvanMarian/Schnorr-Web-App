@@ -13,7 +13,6 @@ using LicentaWebApp.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Utility = LicentaWebApp.Shared.Utility;
 
 
 namespace LicentaWebApp.Server.Controllers
@@ -66,16 +65,19 @@ namespace LicentaWebApp.Server.Controllers
             AuthenticationRequest authenticationRequest)
         {
             var token = string.Empty;
-
-            authenticationRequest.Password = Utility.Encode(authenticationRequest.Password);
+            
             var loggedInUser = await _context.Users.Where(
-                u => u.EmailAddress == authenticationRequest.EmailAddress && 
-                     u.Password == authenticationRequest.Password).FirstOrDefaultAsync();
+                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
 
             if (loggedInUser != null)
             {
-                token = GenerateJwtToken(loggedInUser);
+                var passwordHasher = new PasswordHasher(new HashingOptions());
+                var res = passwordHasher
+                    .Check(loggedInUser.Password, authenticationRequest.Password);
+                if (res.Verified) 
+                    token = GenerateJwtToken(loggedInUser);
             }
+      
 
             return await Task.FromResult(new AuthenticationResponse() {Token = token});
         }
