@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using LicentaWebApp.Shared.Models;
@@ -31,7 +32,7 @@ namespace LicentaWebApp.Server.Controllers
         private static extern void Sign_Document_Test(string hash, string privateFilename, string publicFilename);
         
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void Multiple_Sign(string hash,string[] privateKeys, int signersNumber);
+        private static extern int Multiple_Sign(string hash,string[] privateKeys, int signersNumber);
 
         private readonly UserContext _context;
 
@@ -71,9 +72,9 @@ namespace LicentaWebApp.Server.Controllers
                 if (key == null) return BadRequest("No key named like this!");
 
                 Sign_Document_Test(hash, key.PrivateKeyPath, key.PublicKeyPath);
-                var filePath = "/home/razvan/signatures/signature.plain";
+                const string filePath = "/home/razvan/signatures/signature.plain";
 
-                using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                await using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
                     var memoryStream = new MemoryStream();
                     await fileInput.CopyToAsync(memoryStream);
@@ -161,7 +162,13 @@ namespace LicentaWebApp.Server.Controllers
         {
             try
             {
-                Console.WriteLine(notificationId);
+                var currentUser = new User();
+                if (User.Identity is {IsAuthenticated: true})
+                {
+                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Email);
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
+                
                 var notification = await _context.Notifications
                     .Include(st => st.UserStatusList)
                     .Where(n => n.Id == notificationId).FirstOrDefaultAsync();
@@ -185,13 +192,36 @@ namespace LicentaWebApp.Server.Controllers
                     
                     keys.Add(key.PrivateKeyPath);
                 }
-
-                foreach (var key in keys)
+                
+                var currentUserKey = await _context.Keys.FirstOrDefaultAsync(k => k.UserId == currentUser.Id && k.Name == notification.SelectedKey);
+                keys.Add(currentUserKey?.PrivateKeyPath);
+         
+                var path = "/home/razvan" + notification.FilePath;
+                string hashString;
+                
+                await using (var stream = System.IO.File.OpenRead(path))
                 {
-                    Console.WriteLine(key);
+                    var sha256 = SHA256.Create();
+                    var hash = await sha256.ComputeHashAsync(stream);
+                    hashString =  BitConverter.ToString(hash).Replace("-", "").ToLower();
                 }
-                //Multiple_Sign(keys.ToArray());
-                return Ok("Success");
+                
+                var result = Multiple_Sign(hashString,keys.ToArray(),keys.Count);
+                if (result != 0)
+                    return BadRequest("Error signing the document!");
+
+                const string signatureFilePath = "/home/razvan/signatures/signature.plain";
+                await using (var fileInput = new FileStream(signatureFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    var memoryStream = new MemoryStream();
+                    await fileInput.CopyToAsync(memoryStream);
+                    var buffer = memoryStream.ToArray();
+                    notification.Status = -1;
+                    notification.Signature = Convert.ToBase64String(buffer);
+                    await _context.SaveChangesAsync();
+                    
+                    return await Task.FromResult(Convert.ToBase64String(buffer));
+                }
             }
             catch (Exception ex)
             {

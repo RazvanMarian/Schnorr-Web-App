@@ -58,14 +58,11 @@ namespace LicentaWebApp.Client.Services
             await file.OpenReadStream(file.Size).CopyToAsync(ms);
             ms.Close();
             
-            Console.WriteLine("Am citit fisierul");
-            
             payload.FileContent = ms.ToArray();
             byte[] pdf = { 0x25, 0x50 , 0x44, 0x46};
             if (!payload.FileContent.Take(4).SequenceEqual(pdf))
                 return null;
 
-            Console.WriteLine("Am trimis request-ul");
             var res = await _httpClient.PostAsJsonAsync("upload/multiple-sign-request", payload);
             return res;
         }

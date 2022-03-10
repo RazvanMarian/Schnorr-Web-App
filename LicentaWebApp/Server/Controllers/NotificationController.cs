@@ -84,8 +84,7 @@ public class NotificationController : ControllerBase
 
             notifications.AddRange(notificationsStarted);
 
-
-            return notifications;
+            return notifications.OrderByDescending(n => n.CreatedAt).ToList();
         }
         catch (Exception)
         {

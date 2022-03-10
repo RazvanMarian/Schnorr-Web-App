@@ -74,11 +74,11 @@ public class NotificationViewModel : INotificationViewModel
         return res;
     }
 
-    public async Task<HttpResponseMessage> MultipleSignFinish(int notificationId)
+    public async Task<string> MultipleSignFinish(int notificationId)
     {
         
         var result = await _httpClient.PostAsJsonAsync($"upload/multiple-sign",notificationId);
-        return result;
+        return !result.IsSuccessStatusCode ? null : result.Content.ReadAsStringAsync().Result;
     }
 
     public static implicit operator NotificationViewModel(Notification notification)
