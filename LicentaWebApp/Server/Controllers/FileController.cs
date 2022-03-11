@@ -24,36 +24,18 @@ namespace LicentaWebApp.Server.Controllers
     public class FileController : ControllerBase
     {
         private const string ImportPath = "../../SchnorrSig/schnorrlib.dll";
+        [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Sign_Document(string hash, string privateFilename, string publicFilename);
 
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void test_sign(string str);
-
-        [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void Sign_Document_Test(string hash, string privateFilename, string publicFilename);
-        
-        [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Multiple_Sign(string hash,string[] privateKeys, int signersNumber);
+        private static extern int Multiple_Sign(string hash, string[] privateKeys, int signersNumber);
 
         private readonly UserContext _context;
-
         public FileController(UserContext context)
         {
             _context = context;
         }
-
-        [HttpPost]
-        [Route("uploadHash")]
-        public async Task<IActionResult> PostHash(byte[] hashP)
-        {
-            var hash = BitConverter.ToString(hashP).Replace("-", "").ToLower();
-
-            test_sign(hash);
-            Console.WriteLine("Dupa test!");
-            await Task.Delay(500);
-            return Ok();
-        }
-
-
+        
         [HttpPost]
         [Route("sign/file/{hash}")]
         public async Task<ActionResult<string>> SignDocument([FromRoute] string hash, [FromBody] string keyName)
@@ -71,7 +53,9 @@ namespace LicentaWebApp.Server.Controllers
 
                 if (key == null) return BadRequest("No key named like this!");
 
-                Sign_Document_Test(hash, key.PrivateKeyPath, key.PublicKeyPath);
+                var result = Sign_Document(hash, key.PrivateKeyPath, key.PublicKeyPath);
+                if (result != 0)
+                    return BadRequest("Error signing the document");
                 const string filePath = "/home/razvan/signatures/signature.plain";
 
                 await using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
@@ -131,14 +115,14 @@ namespace LicentaWebApp.Server.Controllers
 
                 var path = "/home/razvan/temp_files/notification" + notification.Id + "/"
                            + notification.FileName;
-                Directory.CreateDirectory("/home/razvan/temp_files/notification"+ notification.Id);
+                Directory.CreateDirectory("/home/razvan/temp_files/notification" + notification.Id);
                 var fs = System.IO.File.Create(path);
                 fs.Write(payload.FileContent, 0,
                     payload.FileContent.Length);
                 fs.Close();
 
                 notification.FilePath = "/temp_files/notification" + notification.Id + "/"
-                    + notification.FileName;
+                                        + notification.FileName;
                 foreach (var user in payload.Users)
                 {
                     var u = await _context.Users.Where(x => x.Id == user.Id).FirstOrDefaultAsync();
@@ -158,7 +142,7 @@ namespace LicentaWebApp.Server.Controllers
 
         [HttpPost]
         [Route("multiple-sign")]
-        public async Task<ActionResult<string>> MultipleSignDocument([FromBody]int notificationId)
+        public async Task<ActionResult<string>> MultipleSignDocument([FromBody] int notificationId)
         {
             try
             {
@@ -168,7 +152,7 @@ namespace LicentaWebApp.Server.Controllers
                     currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Email);
                     currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 }
-                
+
                 var notification = await _context.Notifications
                     .Include(st => st.UserStatusList)
                     .Where(n => n.Id == notificationId).FirstOrDefaultAsync();
@@ -189,26 +173,36 @@ namespace LicentaWebApp.Server.Controllers
 
                     if (!System.IO.File.Exists(key.PrivateKeyPath))
                         return BadRequest("Error. The key file doesn't exist!");
-                    
+
                     keys.Add(key.PrivateKeyPath);
                 }
-                
-                var currentUserKey = await _context.Keys.FirstOrDefaultAsync(k => k.UserId == currentUser.Id && k.Name == notification.SelectedKey);
+
+                var currentUserKey = await _context.Keys.FirstOrDefaultAsync(k =>
+                    k.UserId == currentUser.Id && k.Name == notification.SelectedKey);
                 keys.Add(currentUserKey?.PrivateKeyPath);
-         
+
                 var path = "/home/razvan" + notification.FilePath;
                 string hashString;
-                
+
                 await using (var stream = System.IO.File.OpenRead(path))
                 {
                     var sha256 = SHA256.Create();
                     var hash = await sha256.ComputeHashAsync(stream);
-                    hashString =  BitConverter.ToString(hash).Replace("-", "").ToLower();
+                    hashString = BitConverter.ToString(hash).Replace("-", "").ToLower();
                 }
-                
-                var result = Multiple_Sign(hashString,keys.ToArray(),keys.Count);
+
+                var result = Multiple_Sign(hashString, keys.ToArray(), keys.Count);
                 if (result != 0)
                     return BadRequest("Error signing the document!");
+                
+                const string publicKeyFilePath = "/home/razvan/signatures/signature.plain";
+                await using (var fileInput = new FileStream(publicKeyFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    var memoryStream = new MemoryStream();
+                    await fileInput.CopyToAsync(memoryStream);
+                    var buffer = memoryStream.ToArray();
+                    notification.PublicKey = Convert.ToBase64String(buffer);
+                }
 
                 const string signatureFilePath = "/home/razvan/signatures/signature.plain";
                 await using (var fileInput = new FileStream(signatureFilePath, FileMode.Open, FileAccess.Read))
@@ -219,7 +213,7 @@ namespace LicentaWebApp.Server.Controllers
                     notification.Status = -1;
                     notification.Signature = Convert.ToBase64String(buffer);
                     await _context.SaveChangesAsync();
-                    
+
                     return await Task.FromResult(Convert.ToBase64String(buffer));
                 }
             }
@@ -228,6 +222,5 @@ namespace LicentaWebApp.Server.Controllers
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
-        
     }
 }

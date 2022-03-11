@@ -2,27 +2,59 @@
 
 @if (Action == "SIGN")
 {
-    <MudDialog>
-        <TitleContent>
-            Choose the key you want to sign with
-        </TitleContent>
-        <DialogContent>
-            <MudSelect Label="Select a key" @bind-Value="SelectedKey"
-                       AnchorOrigin="Origin.BottomCenter"
-                       Placeholder="Please select a key"
-                       AdornmentIcon="@Icons.Material.Filled.VpnKey"
-                       AdornmentColor="Color.Primary">
-                @foreach (var key in _keyViewModel.Keys)
-                {
-                    <MudSelectItem Value="@key.Name">@key.Name</MudSelectItem>
-                }
-            </MudSelect>
-        </DialogContent>
-        <DialogActions>
-            <MudButton OnClick="Sign">Sign</MudButton>
-            <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
-        </DialogActions>
-    </MudDialog>
+    @if (_keyViewModel.Keys.Any())
+    {
+        <MudDialog>
+            <TitleContent>
+                Choose the key you want to sign with
+            </TitleContent>
+            <DialogContent>
+                <MudSelect Label="Select a key" @bind-Value="SelectedKey"
+                           AnchorOrigin="Origin.BottomCenter"
+                           Placeholder="Please select a key"
+                           AdornmentIcon="@Icons.Material.Filled.VpnKey"
+                           AdornmentColor="Color.Primary">
+                    @foreach (var key in _keyViewModel.Keys)
+                    {
+                        <MudSelectItem Value="@key.Name">@key.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </DialogContent>
+            <DialogActions>
+                <MudButton OnClick="Sign">Sign</MudButton>
+                <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+            </DialogActions>
+        </MudDialog>
+    }
+    else if(_initialized)
+    {
+        <MudDialog>
+            <TitleContent>
+                Choose the key you want to sign with
+            </TitleContent>
+            <DialogContent>
+                <MudText Typo="Typo.h4">You must generate key before signing a document</MudText>
+            </DialogContent>
+            <DialogActions>
+                <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+            </DialogActions>
+        </MudDialog>
+    }
+    else if (!_initialized)
+    {
+        <MudDialog>
+            <TitleContent>
+                Choose the key you want to sign with
+            </TitleContent>
+            <DialogContent>
+                <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+            </DialogContent>
+            <DialogActions>
+                <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+            </DialogActions>
+        </MudDialog>
+    }
+   
 }
 else if(Action == "DENY")
 {
@@ -36,17 +68,6 @@ else if(Action == "DENY")
         </DialogContent>
         <DialogActions>
             <MudButton OnClick="Deny">Deny</MudButton>
-            <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
-        </DialogActions>
-    </MudDialog>
-}
-else
-{
-    <MudDialog>
-        <TitleContent>
-            No action provided
-        </TitleContent>
-        <DialogActions>
             <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
         </DialogActions>
     </MudDialog>
@@ -65,6 +86,8 @@ else
 
     private string RefuseReason { get; set; }
     
+    private bool _initialized;
+    
     private void Sign()
     {
         MudDialog.Close(DialogResult.Ok(SelectedKey));
@@ -73,6 +96,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         await _keyViewModel.InitializeKeys();
+        _initialized = true;
     }
     
     private void Cancel()

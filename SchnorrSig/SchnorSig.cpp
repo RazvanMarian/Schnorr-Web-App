@@ -1,8 +1,65 @@
 #include <openssl/schnorr.h>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <iterator>
 #include "Certificates.cpp"
 
 extern "C"
 {
+    int Multiple_Sign(const char *hash, const char *keys[], int signersNumber)
+    {
+
+        EC_KEY *SCHNORR_keys[signersNumber];
+        int res;
+        for (int i = 0; i < signersNumber; i++)
+        {
+
+            res = SCHNORR_read_private_key(&SCHNORR_keys[i], keys[i]);
+            if (res != 0)
+            {
+                std::cout << "Erorr reading the private key!" << std::endl;
+                return -1;
+            }
+        }
+
+        SCHNORR_SIG *sig = SCHNORR_SIG_new();
+        res = SCHNORR_multiple_sign(SCHNORR_keys, signersNumber, hash, SHA256_DIGEST_LENGTH, sig);
+        if (res != 0)
+        {
+            std::cout << "Eroare la crearea semnaturii" << std::endl;
+            return -1;
+        }
+
+        res = SCHNORR_multiple_verify(SCHNORR_keys, signersNumber, hash, SHA256_DIGEST_LENGTH, sig);
+        if (res != 0)
+        {
+            std::cout << "Eroare la verificarea semnaturii" << std::endl;
+            return -1;
+        }
+
+        res = SCHNORR_write_signature(sig, "/home/razvan/signatures/signature.plain");
+        if (res != 0)
+        {
+            std::cout << "Eroare la scrierea semnaturii in fisier" << std::endl;
+            return -1;
+        }
+
+        EC_KEY *pKey = SCHNORR_generate_aggregate_public_key(SCHNORR_keys, signersNumber);
+        if (pKey == NULL)
+        {
+            std::cout << "Eroare la generarea cheii publice agregate" << std::endl;
+            return -1;
+        }
+
+        res = SCHNORR_write_public_key(pKey, "/home/razvan/signatures/aggregate_key.pub");
+        if (res != 0)
+        {
+            std::cout << "Eroare la scrierea cheii publice agregate" << std::endl;
+            return -1;
+        }
+        return 0;
+    }
 
     int Generate(const char *privateFilename, const char *publicFilename)
     {
@@ -31,42 +88,7 @@ extern "C"
         return res;
     }
 
-    void test_sign(const char *hash)
-    {
-        int nr_semnatari = 1000;
-        EC_KEY *keys[nr_semnatari];
-        int res;
-        for (int i = 0; i < nr_semnatari; i++)
-        {
-
-            res = SCHNORR_generate_key(&(keys[i]));
-            if (res != 0)
-            {
-                std::cout << "Eroare la generarea cheii!" << std::endl;
-                return;
-            }
-        }
-
-        SCHNORR_SIG *sig = SCHNORR_SIG_new();
-        res = SCHNORR_multiple_sign(keys, nr_semnatari, hash, SHA256_DIGEST_LENGTH, sig);
-        if (res != 0)
-        {
-            std::cout << "Eroare la crearea semnaturii" << std::endl;
-            return;
-        }
-
-        res = SCHNORR_multiple_verify(keys, nr_semnatari, hash, SHA256_DIGEST_LENGTH, sig);
-        if (res != 0)
-        {
-            std::cout << "Eroare la verificarea semnaturii" << std::endl;
-            return;
-        }
-        std::cout << "Semnare si verificare fisier cu " << nr_semnatari << " numar semnatari ok!" << std::endl;
-
-        return;
-    }
-
-    void Sign_Document_Test(const char *hash, const char *privateFilename, const char *publicFilename)
+    int Sign_Document(const char *hash, const char *privateFilename, const char *publicFilename)
     {
         EC_KEY *sign_key;
         EC_KEY *verify_key;
@@ -76,21 +98,21 @@ extern "C"
         if (res != 0)
         {
             std::cout << "Eroare la citirea cheii private!" << std::endl;
-            return;
+            return -1;
         }
 
         res = SCHNORR_sign(sign_key, hash, SHA256_DIGEST_LENGTH, sig);
         if (res != 0)
         {
             std::cout << "Eroare la semnare!" << std::endl;
-            return;
+            return -1;
         }
 
         res = SCHNORR_write_signature(sig, "/home/razvan/signatures/signature.plain");
         if (res != 0)
         {
             std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
-            return;
+            return -1;
         }
         SCHNORR_SIG *aux_sig;
 
@@ -98,14 +120,14 @@ extern "C"
         if (res != 0)
         {
             std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
-            return;
+            return -1;
         }
 
         res = SCHNORR_read_public_key(&verify_key, publicFilename);
         if (res != 0)
         {
             std::cout << "Eroare la citirea cheii private!" << std::endl;
-            return;
+            return -1;
         }
 
         res = SCHNORR_verify(verify_key, hash, SHA256_DIGEST_LENGTH, aux_sig);
@@ -113,11 +135,9 @@ extern "C"
         if (res != 0)
         {
             std::cout << "Eroare la verificare!" << std::endl;
-            return;
+            return -1;
         }
-
-        std::cout << "Semnare verificare ok cu cheia de la calea!" << privateFilename << std::endl;
-        // Schnorr_SIG_free(sig);
+        return 0;
     }
 
     int Generate_Certificate(const char *privateFilename, const char *publicFilename)

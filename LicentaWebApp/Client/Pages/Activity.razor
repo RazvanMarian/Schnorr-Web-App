@@ -16,7 +16,7 @@ else if (!Notifications.Any())
 }
 else
 {
-    <MudText Typo="Typo.h6">Notifications you have to give the last approval</MudText>
+    <MudText Typo="Typo.h6">Requests that were just accepted</MudText>
     <MudExpansionPanels Style="padding-bottom: 2rem">
         @foreach (var notification in Notifications)
         {
@@ -29,9 +29,9 @@ else
             }
         }
     </MudExpansionPanels>
-    
+
     <MudDivider/>
-    
+
     <MudText Typo="Typo.h6">Notifications you have started that are in pending</MudText>
     <MudExpansionPanels Style="padding-top: 2rem; padding-bottom: 2rem">
         @foreach (var notification in Notifications)
@@ -44,9 +44,9 @@ else
             }
         }
     </MudExpansionPanels>
-    
+
     <MudDivider/>
-    
+
     <MudExpansionPanels Style="padding-top: 2rem">
         <MudText Typo="Typo.h6">Notifications you have been involved in the past</MudText>
         @foreach (var notification in Notifications)
@@ -56,18 +56,29 @@ else
                 @if (notification.Status == -1)
                 {
                     <MudExpansionPanel Text="@notification.FileName">
-                    
-                        <MudText>- status : success</MudText>
-                        <MudText>- created at: @notification.CreatedAt</MudText>
-                        <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
+                        <MudItem style="display: inline-block">
+                            <MudText>- status : success</MudText>
+                            <MudText>- created at: @notification.CreatedAt</MudText>
+                            <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
+                        </MudItem>
+                        <MudItem style="display: inline-block">
+                            <MudButton Variant="Variant.Filled" Color="Color.Default">Download signature</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Default">Download public key</MudButton>
+                        </MudItem>
                     </MudExpansionPanel>
                 }
                 else
                 {
                     <MudExpansionPanel Text="@notification.FileName">
-                        <MudText>- status : denied</MudText>
-                        <MudText>- created at: @notification.CreatedAt</MudText>
-                        <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
+                        <MudItem style="display: inline-block">
+                            <MudText>- status : denied</MudText>
+                            <MudText>- created at: @notification.CreatedAt</MudText>
+                            <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
+                        </MudItem>
+                        <MudItem style="display: inline-block">
+                            <MudButton Variant="Variant.Filled" Color="Color.Default">Download signature</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Default">Download public key</MudButton>
+                        </MudItem>
                     </MudExpansionPanel>
                 }
             }
@@ -77,9 +88,9 @@ else
 
 @code {
     private List<Notification> Notifications { get; set; }
-    
+
     private int UserId { get; set; }
-    
+
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationState { get; set; }
 
@@ -93,9 +104,8 @@ else
             var claim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
             if (claim != null) UserId = int.Parse(claim.Value);
         }
-        
+
         Notifications = await _notificationViewModel.GetAllNotifications();
-        
     }
 
     private async Task OnClickFunction(int notificationId)

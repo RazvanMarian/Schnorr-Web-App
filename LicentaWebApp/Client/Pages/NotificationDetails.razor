@@ -70,6 +70,12 @@
         if (!result.Cancelled)
         {
             var key = result.Data.ToString();
+            if (string.IsNullOrEmpty(key))
+            {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                _snackbar.Add("The request could not be accepted!", Severity.Error);
+                return;
+            }
             var res = await _notificationViewModel.AcceptNotification(Notification.Id, key);
             if (res.IsSuccessStatusCode)
             {

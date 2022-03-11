@@ -20,8 +20,9 @@
                         <MudText>@notification.InitiatorFirstName @notification.InitiatorLastName sent you a signature request</MudText>
                         <MudText Typo="Typo.body2">@notification.FileName</MudText>
                     </MudCardContent>
-                    <MudCardActions>
-                        <MudText>Created at: @notification.CreatedAt</MudText>
+                    <MudCardActions Style="display: block">
+                        <MudText>Created on: @notification.CreatedAt.Day-@notification.CreatedAt.Month-@notification.CreatedAt.Year</MudText>
+                        <MudText>At: @notification.CreatedAt.Hour:@notification.CreatedAt.Minute @notification.CreatedAt.ToString("tt")</MudText>
                     </MudCardActions>
                 </MudCard>
             </MudMenuItem>

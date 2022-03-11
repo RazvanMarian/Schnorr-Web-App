@@ -22,5 +22,7 @@ public class Notification
     public string FileName { get; set; }
     [MaxLength(128)]
     public string Signature { get; set; }
+    
+    public string PublicKey { get; set; }
     public List<NotificationUserStatus> UserStatusList { get; set; } = new List<NotificationUserStatus>();
 }
