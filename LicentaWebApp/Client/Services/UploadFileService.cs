@@ -20,7 +20,7 @@ namespace LicentaWebApp.Client.Services
         }
         
 
-        public async Task<string> UploadHashWithKey(IBrowserFile file, string keyName)
+        public async Task<string> SignFile(IBrowserFile file, string keyName, string fileName)
         {
             var sha256 = SHA256.Create();
             
@@ -40,9 +40,16 @@ namespace LicentaWebApp.Client.Services
             
             var hash = sha256.ComputeHash(buffer);
             var hashString =  BitConverter.ToString(hash).Replace("-", "").ToLower();
-            
+
+            SignPayload payload = new()
+            {
+                Hash = hashString,
+                KeyName = keyName,
+                FileName = fileName
+            };
+
             var result =
-                await _httpClient.PostAsJsonAsync("upload/sign/file/" +  hashString, keyName);
+                await _httpClient.PostAsJsonAsync("file/sign",payload);
             
             return !result.IsSuccessStatusCode ? null : result.Content.ReadAsStringAsync().Result;
         }
@@ -63,7 +70,7 @@ namespace LicentaWebApp.Client.Services
             if (!payload.FileContent.Take(4).SequenceEqual(pdf))
                 return null;
 
-            var res = await _httpClient.PostAsJsonAsync("upload/multiple-sign-request", payload);
+            var res = await _httpClient.PostAsJsonAsync("file/multiple-sign-request", payload);
             return res;
         }
     }

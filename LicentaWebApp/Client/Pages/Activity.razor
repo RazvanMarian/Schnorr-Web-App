@@ -23,8 +23,18 @@ else
             @if (notification.Status == 0)
             {
                 <MudExpansionPanel Text="@notification.FileName">
-                    @notification.FileName - status : @notification.Status - creat at: @notification.CreatedAt, created by: @notification.InitiatorEmailAddress
-                    <MudButton OnClick="() => OnClickFunction(notification.Id)" Variant="Variant.Filled" Color="Color.Default">Click me</MudButton>
+                    <MudItem style="display: inline-block">
+                        <MudText>- status : success</MudText>
+                        <MudText>- created at: @notification.CreatedAt</MudText>
+                        <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
+                    </MudItem>
+
+                    <MudItem style="display: inline-block">
+                        <MudButton OnClick="() => OnClickFunction(notification.Id)"
+                                   Variant="Variant.Filled" Color="Color.Default">
+                            Download signature
+                        </MudButton>
+                    </MudItem>
                 </MudExpansionPanel>
             }
         }
@@ -32,14 +42,18 @@ else
 
     <MudDivider/>
 
-    <MudText Typo="Typo.h6">Notifications you have started that are in pending</MudText>
+    <MudText Typo="Typo.h6">Notifications in pending</MudText>
     <MudExpansionPanels Style="padding-top: 2rem; padding-bottom: 2rem">
         @foreach (var notification in Notifications)
         {
             @if (notification.Status > 0 && notification.IdInitiator == UserId)
             {
                 <MudExpansionPanel Text="@notification.FileName">
-                    @notification.FileName - status : @notification.Status - creat at: @notification.CreatedAt, created by: @notification.InitiatorEmailAddress
+                    <MudItem style="display: inline-block">
+                        <MudText>- status : pending</MudText>
+                        <MudText>- created at: @notification.CreatedAt</MudText>
+                        <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
+                    </MudItem>
                 </MudExpansionPanel>
             }
         }
@@ -53,34 +67,32 @@ else
         {
             @if (notification.Status < 0)
             {
-                @if (notification.Status == -1)
-                {
-                    <MudExpansionPanel Text="@notification.FileName">
-                        <MudItem style="display: inline-block">
+                <MudExpansionPanel Text="@notification.FileName">
+                    <MudItem style="display: inline-block">
+                        @if (notification.Status == -1)
+                        {
                             <MudText>- status : success</MudText>
-                            <MudText>- created at: @notification.CreatedAt</MudText>
-                            <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
-                        </MudItem>
-                        <MudItem style="display: inline-block">
-                            <MudButton Variant="Variant.Filled" Color="Color.Default">Download signature</MudButton>
-                            <MudButton Variant="Variant.Filled" Color="Color.Default">Download public key</MudButton>
-                        </MudItem>
-                    </MudExpansionPanel>
-                }
-                else
-                {
-                    <MudExpansionPanel Text="@notification.FileName">
-                        <MudItem style="display: inline-block">
+                        }
+                        else
+                        {
                             <MudText>- status : denied</MudText>
-                            <MudText>- created at: @notification.CreatedAt</MudText>
-                            <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
-                        </MudItem>
+                        }
+                        <MudText>- created at: @notification.CreatedAt</MudText>
+                        <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
+                    </MudItem>
+                    @if (notification.Status == -1)
+                    {
                         <MudItem style="display: inline-block">
-                            <MudButton Variant="Variant.Filled" Color="Color.Default">Download signature</MudButton>
-                            <MudButton Variant="Variant.Filled" Color="Color.Default">Download public key</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="() => DownloadSignature(notification.Id)">
+                                Download signature
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="() => DownloadCertificate(notification.Id)">
+                                Export public key
+                            </MudButton>
                         </MudItem>
-                    </MudExpansionPanel>
-                }
+                    }
+
+                </MudExpansionPanel>
             }
         }
     </MudExpansionPanels>
@@ -124,6 +136,32 @@ else
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("The document could not be signed!", Severity.Error);
+        }
+    }
+
+    private async Task DownloadSignature(int notificationId)
+    {
+        var result = await _notificationViewModel.DownloadSignature(notificationId);
+        Console.WriteLine(result);
+        if (!string.IsNullOrEmpty(result))
+            await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result, "signature.plain");
+        else
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("The signature could not be downloaded!", Severity.Error);
+        }
+    }
+
+    private async Task DownloadCertificate(int notificationId)
+    {
+        var result = await _notificationViewModel.DownloadCertificate(notificationId);
+        Console.WriteLine(result);
+        if (!string.IsNullOrEmpty(result))
+            await _jsRuntime.InvokeVoidAsync("downloadFile", "application/x-pem-file", result, "cert.pem");
+        else
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("The certificate could not be exported!", Severity.Error);
         }
     }
 

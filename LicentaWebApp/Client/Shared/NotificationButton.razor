@@ -3,12 +3,19 @@
 @inject IDialogService _dialogService
 @inject NavigationManager _navigationManager
 
-
-<MudMenu MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+<MudMenu Disabled="@(NotificationsNumber == 0)" MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
     <ActivatorContent>
-        <MudBadge Overlap="true" Content="NotificationsNumber" Color="Color.Primary">
+        @if (@NotificationsNumber > 0)
+        {
+            <MudBadge Overlap="true" Content="NotificationsNumber" Color="Color.Primary">
+                <MudIconButton Icon="@Icons.Material.Outlined.Notifications"></MudIconButton>
+            </MudBadge>
+        }
+        else
+        {
             <MudIconButton Icon="@Icons.Material.Outlined.Notifications"></MudIconButton>
-        </MudBadge>
+        }
+
     </ActivatorContent>
 
     <ChildContent>

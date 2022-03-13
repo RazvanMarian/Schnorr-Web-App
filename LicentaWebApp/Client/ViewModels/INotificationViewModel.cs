@@ -25,4 +25,6 @@ public interface INotificationViewModel
     public Task<HttpResponseMessage> AcceptNotification(int notificationId, string selectedKey);
     public Task<List<Notification>> GetAllNotifications();
     public Task<string> MultipleSignFinish(int notificationId);
+    public Task<string> DownloadSignature(int notificationId);
+    public Task<string> DownloadCertificate(int notificationId);
 }

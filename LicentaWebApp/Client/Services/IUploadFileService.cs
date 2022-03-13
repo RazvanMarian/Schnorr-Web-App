@@ -8,7 +8,7 @@ namespace LicentaWebApp.Client.Services
     public interface IUploadFileService
     {
 
-        public Task<string> UploadHashWithKey(IBrowserFile file, string keyName);
+        public Task<string> SignFile(IBrowserFile file, string keyName, string fileName);
 
         public Task<HttpResponseMessage> MultipleSignFile(IBrowserFile file, MultipleSignPayload payload);
     }

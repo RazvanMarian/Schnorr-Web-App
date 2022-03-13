@@ -52,12 +52,20 @@ extern "C"
             return -1;
         }
 
-        res = SCHNORR_write_public_key(pKey, "/home/razvan/signatures/aggregate_key.pub");
-        if (res != 0)
+        EC_KEY *privateKey = SCHNORR_generate_aggregate_private_key(SCHNORR_keys, signersNumber);
+        if (pKey == NULL)
         {
-            std::cout << "Eroare la scrierea cheii publice agregate" << std::endl;
+            std::cout << "Eroare la generarea cheii private agregate" << std::endl;
             return -1;
         }
+
+        res = Create_Certificate(privateKey, pKey);
+        if (res != 0)
+        {
+            std::cout << "Eroare la creare certificat!" << std::endl;
+            return -1;
+        }
+
         return 0;
     }
 
@@ -129,14 +137,19 @@ extern "C"
             std::cout << "Eroare la citirea cheii private!" << std::endl;
             return -1;
         }
-
         res = SCHNORR_verify(verify_key, hash, SHA256_DIGEST_LENGTH, aux_sig);
-
         if (res != 0)
         {
             std::cout << "Eroare la verificare!" << std::endl;
             return -1;
         }
+
+        // res = Create_Certificate(sign_key, verify_key);
+        // if (res != 0)
+        // {
+        //     std::cout << "Eroare la creare certificat!" << std::endl;
+        //     return -1;
+        // }
         return 0;
     }
 

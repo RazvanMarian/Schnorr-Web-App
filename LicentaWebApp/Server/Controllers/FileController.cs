@@ -18,12 +18,13 @@ using User = DataAccessLayer.Models.User;
 
 namespace LicentaWebApp.Server.Controllers
 {
-    [Route("upload")]
+    [Route("file")]
     [ApiController]
     [Authorize]
     public class FileController : ControllerBase
     {
         private const string ImportPath = "../../SchnorrSig/schnorrlib.dll";
+        
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
         private static extern int Sign_Document(string hash, string privateFilename, string publicFilename);
 
@@ -37,8 +38,8 @@ namespace LicentaWebApp.Server.Controllers
         }
         
         [HttpPost]
-        [Route("sign/file/{hash}")]
-        public async Task<ActionResult<string>> SignDocument([FromRoute] string hash, [FromBody] string keyName)
+        [Route("sign")]
+        public async Task<ActionResult<string>> SignDocument(SignPayload payload)
         {
             try
             {
@@ -47,17 +48,20 @@ namespace LicentaWebApp.Server.Controllers
                 {
                     currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Email);
                     currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                    // currentUser.FirstName = User.FindFirstValue(ClaimTypes.Surname);
+                    // currentUser.LastName = User.FindFirstValue(ClaimTypes.Name);
                 }
 
-                var key = await _context.Keys.FirstOrDefaultAsync(k => k.UserId == currentUser.Id && k.Name == keyName);
-
+                var key = await _context.Keys.FirstOrDefaultAsync(k => k.UserId == currentUser.Id && k.Name == payload.KeyName);
                 if (key == null) return BadRequest("No key named like this!");
 
-                var result = Sign_Document(hash, key.PrivateKeyPath, key.PublicKeyPath);
+                
+                var result = Sign_Document(payload.Hash, key.PrivateKeyPath, key.PublicKeyPath);
                 if (result != 0)
                     return BadRequest("Error signing the document");
-                const string filePath = "/home/razvan/signatures/signature.plain";
 
+                
+                const string filePath = "/home/razvan/signatures/signature.plain";
                 await using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
                     var memoryStream = new MemoryStream();
@@ -195,7 +199,7 @@ namespace LicentaWebApp.Server.Controllers
                 if (result != 0)
                     return BadRequest("Error signing the document!");
                 
-                const string publicKeyFilePath = "/home/razvan/signatures/signature.plain";
+                const string publicKeyFilePath = "/home/razvan/certificates/cert.pem";
                 await using (var fileInput = new FileStream(publicKeyFilePath, FileMode.Open, FileAccess.Read))
                 {
                     var memoryStream = new MemoryStream();

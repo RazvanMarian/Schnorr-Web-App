@@ -33,19 +33,25 @@
                     @context.User.Identity.Name
                 </MudText>
 
-                <NotificationButton Notifications="@Notifications" NotificationsNumber="@NotificationNumber"/>
+                <MudTooltip Text="Notifications">
+                    <NotificationButton Notifications="@Notifications" NotificationsNumber="@NotificationNumber"/>
+                </MudTooltip>
 
+                <MudTooltip Text="DarkMode">
+                    @if (_currentTheme == _darkTheme)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@(_ => DarkMode())"></MudIconButton>
+                    }
+                    else
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.ModeNight" OnClick="@(_ => DarkMode())"></MudIconButton>
+                    }
+                </MudTooltip>
 
-                @if (_currentTheme == _darkTheme)
-                {
-                    <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@(_ => DarkMode())"></MudIconButton>
-                }
-                else
-                {
-                    <MudIconButton Icon="@Icons.Material.Filled.ModeNight" OnClick="@(_ => DarkMode())"></MudIconButton>
-                }
-                <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
-                               Link="https://github.com/RazvanMarian/Schnorr-Web-App" Target="_blank"/>
+                <MudTooltip Text="Github">
+                    <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
+                                   Link="https://github.com/RazvanMarian/Schnorr-Web-App" Target="_blank"/>
+                </MudTooltip>
                 <MudTooltip Text="Log out">
                     <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" OnClick="LogoutUser"/>
                 </MudTooltip>
@@ -90,7 +96,7 @@
     {
         var authState = await AuthState;
         var user = authState.User;
-        
+
         if (user.Identity is {IsAuthenticated: true })
         {
             PollForUpdates();
@@ -111,7 +117,7 @@
                 NotificationNumber = Notifications?.Count ?? 0;
             }
             StateHasChanged();
-            await Task.Delay(5000);
+            await Task.Delay(30000);
         }
     }
 

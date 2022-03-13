@@ -77,8 +77,20 @@ public class NotificationViewModel : INotificationViewModel
     public async Task<string> MultipleSignFinish(int notificationId)
     {
         
-        var result = await _httpClient.PostAsJsonAsync($"upload/multiple-sign",notificationId);
+        var result = await _httpClient.PostAsJsonAsync($"file/multiple-sign",notificationId);
         return !result.IsSuccessStatusCode ? null : result.Content.ReadAsStringAsync().Result;
+    }
+
+    public async Task<string> DownloadSignature(int notificationId)
+    {
+        var result = await _httpClient.GetAsync("/notification/get-signature/"+notificationId);
+        return result.IsSuccessStatusCode ? result.Content.ReadAsStringAsync().Result : null;
+    }
+
+    public async Task<string> DownloadCertificate(int notificationId)
+    {
+        var result = await _httpClient.GetAsync("/notification/get-public-key/"+notificationId);
+        return result.IsSuccessStatusCode ? result.Content.ReadAsStringAsync().Result : null;
     }
 
     public static implicit operator NotificationViewModel(Notification notification)

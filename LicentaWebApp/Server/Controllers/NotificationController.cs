@@ -41,7 +41,7 @@ public class NotificationController : ControllerBase
             .Where(n => n.NotifiedUserId == currentUser.Id && n.Status == 2)
             .ToListAsync();
 
-        List<Notification> notifications = new List<Notification>();
+        var notifications = new List<Notification>();
         foreach (var n in notificationUserStatus)
         {
             var not = _context.Notifications.FirstOrDefault(x => x.UserStatusList.Contains(n) && x.Status > 0);
@@ -65,12 +65,11 @@ public class NotificationController : ControllerBase
                 currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             }
 
-            //Notificari la care ai fost invitat sa participi si n ai raspuns inca 
             var notificationUserStatus = await _context.NotificationsUserStatus
-                .Where(n => n.NotifiedUserId == currentUser.Id)
+                .Where(n => n.NotifiedUserId == currentUser.Id && n.Status!=-10)
                 .ToListAsync();
 
-            List<Notification> notifications = new List<Notification>();
+            var notifications = new List<Notification>();
             foreach (var n in notificationUserStatus)
             {
                 var not = _context.Notifications.FirstOrDefault(x => x.UserStatusList.Contains(n) && x.Status != 0);
@@ -78,12 +77,10 @@ public class NotificationController : ControllerBase
                     notifications.Add(not);
             }
 
-            // notificari pornite de catre user-ul curent
             var notificationsStarted = await _context.Notifications.AsQueryable()
                 .Where(n => n.IdInitiator == currentUser.Id).ToListAsync();
 
             notifications.AddRange(notificationsStarted);
-
             return notifications.OrderByDescending(n => n.CreatedAt).ToList();
         }
         catch (Exception)
@@ -210,6 +207,46 @@ public class NotificationController : ControllerBase
             }
 
             return Ok("SUCCESS");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex}");
+        }
+    }
+
+    [HttpGet]
+    [Route("get-signature/{notificationId}")]
+    public async Task<ActionResult<string>> GetSignature(int notificationId)
+    {
+        try
+        {
+            var notification = await _context.Notifications
+                .Where(n => n.Id == notificationId).FirstOrDefaultAsync();
+            
+            if (string.IsNullOrEmpty(notification?.Signature))
+                return BadRequest("Signature could not be loaded");
+
+            return await Task.FromResult(notification.Signature);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex}");
+        }
+    }
+    
+    [HttpGet]
+    [Route("get-public-key/{notificationId}")]
+    public async Task<ActionResult<string>> GetPublicKey(int notificationId)
+    {
+        try
+        {
+            var notification = await _context.Notifications
+                .Where(n => n.Id == notificationId).FirstOrDefaultAsync();
+            
+            if (string.IsNullOrEmpty(notification?.PublicKey))
+                return BadRequest("Signature could not be loaded");
+
+            return await Task.FromResult(notification.PublicKey);
         }
         catch (Exception ex)
         {

@@ -159,9 +159,8 @@
 
         if (!Options.Any())
         {
-            var result = await _uploadFileService.UploadHashWithKey(_file, SelectedKey);
-            Console.WriteLine(result);
-            Console.WriteLine(result.Length);
+            var result = await _uploadFileService.SignFile(_file, SelectedKey,_fileName);
+   
             if (result != null)
             {
                 await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
