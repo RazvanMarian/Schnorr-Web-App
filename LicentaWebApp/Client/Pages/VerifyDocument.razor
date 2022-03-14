@@ -1,6 +1,125 @@
 @page "/Verify-Document"
-<h3>VerifyDocument</h3>
+@inject ISnackbar _snackbar
+@inject IUploadFileService _uploadFileService
 
-@code {
-    
+<MudGrid Justify="Justify.Center">
+    <MudItem>
+        <InputFile id="fileInputDocument" OnChange="OnChangeDocument" hidden accept=".pdf"/>
+
+        <MudButton HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Filled.CloudUpload"
+                   for="fileInputDocument">
+            @if (_documentFile == null)
+            {
+                <MudText>Upload your document</MudText>
+            }
+            else
+            {
+                <MudText>@_documentFile.Name</MudText>
+            }
+        </MudButton>
+    </MudItem>
+
+    <MudItem>
+        <InputFile id="fileInputSignature" OnChange="OnChangeSignature" hidden/>
+
+        <MudButton HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Filled.CloudUpload"
+                   for="fileInputSignature">
+            @if (_signatureFile == null)
+            {
+                <MudText>Upload the document's signature</MudText>
+            }
+            else
+            {
+                <MudText>@_signatureFile.Name</MudText>
+            }
+        </MudButton>
+    </MudItem>
+
+    <MudItem>
+        <InputFile id="fileInputCertificate" OnChange="OnChangeCertificate" hidden/>
+
+        <MudButton HtmlTag="label"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Filled.CloudUpload"
+                   for="fileInputCertificate">
+            @if (_certificateFile == null)
+            {
+                <MudText>Upload the certificate</MudText>
+            }
+            else
+            {
+                <MudText>@_certificateFile.Name</MudText>
+            }
+        </MudButton>
+    </MudItem>
+</MudGrid>
+<MudGrid Justify="Justify.Center" Spacing="2" Style="padding-top: 2.5rem ">
+    <MudItem>
+        <MudButton Disabled="_processing" Variant="Variant.Filled" OnClick="UploadFiles">
+            Upload files
+        </MudButton>
+    </MudItem>
+    <MudItem>
+        <MudButton Disabled="_processing" Variant="Variant.Filled" OnClick="Clear">
+            Clear
+        </MudButton>
+    </MudItem>
+</MudGrid>
+
+@code
+{
+    IBrowserFile _documentFile;
+    IBrowserFile _signatureFile;
+    IBrowserFile _certificateFile;
+    bool _processing;
+
+    private void OnChangeDocument(InputFileChangeEventArgs e)
+    {
+        _documentFile = e.File;
+    }
+
+    private void OnChangeCertificate(InputFileChangeEventArgs e)
+    {
+        _certificateFile = e.File;
+    }
+
+    private void OnChangeSignature(InputFileChangeEventArgs e)
+    {
+        _signatureFile = e.File;
+    }
+
+    private async Task UploadFiles()
+    {
+        Console.WriteLine("aici");
+        _processing = true;
+        var res = await _uploadFileService.VerifyFile(_documentFile, _signatureFile, _certificateFile);
+
+        if (res != null)
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Add("The signature was verified successfully!", Severity.Success);
+        }
+        else
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Add("The signature could not be verified!", Severity.Error);
+        }
+
+        Clear();
+        _processing = false;
+    }
+
+    private void Clear()
+    {
+        _signatureFile = null;
+        _documentFile = null;
+        _certificateFile = null;
+    }
 }

@@ -11,5 +11,7 @@ namespace LicentaWebApp.Client.Services
         public Task<string> SignFile(IBrowserFile file, string keyName, string fileName);
 
         public Task<HttpResponseMessage> MultipleSignFile(IBrowserFile file, MultipleSignPayload payload);
+
+        public Task<string> VerifyFile(IBrowserFile document, IBrowserFile signatureFile, IBrowserFile publicKeyFile);
     }
 }

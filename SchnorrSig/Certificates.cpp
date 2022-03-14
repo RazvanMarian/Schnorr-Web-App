@@ -1,6 +1,7 @@
 #include <iostream>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+#include <openssl/evp.h>
 
 int Create_Certificate(EC_KEY *private_key, EC_KEY *public_key)
 {
@@ -220,6 +221,46 @@ int Create_Certificate(EC_KEY *private_key, EC_KEY *public_key)
     BIO_free_all(output);
     X509_REQ_free(x509_req);
     X509_free(newcert);
+
+    return 0;
+}
+
+int Read_Public_Key_Certificate(EC_KEY **key, const char *certificatePath)
+{
+    OpenSSL_add_all_algorithms();
+    ERR_load_BIO_strings();
+    ERR_load_crypto_strings();
+
+    BIO *certbio = BIO_new(BIO_s_file());
+    X509 *cert = NULL;
+    EVP_PKEY *pkey = NULL;
+
+    int ret = BIO_read_filename(certbio, certificatePath);
+    if (!(cert = PEM_read_bio_X509(certbio, NULL, 0, NULL)))
+    {
+        printf("Error loading cert into memory\n");
+        return -1;
+    }
+
+    if ((pkey = X509_get_pubkey(cert)) == NULL)
+    {
+        printf("Error getting public key from certificate\n");
+        return -1;
+    }
+
+    int result = EVP_PKEY_base_id(pkey);
+    if (result != EVP_PKEY_EC)
+    {
+        printf("The certificate does not contain an EC_KEY type of key\n");
+        return -1;
+    }
+
+    *key = EVP_PKEY_get1_EC_KEY(pkey);
+    if (*key == NULL)
+    {
+        printf("Error extracting the EC_KEY from the EVP_PKEY\n");
+        return -1;
+    }
 
     return 0;
 }
