@@ -1,5 +1,4 @@
-namespace LicentaWebApp.Shared.Models;
-
+namespace LicentaWebApp.Shared.PayloadModels;
 public class AcceptNotificationPayload
 {
     public int NotificationId { get; set; }

@@ -8,7 +8,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
-using LicentaWebApp.Shared.Models;
 using LicentaWebApp.Shared.PayloadModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -53,19 +52,46 @@ namespace LicentaWebApp.Server.Controllers
                 {
                     currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Email);
                     currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                    // currentUser.FirstName = User.FindFirstValue(ClaimTypes.Surname);
-                    // currentUser.LastName = User.FindFirstValue(ClaimTypes.Name);
+                    currentUser.FirstName = User.FindFirstValue(ClaimTypes.Surname);
+                    currentUser.LastName = User.FindFirstValue(ClaimTypes.Name);
                 }
 
-                var key = await _context.Keys.FirstOrDefaultAsync(k =>
+                var key = await _context.Keys.AsNoTracking().FirstOrDefaultAsync(k =>
                     k.UserId == currentUser.Id && k.Name == payload.KeyName);
                 if (key == null) return BadRequest("No key named like this!");
-
-
+                
+                if (!System.IO.File.Exists(key.PrivateKeyPath))
+                    return BadRequest("Error. The key file doesn't exist!");
+                
+                if (!System.IO.File.Exists(key.PublicKeyPath))
+                    return BadRequest("Error. The key file doesn't exist!");
+                
                 var result = Sign_Document(payload.Hash, key.PrivateKeyPath, key.PublicKeyPath);
                 if (result != 0)
                     return BadRequest("Error signing the document");
-
+                
+                var notification = new Notification
+                {
+                    IdInitiator = currentUser.Id,
+                    InitiatorFirstName = currentUser.FirstName,
+                    InitiatorLastName = currentUser.LastName,
+                    InitiatorEmailAddress = currentUser.EmailAddress,
+                    CreatedAt = DateTime.Now,
+                    Status = -1,
+                    FileName = payload.FileName,
+                    SelectedKey = payload.KeyName,
+                    UserStatusList = null
+                };
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+                const string publicKeyFilePath = "/home/razvan/certificates/cert.pem";
+                await using (var fileInput = new FileStream(publicKeyFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    var memoryStream = new MemoryStream();
+                    await fileInput.CopyToAsync(memoryStream);
+                    var buffer = memoryStream.ToArray();
+                    notification.PublicKey = Convert.ToBase64String(buffer);
+                }
 
                 const string filePath = "/home/razvan/signatures/signature.plain";
                 await using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
@@ -74,6 +100,9 @@ namespace LicentaWebApp.Server.Controllers
                     await fileInput.CopyToAsync(memoryStream);
 
                     var buffer = memoryStream.ToArray();
+                    notification.Signature = Convert.ToBase64String(buffer);
+                    
+                    await _context.SaveChangesAsync();
                     return await Task.FromResult(Convert.ToBase64String(buffer));
                 }
             }
@@ -91,8 +120,7 @@ namespace LicentaWebApp.Server.Controllers
             {
                 if (payload.Users == null)
                     return await Task.FromResult<ActionResult<string>>(BadRequest("Failed"));
-
-
+                
                 var currentUser = new User();
                 if (User.Identity is {IsAuthenticated: true})
                 {
@@ -109,8 +137,6 @@ namespace LicentaWebApp.Server.Controllers
                     .ToList();
 
                 notification.UserStatusList.AddRange(notificationUserStatusList);
-
-
                 notification.IdInitiator = currentUser.Id;
                 notification.InitiatorFirstName = currentUser.FirstName;
                 notification.InitiatorLastName = currentUser.LastName;

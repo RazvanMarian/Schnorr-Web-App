@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using LicentaWebApp.Shared.Models;
 
-namespace LicentaWebApp.Shared.Models;
+namespace LicentaWebApp.Shared.PayloadModels;
 
 public class MultipleSignPayload
 {

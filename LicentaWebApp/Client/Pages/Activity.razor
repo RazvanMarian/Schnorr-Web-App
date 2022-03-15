@@ -24,7 +24,7 @@ else
             {
                 <MudExpansionPanel Text="@notification.FileName">
                     <MudItem style="display: inline-block">
-                        <MudText>- status : success</MudText>
+                        <MudText>- status : <MudIcon Icon="@Icons.Filled.Check" Color="Color.Success"></MudIcon></MudText>
                         <MudText>- created at: @notification.CreatedAt</MudText>
                         <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
                     </MudItem>
@@ -50,7 +50,9 @@ else
             {
                 <MudExpansionPanel Text="@notification.FileName">
                     <MudItem style="display: inline-block">
-                        <MudText>- status : pending</MudText>
+                        <MudText>- status : 
+                            <MudIcon Icon="@Icons.Filled.Pending" Color="Color.Warning"></MudIcon>
+                        </MudText>
                         <MudText>- created at: @notification.CreatedAt</MudText>
                         <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
                     </MudItem>
@@ -71,11 +73,11 @@ else
                     <MudItem style="display: inline-block">
                         @if (notification.Status == -1)
                         {
-                            <MudText>- status : success</MudText>
+                            <MudText>- status : <MudIcon Icon="@Icons.Filled.Check" Color="Color.Success"></MudIcon></MudText>
                         }
                         else
                         {
-                            <MudText>- status : denied</MudText>
+                            <MudText>- status : <MudIcon Icon="@Icons.Filled.Cancel" Color="Color.Error"></MudIcon></MudText>
                         }
                         <MudText>- created at: @notification.CreatedAt</MudText>
                         <MudText>- created by: @notification.InitiatorEmailAddress</MudText>

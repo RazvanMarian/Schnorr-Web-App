@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using LicentaWebApp.Shared.Models;
+using LicentaWebApp.Shared.PayloadModels;
 
 namespace LicentaWebApp.Client.ViewModels;
 

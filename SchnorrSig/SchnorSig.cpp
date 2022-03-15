@@ -144,12 +144,12 @@ extern "C"
             return -1;
         }
 
-        // res = Create_Certificate(sign_key, verify_key);
-        // if (res != 0)
-        // {
-        //     std::cout << "Eroare la creare certificat!" << std::endl;
-        //     return -1;
-        // }
+        res = Create_Certificate(sign_key, verify_key);
+        if (res != 0)
+        {
+            std::cout << "Eroare la creare certificat!" << std::endl;
+            return -1;
+        }
         return 0;
     }
 
@@ -192,25 +192,21 @@ extern "C"
 
         if (res != 0)
         {
-
-            printf("Error reading the public key\n");
             return -1;
         }
         SCHNORR_SIG *sig = SCHNORR_SIG_new();
         res = SCHNORR_read_signature(sig, signatureFileName);
         if (res != 0)
         {
-            printf("Error reading the public key\n");
             return -1;
         }
 
         res = SCHNORR_verify(key, hash, SHA256_DIGEST_LENGTH, sig);
         if (res != 0)
         {
-            printf("Error reading the public key\n");
             return -1;
         }
-
+        SCHNORR_SIG_free(sig);
         return res;
     }
 }

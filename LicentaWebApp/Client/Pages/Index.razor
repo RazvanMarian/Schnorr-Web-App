@@ -2,31 +2,97 @@
 @inject NavigationManager _navigationManager
 @inject ISnackbar _snackbar
 
+<style>
+    .explore-card:hover {
+        background-color: #454d55;
+        transition: all .2s ease-in;
+    }
+    
+    .explore-card
+    {
+        background-color: #27272f;
+    }
+</style>
+
 <AuthorizeView>
     <Authorized>
-        <MudText Style="margin-bottom: 2rem" Typo="Typo.h3" Align="Align.Center"> Welcome!</MudText>
+        <MudText Style="margin-bottom: 2rem" Typo="Typo.h3" Align="Align.Center">Welcome!</MudText>
+        <MudText Typo="Typo.h6">What do you want to do next?</MudText>
 
-        <MudCarousel Style="height:30rem;" ShowArrows="true" ShowDelimiters="true" AutoCycle="true" TData="object">
-            <MudCarouselItem Transition="Transition.Slide" Color="@Color.Primary">
-                <div class="d-flex" style="height:100%; justify-content: center">
-                    <MudText Typo="Typo.h3">To do..</MudText>
-                </div>
-            </MudCarouselItem>
-            <MudCarouselItem Transition="Transition.Slide" Color="@Color.Secondary">
-                <div class="d-flex" style="height:100%">
-                    <MudIcon Class="mx-auto my-auto" Icon="@Icons.Filled.Analytics" Size="@Size.Large"/>
-                </div>
-            </MudCarouselItem>
-            <MudCarouselItem Transition="Transition.Slide" Color="Color.Surface">
-                <div class="d-flex" style="height:100%">
-                    <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Color="@Color.Primary" Size="@Size.Large"/>
-                </div>
-            </MudCarouselItem>
-        </MudCarousel>
-
-        <MudGrid Spacing="2" Justify="Justify.Center" Style="margin-top: 1rem">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickFunction">Get started</MudButton>
+        <MudGrid Style="padding-top: 2.5rem" Justify="Justify.Center">
+            <MudItem>
+                <MudLink Style="text-decoration: none" href="/Sign-Document">
+                    <MudPaper Outlined="true" Class="pa-2 rounded-lg d-flex flex-column">
+                        <MudPaper Class="pa-2 rounded-lg docs-gray-bg explore-card" Outlined="true" Elevation="0"
+                                  Style="height: 7rem">
+                            <div class="d-flex justify-center align-center relative pa-8 mud-height-full mud-width-full">
+                                <MudIcon Icon="@Icons.Filled.Create"></MudIcon>
+                            </div>
+                        </MudPaper>
+                        <MudText Typo="Typo.h6">Sign a document</MudText>
+                    </MudPaper>
+                </MudLink>
+            </MudItem>
+            
+            <MudItem>
+                <MudLink Style="text-decoration: none" href="/Verify-Document">
+                    <MudPaper Outlined="true" Class="pa-2 rounded-lg d-flex flex-column">
+                        <MudPaper Class="pa-2 rounded-lg docs-gray-bg explore-card" Outlined="true" Elevation="0"
+                                  Style="height: 7rem">
+                            <div class="d-flex justify-center align-center relative pa-8 mud-height-full mud-width-full">
+                                <MudIcon Icon="@Icons.Filled.FactCheck"></MudIcon>
+                            </div>
+                        </MudPaper>
+                        <MudText Typo="Typo.h6">Verify a document</MudText>
+                    </MudPaper>
+                </MudLink>
+            </MudItem>
+            
+            <MudItem>
+                <MudLink Style="text-decoration: none" href="/User-Keys">
+                    <MudPaper Outlined="true" Class="pa-2 rounded-lg d-flex flex-column">
+                        <MudPaper Class="pa-2 rounded-lg docs-gray-bg explore-card" Outlined="true" Elevation="0"
+                                  Style="height: 7rem">
+                            <div class="d-flex justify-center align-center relative pa-8 mud-height-full mud-width-full">
+                                <MudIcon Icon="@Icons.Filled.VpnKey"></MudIcon>
+                            </div>
+                        </MudPaper>
+                        <MudText Typo="Typo.h6">Manage your keys</MudText>
+                    </MudPaper>
+                </MudLink>
+            </MudItem>
+            
+            
+            <MudItem>
+                <MudLink Style="text-decoration: none" href="/Generate-Key">
+                    <MudPaper Outlined="true" Class="pa-2 rounded-lg d-flex flex-column">
+                        <MudPaper Class="pa-2 rounded-lg docs-gray-bg explore-card" Outlined="true" Elevation="0"
+                                  Style="height: 7rem">
+                            <div class="d-flex justify-center align-center relative pa-8 mud-height-full mud-width-full">
+                                <MudIcon Icon="@Icons.Filled.VpnKey"></MudIcon>
+                            </div>
+                        </MudPaper>
+                        <MudText Typo="Typo.h6">Generate a new key</MudText>
+                    </MudPaper>
+                </MudLink>
+            </MudItem>
+            
+            <MudItem>
+                <MudLink Style="text-decoration: none" href="/Activity">
+                    <MudPaper Outlined="true" Class="pa-2 rounded-lg d-flex flex-column">
+                        <MudPaper Class="pa-2 rounded-lg docs-gray-bg explore-card" Outlined="true" Elevation="0"
+                                  Style="height: 7rem">
+                            <div class="d-flex justify-center align-center relative pa-8 mud-height-full mud-width-full">
+                                <MudIcon Icon="@Icons.Filled.History"></MudIcon>
+                            </div>
+                        </MudPaper>
+                        <MudText Typo="Typo.h6">See your history</MudText>
+                    </MudPaper>
+                </MudLink>
+            </MudItem>
+            
         </MudGrid>
+
     </Authorized>
     <NotAuthorized>
         <Login></Login>
@@ -36,10 +102,7 @@
 
 @code{
 
-    void OnClickFunction()
-    {
-        _navigationManager.NavigateTo("/Sign");
-    }
-    
+
+
 
 }

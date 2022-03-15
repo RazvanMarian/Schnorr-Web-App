@@ -1,4 +1,4 @@
-namespace LicentaWebApp.Shared.Models;
+namespace LicentaWebApp.Shared.PayloadModels;
 
 public class SignPayload
 {

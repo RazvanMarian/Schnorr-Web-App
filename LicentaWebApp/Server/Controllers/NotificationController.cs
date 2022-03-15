@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using LicentaWebApp.Shared.Models;
+using LicentaWebApp.Shared.PayloadModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

@@ -262,5 +262,9 @@ int Read_Public_Key_Certificate(EC_KEY **key, const char *certificatePath)
         return -1;
     }
 
+    BIO_free_all(certbio);
+    X509_free(cert);
+    EVP_PKEY_free(pkey);
+
     return 0;
 }
