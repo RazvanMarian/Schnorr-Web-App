@@ -1,0 +1,19 @@
+<MudCard Outlined="true" Style="min-width: 20rem; height: 35%;border: none; background-color: transparent">
+    <MudCardMedia Image="@ImageSrc" Height="260"/>
+    <MudCardActions Style="justify-content: center">
+        <MudLink Href="@Path" Underline="Underline.None" Color="Color.Default">@Text</MudLink>
+    </MudCardActions>
+</MudCard>
+
+@code {
+
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public string ImageSrc { get; set; }
+    
+    [Parameter]
+    public string Path { get; set; }
+
+}

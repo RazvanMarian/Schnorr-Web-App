@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using LicentaWebApp.Client.Handlers;
 using LicentaWebApp.Client.ViewModels;
-using LicentaWebApp.Shared.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 
 

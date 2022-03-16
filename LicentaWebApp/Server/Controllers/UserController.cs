@@ -74,14 +74,23 @@ namespace LicentaWebApp.Server.Controllers
                 var passwordHasher = new PasswordHasher(new HashingOptions());
                 var res = passwordHasher
                     .Check(loggedInUser.Password, authenticationRequest.Password);
-                if (res.Verified) 
+                if (res.Verified)
+                {
+                    
+                    loggedInUser.OtpCode = OTPGenerator.GenerateOTP();
+                    loggedInUser.OtpCreationTime=DateTime.Now;
+                    _context.SaveChanges();
+                    Console.WriteLine(loggedInUser.OtpCode);
                     token = GenerateJwtToken(loggedInUser);
+                }
             }
       
 
             return await Task.FromResult(new AuthenticationResponse() {Token = token});
         }
 
+        
+        
         [HttpPost("getuserbyjwt")]
         public async Task<ActionResult<User>> GetUserByJwt([FromBody] string jwtToken)
         {

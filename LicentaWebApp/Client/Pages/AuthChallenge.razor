@@ -1,0 +1,8 @@
+@page "/Auth-Challenge"
+<MudInput Value="@InputValue" @bind-Text="@InputValue" Style="text-transform: uppercase"/>
+<MudButton Variant="Variant.Filled" OnClick="() => Console.WriteLine(InputValue)">click</MudButton>
+
+@code {
+    string InputValue { get; set; }
+
+}

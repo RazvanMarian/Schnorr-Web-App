@@ -1,74 +1,125 @@
 @page "/Verify-Document"
+@using System.IO
 @inject ISnackbar _snackbar
 @inject IUploadFileService _uploadFileService
 
-<MudGrid Justify="Justify.Center">
-    <MudItem>
-        <InputFile id="fileInputDocument" OnChange="OnChangeDocument" hidden accept=".pdf"/>
+<style>
+    .drag-drop-zone {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .4s;
+        height: 80px;
+        width: 100%;
+    }
 
-        <MudButton HtmlTag="label"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Filled.CloudUpload"
-                   for="fileInputDocument">
+    .drag-drop-input {
+        position: absolute;
+        width: 16%;
+        height: 11%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 2;
+    }
+</style>
+
+<MudText Typo="Typo.h3" Align="Align.Center"> Verify a document's signature</MudText>
+<MudGrid Style="max-width: 20rem;margin: auto;">
+    <MudItem xs="12">
+        <MudText Typo="Typo.h5">Upload the document</MudText>
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudPaper Class="drag-drop-zone">
+
+            <InputFile OnChange="OnChangeDocument" class="drag-drop-input"/>
+
             @if (_documentFile == null)
             {
-                <MudText>Upload your document</MudText>
+                <MudText Typo="Typo.h6">Upload file</MudText>
             }
             else
             {
-                <MudText>@_documentFile.Name</MudText>
+                <MudItem @key="@_documentFile">
+                    <MudChip Color="Color.Dark" Style="width:60px; overflow:hidden;" Text="@(Path.GetExtension(_documentFile.Name))"/>
+                    @_documentFile.Name
+                </MudItem>
             }
-        </MudButton>
+        </MudPaper>
     </MudItem>
 
-    <MudItem>
-        <InputFile id="fileInputSignature" OnChange="OnChangeSignature" hidden/>
+    <MudItem xs="12">
+        <MudText Typo="Typo.h5">Upload the signature</MudText>
+    </MudItem>
 
-        <MudButton HtmlTag="label"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Filled.CloudUpload"
-                   for="fileInputSignature">
+    <MudItem xs="12">
+        <MudPaper Class="drag-drop-zone">
+
+            <InputFile OnChange="OnChangeSignature" class="drag-drop-input"/>
+
             @if (_signatureFile == null)
             {
-                <MudText>Upload the document's signature</MudText>
+                <MudText Typo="Typo.h6">Upload file</MudText>
             }
             else
             {
-                <MudText>@_signatureFile.Name</MudText>
+                <MudItem @key="@_signatureFile">
+                    <MudChip Color="Color.Dark" Style="width:60px; overflow:hidden;" Text="@(Path.GetExtension(_signatureFile.Name))"/>
+                    @_signatureFile.Name
+                </MudItem>
             }
-        </MudButton>
+        </MudPaper>
     </MudItem>
 
-    <MudItem>
-        <InputFile id="fileInputCertificate" OnChange="OnChangeCertificate" hidden/>
+    <MudItem xs="12">
+        <MudText Typo="Typo.h5">Upload the certificate</MudText>
+    </MudItem>
 
-        <MudButton HtmlTag="label"
-                   Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Filled.CloudUpload"
-                   for="fileInputCertificate">
+    <MudItem xs="12">
+        <MudPaper Class="drag-drop-zone">
+
+            <InputFile OnChange="OnChangeCertificate" class="drag-drop-input"/>
+
             @if (_certificateFile == null)
             {
-                <MudText>Upload the certificate</MudText>
+                <MudText Typo="Typo.h6">Upload file</MudText>
             }
             else
             {
-                <MudText>@_certificateFile.Name</MudText>
+                <MudItem @key="@_certificateFile">
+                    <MudChip Color="Color.Dark" Style="width:60px; overflow:hidden;" Text="@(Path.GetExtension(_certificateFile.Name))"/>
+                    @_certificateFile.Name
+                </MudItem>
             }
-        </MudButton>
+        </MudPaper>
     </MudItem>
 </MudGrid>
-<MudGrid Justify="Justify.Center" Spacing="2" Style="padding-top: 2.5rem ">
+<MudGrid Justify="Justify.Center" Spacing="2" Style="padding-top: 2.5rem;max-width: 20rem;margin: auto; ">
     <MudItem>
-        <MudButton Disabled="_processing" Variant="Variant.Filled" OnClick="UploadFiles">
-            Upload files
+
+        <MudButton Disabled="@(_processing || _disabled)" Variant="Variant.Filled" OnClick="UploadFiles">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                <MudText Class="ms-2">Processing</MudText>
+            }
+            else
+            {
+                <MudText>Verify</MudText>
+            }
         </MudButton>
     </MudItem>
     <MudItem>
         <MudButton Disabled="_processing" Variant="Variant.Filled" OnClick="Clear">
-            Clear
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                <MudText Class="ms-2">Processing</MudText>
+            }
+            else
+            {
+                <MudText>Clear</MudText>
+            }
         </MudButton>
     </MudItem>
 </MudGrid>
@@ -79,25 +130,32 @@
     IBrowserFile _signatureFile;
     IBrowserFile _certificateFile;
     bool _processing;
+    bool _disabled = true;
 
     private void OnChangeDocument(InputFileChangeEventArgs e)
     {
         _documentFile = e.File;
+        if (_signatureFile != null && _certificateFile != null && _documentFile != null)
+            _disabled = false;
+
     }
 
     private void OnChangeCertificate(InputFileChangeEventArgs e)
     {
         _certificateFile = e.File;
+        if (_signatureFile != null && _certificateFile != null && _documentFile != null)
+            _disabled = false;
     }
 
     private void OnChangeSignature(InputFileChangeEventArgs e)
     {
         _signatureFile = e.File;
+        if (_signatureFile != null && _certificateFile != null && _documentFile != null)
+            _disabled = false;
     }
 
     private async Task UploadFiles()
     {
-        Console.WriteLine("aici");
         _processing = true;
         var res = await _uploadFileService.VerifyFile(_documentFile, _signatureFile, _certificateFile);
 
@@ -121,5 +179,6 @@
         _signatureFile = null;
         _documentFile = null;
         _certificateFile = null;
+        _disabled = true;
     }
 }

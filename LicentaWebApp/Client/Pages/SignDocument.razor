@@ -27,15 +27,6 @@
         cursor: pointer;
         z-index: 2;
     }
-
-    .drag-enter {
-        box-shadow: var(--mud-elevation-10);
-    }
-
-    .list {
-        padding: 2em;
-        min-width: 100%;
-    }
 </style>
 
 <MudGrid style="margin: auto; justify-content: center; width: 33%">
@@ -64,10 +55,9 @@
     </MudItem>
     
     <MudItem xs="12">
-        <MudPaper @ondragenter="@(() => _dragEnterStyle = "drag-enter")" @ondragleave="@(() => _dragEnterStyle = null)"
-                  @ondragend="@(() => _dragEnterStyle = null)" Class=@("drag-drop-zone " + _dragEnterStyle)>
+        <MudPaper Class="drag-drop-zone">
 
-            <InputFile OnChange="OnInputFileChanged" multiple class="drag-drop-input"/>
+            <InputFile OnChange="OnInputFileChanged" class="drag-drop-input"/>
 
             @if (_fileName == null)
             {
@@ -124,7 +114,6 @@
     private List<User> CompanyUsers { get; set; } = new();
 
     bool _processing;
-    string _dragEnterStyle;
     string _fileType;
     IBrowserFile _file;
     string _fileName;
@@ -150,11 +139,12 @@
         _show = true;
         _processing = true;
 
-        if (SelectedKey == null)
+        if (string.IsNullOrEmpty(SelectedKey))
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("You did not select a key!", Severity.Error);
             _processing = false;
+            _fileName = null;
             return;
         }
 
@@ -218,7 +208,6 @@
     {
         _fileName = null;
         _show = true;
-        _dragEnterStyle = null;
         Options = Enumerable.Empty<string>();
         SelectedKey = "";
     }

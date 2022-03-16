@@ -42,11 +42,11 @@
         if (authenticationResponse.Token != string.Empty)
         {
             await _localStorageService.SetItemAsync("jwt_token", authenticationResponse.Token);
-            _navigationManager.NavigateTo("/",true);
+            _navigationManager.NavigateTo("/Auth-Challenge",true);
         }
         else
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("Username or password are wrong!", Severity.Error);
         }
     }
