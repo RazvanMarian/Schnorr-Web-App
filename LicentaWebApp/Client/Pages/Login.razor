@@ -1,10 +1,12 @@
+@page "/Login"
+
 @using LicentaWebApp.Client.ViewModels
-@using LicentaWebApp.Shared
 @using Blazored.LocalStorage
 @inject ILoginViewModel _loginViewModel
 @inject NavigationManager _navigationManager
 @inject ISnackbar _snackbar
 @inject ILocalStorageService _localStorageService
+@inject IUserViewModel _userViewModel
 
 <div style="max-width: 400px; margin: auto">
 
@@ -22,7 +24,9 @@
             </MudCardContent>
             <MudCardActions>
                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                           Class="ml-auto" Style="margin: auto">Login</MudButton>
+                           Class="ml-auto" Style="margin: auto">
+                    Login
+                </MudButton>
             </MudCardActions>
         </MudCard>
         <MudText Typo="Typo.body2" Align="Align.Center" Class="my-4">
@@ -33,16 +37,16 @@
 </div>
 
 @code {
-    
-    
+
+
     private async Task AuthenticateJwt()
     {
         var authenticationResponse = await _loginViewModel.AuthenticateJwt();
-
-        if (authenticationResponse.Token != string.Empty)
+        if (authenticationResponse.Email != string.Empty)
         {
-            await _localStorageService.SetItemAsync("jwt_token", authenticationResponse.Token);
-            _navigationManager.NavigateTo("/Auth-Challenge",true);
+            _userViewModel.EmailAddress = authenticationResponse.Email;
+            _userViewModel.ValidOtp = true;
+            _navigationManager.NavigateTo("/Login/Challenge");
         }
         else
         {
@@ -50,6 +54,6 @@
             _snackbar.Add("Username or password are wrong!", Severity.Error);
         }
     }
-    
+
 
 }

@@ -11,33 +11,9 @@ namespace LicentaWebApp.Client.ViewModels
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string EmailAddress { get; set; }
+        public bool ValidOtp { get; set; } = false;
         public Company Company { get; set; }
-
-        private readonly HttpClient _httpClient;
-
-
-        public UserViewModel()
-        {
-            
-        }
-        public UserViewModel(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
-
-        public Task<List<User>> GetCompanyUsers()
-        {
-            var companyUserList = _httpClient
-                .GetFromJsonAsync<List<User>>("/user/getcompanyusers");
-
-            return companyUserList;
-        }
-
-        public async Task GetUser(int id)
-        {
-            var user = await _httpClient.GetFromJsonAsync<User>("/user/getuser/" + id);
-            LoadCurrentObject(user);
-        }
 
         private void LoadCurrentObject(UserViewModel user)
         {

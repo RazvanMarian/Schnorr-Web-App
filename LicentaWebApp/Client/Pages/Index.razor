@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inject NavigationManager _navigationManager
 @inject ISnackbar _snackbar
+@attribute [Authorize]
 
 <style>
     .explore-card:hover {
@@ -33,71 +34,9 @@
             <MudItem Style="padding-right: 2rem">
                 <HomePageOption Text="Manage your keys" ImageSrc="images/SignImage.jpeg" Path="User-Keys"/>
             </MudItem>
-
-
-            @* <MudItem> *@
-            @*     <MudLink Style="text-decoration: none" href="/Verify-Document"> *@
-            @*         <MudPaper Outlined="true" Class="pa-2 rounded-lg d-flex flex-column"> *@
-            @*             <MudPaper Class="pa-2 rounded-lg docs-gray-bg explore-card" Outlined="true" Elevation="0" *@
-            @*                       Style="height: 7rem"> *@
-            @*                 <div class="d-flex justify-center align-center relative pa-8 mud-height-full mud-width-full"> *@
-            @*                     <MudIcon Icon="@Icons.Filled.FactCheck"></MudIcon> *@
-            @*                 </div> *@
-            @*             </MudPaper> *@
-            @*             <MudText Typo="Typo.h6">Verify a document</MudText> *@
-            @*         </MudPaper> *@
-            @*     </MudLink> *@
-            @* </MudItem> *@
-            @* *@
-            @* <MudItem> *@
-            @*     <MudLink Style="text-decoration: none" href="/User-Keys"> *@
-            @*         <MudPaper Outlined="true" Class="pa-2 rounded-lg d-flex flex-column"> *@
-            @*             <MudPaper Class="pa-2 rounded-lg docs-gray-bg explore-card" Outlined="true" Elevation="0" *@
-            @*                       Style="height: 7rem"> *@
-            @*                 <div class="d-flex justify-center align-center relative pa-8 mud-height-full mud-width-full"> *@
-            @*                     <MudIcon Icon="@Icons.Filled.VpnKey"></MudIcon> *@
-            @*                 </div> *@
-            @*             </MudPaper> *@
-            @*             <MudText Typo="Typo.h6">Manage your keys</MudText> *@
-            @*         </MudPaper> *@
-            @*     </MudLink> *@
-            @* </MudItem> *@
-            @* *@
-            @* *@
-            @* <MudItem> *@
-            @*     <MudLink Style="text-decoration: none" href="/Generate-Key"> *@
-            @*         <MudPaper Outlined="true" Class="pa-2 rounded-lg d-flex flex-column"> *@
-            @*             <MudPaper Class="pa-2 rounded-lg docs-gray-bg explore-card" Outlined="true" Elevation="0" *@
-            @*                       Style="height: 7rem"> *@
-            @*                 <div class="d-flex justify-center align-center relative pa-8 mud-height-full mud-width-full"> *@
-            @*                     <MudIcon Icon="@Icons.Filled.VpnKey"></MudIcon> *@
-            @*                 </div> *@
-            @*             </MudPaper> *@
-            @*             <MudText Typo="Typo.h6">Generate a new key</MudText> *@
-            @*         </MudPaper> *@
-            @*     </MudLink> *@
-            @* </MudItem> *@
-            @* *@
-            @* <MudItem> *@
-            @*     <MudLink Style="text-decoration: none" href="/Activity"> *@
-            @*         <MudPaper Outlined="true" Class="pa-2 rounded-lg d-flex flex-column"> *@
-            @*             <MudPaper Class="pa-2 rounded-lg docs-gray-bg explore-card" Outlined="true" Elevation="0" *@
-            @*                       Style="height: 7rem"> *@
-            @*                 <div class="d-flex justify-center align-center relative pa-8 mud-height-full mud-width-full"> *@
-            @*                     <MudIcon Icon="@Icons.Filled.History"></MudIcon> *@
-            @*                 </div> *@
-            @*             </MudPaper> *@
-            @*             <MudText Typo="Typo.h6">See your history</MudText> *@
-            @*         </MudPaper> *@
-            @*     </MudLink> *@
-            @* </MudItem> *@
-
+            
         </MudGrid>
-
     </Authorized>
-    <NotAuthorized>
-        <Login></Login>
-    </NotAuthorized>
 </AuthorizeView>
 
 

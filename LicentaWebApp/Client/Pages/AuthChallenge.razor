@@ -1,8 +1,84 @@
-@page "/Auth-Challenge"
-<MudInput Value="@InputValue" @bind-Text="@InputValue" Style="text-transform: uppercase"/>
-<MudButton Variant="Variant.Filled" OnClick="() => Console.WriteLine(InputValue)">click</MudButton>
+@page "/Login/Challenge"
+@using Blazored.LocalStorage
+@using LicentaWebApp.Client.ViewModels
+@inject ILocalStorageService _localStorageService
+@inject ILoginViewModel _loginViewModel
+@inject NavigationManager _navigationManager
+@inject ISnackbar _snackbar
+@inject IUserViewModel _userViewModel
+
+<img src="logo.png" alt="" style="margin-left: auto; margin-right: auto; display: block;  padding-bottom: 1rem"/>
+<div style="margin: auto; width: 33%">
+    @if (TimePassed)
+    {
+        <MudText Typo="Typo.h5" Align="Align.Center">You will be redirected to log in..</MudText>
+    }
+    else
+    {
+        <MudText Typo="Typo.h5" Align="Align.Center">@Seconds</MudText>
+        <MudCard>
+            <MudCardContent>
+                <MudTextField Label="Authentication code" @bind-Value="@InputValue"/>
+            </MudCardContent>
+            <MudCardActions Style="justify-content: center">
+                <MudButton Disabled="@TimePassed"
+                           ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickFunction">
+                    Submit
+                </MudButton>
+
+            </MudCardActions>
+        </MudCard>
+        <MudText Align="Align.Center">Enter the code you received at the following address: @_userViewModel.EmailAddress</MudText>
+    }
+</div>
 
 @code {
     string InputValue { get; set; }
+
+    int Seconds { get; set; } = 60;
+
+    string Email { get; set; }
+
+    bool TimePassed { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_userViewModel.ValidOtp == false)
+            _navigationManager.NavigateTo("/");
+
+        _userViewModel.ValidOtp = false;
+        Email = _userViewModel.EmailAddress;
+
+        while (Seconds > 0)
+        {
+            await Task.Delay(1000);
+            Seconds--;
+            StateHasChanged();
+        }
+        TimePassed = true;
+        StateHasChanged();
+        await Task.Delay(5000);
+        _navigationManager.NavigateTo("/");
+    }
+
+    private async Task OnClickFunction()
+    {
+        _loginViewModel.OtpCode = InputValue.ToUpper();
+        _loginViewModel.EmailAddress = Email;
+        var authenticationResponse = await _loginViewModel.AuthenticateOtp();
+        if (authenticationResponse.Token != string.Empty)
+        {
+            await _localStorageService.SetItemAsync("jwt_token", authenticationResponse.Token);
+            _navigationManager.NavigateTo("/", true);
+        }
+        else
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("The code is not correct!", Severity.Error);
+        }
+    }
+
+
 
 }

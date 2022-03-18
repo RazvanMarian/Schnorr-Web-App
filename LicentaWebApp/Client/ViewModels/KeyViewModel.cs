@@ -58,6 +58,13 @@ namespace LicentaWebApp.Client.ViewModels
             var base64 = result.Content.ReadAsStringAsync().Result;
             return base64;
         }
+        public Task<List<User>> GetCompanyUsers()
+        {
+            var companyUserList = _httpClient
+                .GetFromJsonAsync<List<User>>("/user/getcompanyusers");
+
+            return companyUserList;
+        }
 
         public static implicit operator KeyViewModel(Key key)
         {

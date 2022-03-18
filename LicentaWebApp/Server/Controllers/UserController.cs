@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,8 +66,6 @@ namespace LicentaWebApp.Server.Controllers
         public async Task<ActionResult<AuthenticationResponse>> AuthenticateJwt(
             AuthenticationRequest authenticationRequest)
         {
-            var token = string.Empty;
-            
             var loggedInUser = await _context.Users.Where(
                 u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
 
@@ -80,11 +80,42 @@ namespace LicentaWebApp.Server.Controllers
                     loggedInUser.OtpCode = OTPGenerator.GenerateOTP();
                     loggedInUser.OtpCreationTime=DateTime.Now;
                     _context.SaveChanges();
+                    
                     Console.WriteLine(loggedInUser.OtpCode);
-                    token = GenerateJwtToken(loggedInUser);
+                    SendOtpMail(loggedInUser.EmailAddress,loggedInUser.OtpCode);
+                    
+                    return await Task.FromResult(new AuthenticationResponse
+                        {Email = authenticationRequest.EmailAddress});
                 }
             }
       
+
+            return await Task.FromResult(new AuthenticationResponse() {Email = string.Empty});
+        }
+
+        [HttpPost]
+        [Route("authenticate-challenge")]
+        public async Task<ActionResult<AuthenticationResponse>> AuthenticateOtp
+            (AuthenticationRequest authenticationRequest)
+        {
+            var token = string.Empty;
+            var loggedInUser = await _context.Users.Where(
+                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
+            
+            if (loggedInUser != null)
+            {
+                if (authenticationRequest.OtpCode == loggedInUser.OtpCode)
+                {
+                    var now = DateTime.Now;
+                    var ts = now - loggedInUser.OtpCreationTime;
+                    if (ts.Seconds > 60)
+                    {
+                        return await Task.FromResult(new AuthenticationResponse() {Token = token});
+                    }
+                    
+                    token = GenerateJwtToken(loggedInUser);
+                }
+            }
 
             return await Task.FromResult(new AuthenticationResponse() {Token = token});
         }
@@ -159,12 +190,32 @@ namespace LicentaWebApp.Server.Controllers
                 return null;
             }
         }
-        
-        [HttpGet]
-        [Route("getuser/{id}")]
-        public async Task<User> GetUserById(int id)
+
+        private void SendOtpMail(string email, string otp)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            
+            string to = email;
+            const string from = "schnorrsign@gmail.com"; 
+            const string password = "Minge789?";
+            string mail = "Your otp code is: " + otp +".";
+            MailMessage message = new MailMessage();
+            message.To.Add(to);
+            message.From = new MailAddress(from);
+            message.Body = mail;
+            message.Subject = "Schnorr Sign authentication"; 
+            SmtpClient smtp = new SmtpClient("smtp.gmail.com");
+            smtp.EnableSsl = true;
+            smtp.Port = 587;
+            smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+            smtp.Credentials = new NetworkCredential(from, password);
+            try
+            {
+                smtp.Send(message);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
         
     }

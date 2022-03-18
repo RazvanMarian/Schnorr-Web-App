@@ -10,8 +10,9 @@ namespace LicentaWebApp.Client.ViewModels
         [EmailAddress]
         public string EmailAddress { get; set; }
         public string Password { get; set; }
-        
+        public string OtpCode { get; set; }
         
         public Task<AuthenticationResponse> AuthenticateJwt();
+        public Task<AuthenticationResponse> AuthenticateOtp();
     }
 }

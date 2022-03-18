@@ -8,11 +8,10 @@ namespace LicentaWebApp.Client.ViewModels
     {
         public int Id { get; set; }
         public string FirstName { get; set; }
-
         public string LastName { get; set; }
+        public string EmailAddress { get; set; }
+        public bool ValidOtp { get; set; }
 
-        public Task<List<User>> GetCompanyUsers();
-        public Task GetUser(int id);
-        
+
     }
 }

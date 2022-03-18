@@ -12,6 +12,7 @@ namespace LicentaWebApp.Client.ViewModels
         [EmailAddress]
         public string EmailAddress { get; set; }
         public string Password { get; set; }
+        public string OtpCode { get; set; }
 
         private readonly HttpClient _httpClient;
         public LoginViewModel()
@@ -37,6 +38,21 @@ namespace LicentaWebApp.Client.ViewModels
             
             return await httpMessageResponse.Content.ReadFromJsonAsync<AuthenticationResponse>();
         }
+
+        public async Task<AuthenticationResponse> AuthenticateOtp()
+        {
+            var authenticationRequest = new AuthenticationRequest
+            {
+                EmailAddress = this.EmailAddress,
+                OtpCode = this.OtpCode
+            };
+
+            var httpMessageResponse =
+                await _httpClient.
+                    PostAsJsonAsync<AuthenticationRequest>($"user/authenticate-challenge", authenticationRequest);
+            return await httpMessageResponse.Content.ReadFromJsonAsync<AuthenticationResponse>();
+        }
+
         public static implicit operator LoginViewModel(User user)
         {
             return new LoginViewModel

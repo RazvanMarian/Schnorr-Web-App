@@ -1,6 +1,5 @@
 @page "/Sign-Document"
 @using LicentaWebApp.Shared.Models
-@inject ViewModels.IUserViewModel _userViewModel
 @inject ISnackbar _snackbar
 @inject ViewModels.IKeyViewModel _keyViewModel
 @using System.IO
@@ -121,7 +120,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        CompanyUsers = await _userViewModel.GetCompanyUsers();
+        CompanyUsers = await _keyViewModel.GetCompanyUsers();
         await _keyViewModel.InitializeKeys();
     }
 

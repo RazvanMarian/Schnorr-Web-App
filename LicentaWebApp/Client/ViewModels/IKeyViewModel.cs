@@ -21,5 +21,6 @@ namespace LicentaWebApp.Client.ViewModels
         public Task<HttpResponseMessage> RenameKey(Key k);
 
         public Task<string> GenerateCertificate(Key k);
+        public Task<List<User>> GetCompanyUsers();
     }
 }
