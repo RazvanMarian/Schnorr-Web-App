@@ -364,4 +364,4 @@ FodyWeavers.xsd
 
 # My entries
 .idea
-./SchnorrSig/schnorlib.dll
+*.dll
