@@ -6,7 +6,7 @@
 
 
 <div style="max-width: 400px; margin: auto">
-    <MudText Typo="Typo.h3">Generate a key </MudText>
+    <MudText Align="Align.Center" Style="padding-bottom: 5rem" Typo="Typo.h3">Generate a key </MudText>
     <EditForm Model="@_keyViewModel" OnValidSubmit="OnClickFunction">
         <DataAnnotationsValidator/>
         <MudCard>
@@ -18,7 +18,7 @@
             </MudCardContent>
             <MudCardActions Style="justify-content: center">
                 <MudButton Disabled="@_processing" ButtonType="ButtonType.Submit"
-                           Variant="Variant.Filled" Color="Color.Primary">
+                           Variant="Variant.Filled">
                     @if (_processing)
                     {
                         <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
@@ -44,21 +44,23 @@
         if (_keyViewModel.Name == null)
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("You have to give a name to your key!", Severity.Error);_processing = false;
+            _snackbar.Add("You have to give a name to your key!", Severity.Error);
+            _processing = false;
             _processing = false;
             return;
         }
-        
+
         if (_keyViewModel.Name.Length > 20 || _keyViewModel.Description?.Length > 30)
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("Your key name is too long!", Severity.Error);_processing = false;
+            _snackbar.Add("Your key name is too long!", Severity.Error);
+            _processing = false;
             _processing = false;
             _keyViewModel.Name = null;
             _keyViewModel.Description = null;
             return;
         }
-   
+
         var result = await _keyViewModel.GenerateKey();
         if (result.IsSuccessStatusCode)
         {
@@ -70,7 +72,7 @@
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("Key generation failed!", Severity.Error);
         }
-        
+
         _processing = false;
         _keyViewModel.Name = null;
         _keyViewModel.Description = null;

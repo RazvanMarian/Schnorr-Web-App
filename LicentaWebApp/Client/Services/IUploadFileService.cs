@@ -14,5 +14,9 @@ namespace LicentaWebApp.Client.Services
         public Task<HttpResponseMessage> MultipleSignFile(IBrowserFile file, MultipleSignPayload payload);
 
         public Task<string> VerifyFile(IBrowserFile document, IBrowserFile signatureFile, IBrowserFile publicKeyFile);
+
+        public Task<string> GenerateOtpCode();
+
+        public Task<string> TestOtpCode(string otpCode);
     }
 }

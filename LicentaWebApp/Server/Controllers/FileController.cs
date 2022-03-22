@@ -121,6 +121,8 @@ namespace LicentaWebApp.Server.Controllers
                 if (payload.Users == null)
                     return await Task.FromResult<ActionResult<string>>(BadRequest("Failed"));
                 
+                Console.WriteLine("pe aici?");
+                
                 var currentUser = new User();
                 if (User.Identity is {IsAuthenticated: true})
                 {

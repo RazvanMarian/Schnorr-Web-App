@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
@@ -187,6 +188,70 @@ namespace LicentaWebApp.Server.Controllers
             }
             catch (Exception)
             {
+                return null;
+            }
+        }
+
+        [HttpPost]
+        [Route("generate-otp")]
+        public async Task<ActionResult<string>> GenerateOtp()
+        {
+            var currentUser = new User();
+            if (User.Identity is {IsAuthenticated: true})
+            {
+                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
+            var loggedInUser = await _context.Users.Where(
+                u => u.Id == currentUser.Id).FirstOrDefaultAsync();
+            
+            if(loggedInUser == null)
+                return BadRequest("Error finding the user");
+            
+            loggedInUser.OtpCode = OTPGenerator.GenerateOTP();
+            loggedInUser.OtpCreationTime = DateTime.Now;
+            Console.WriteLine(loggedInUser.OtpCode);
+            await _context.SaveChangesAsync();
+
+            return Ok("Success!");
+        }
+
+        [HttpPost]
+        [Route("test-otp")]
+        public async Task<ActionResult<string>> TestOtp([FromBody]string otpCode)
+        {
+            try
+            {
+                var currentUser = new User();
+                if (User.Identity is {IsAuthenticated: true})
+                {
+                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
+                
+                var loggedInUser = await _context.Users.Where(
+                    u => u.Id == currentUser.Id).FirstOrDefaultAsync();
+                
+                if(loggedInUser == null)
+                    return BadRequest("Error finding the user");
+                
+                Console.WriteLine(loggedInUser.OtpCode);
+                if (otpCode == loggedInUser.OtpCode)
+                {
+                    var now = DateTime.Now;
+                    var ts = now - loggedInUser.OtpCreationTime;
+                    if (ts.Seconds > 60)
+                    {
+                        return BadRequest("Otp code expired!");
+                    }
+
+                    return Ok("Success!");
+                }
+                return BadRequest("The code is not correct");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
                 return null;
             }
         }

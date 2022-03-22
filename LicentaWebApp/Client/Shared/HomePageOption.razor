@@ -1,11 +1,22 @@
-<MudCard Outlined="true" Style="min-width: 20rem; height: 35%;border: none; background-color: transparent">
-    <MudLink Href=@Path>
-    <MudCardMedia Image="@ImageSrc" Height="260"/>
-    </MudLink>
-    <MudCardActions Style="justify-content: center">
-        <MudLink Href="@Path" Underline="Underline.None" Color="Color.Default">@Text</MudLink>
-    </MudCardActions>
-</MudCard>
+<style>
+    .home-page-link:hover {
+        box-shadow: 0px 0px 12px #888888;
+        -webkit-transform: scale(1.05);
+        transform: scale(1.05);
+        -webkit-transition: .3s ease-in-out;
+        transition: .3s ease-in-out;
+    }
+</style>
+<div>
+    <MudCard Outlined="true" Style="min-width: 20rem; height: 35%;border: none; background-color: transparent" Class="home-page-link">
+        <MudLink Href=@Path>
+            <MudCardMedia Image="@ImageSrc" Height="260"/>
+        </MudLink>
+        <MudCardActions Style="justify-content: center">
+            <MudLink Href="@Path" Underline="Underline.None" Color="Color.Default">@Text</MudLink>
+        </MudCardActions>
+    </MudCard>
+</div>
 
 @code {
 
@@ -14,7 +25,7 @@
 
     [Parameter]
     public string ImageSrc { get; set; }
-    
+
     [Parameter]
     public string Path { get; set; }
 

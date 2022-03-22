@@ -1,0 +1,50 @@
+@inject IUploadFileService _uploadFileService
+@inject ISnackbar _snackbar
+
+<MudDialog>
+    <DialogContent>
+
+        <MudText Typo="Typo.h5" Align="Align.Center">@Seconds</MudText>
+        <MudTextField Label="Authentication code" @bind-Value="@InputValue" Style="text-align: center !important;"/>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit">Submit</MudButton>
+        <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    private string InputValue { get; set; }
+
+    int Seconds { get; set; } = 60;
+
+    protected override async Task OnInitializedAsync()
+    {
+        while (Seconds > 0)
+        {
+            await Task.Delay(1000);
+            Seconds--;
+            StateHasChanged();
+        }
+        MudDialog.Cancel();
+    }
+
+    async Task Submit()
+    {
+        var result = await _uploadFileService.TestOtpCode(InputValue.ToUpper());
+        if(result!=null)
+            MudDialog.Close(DialogResult.Ok(true));
+        else
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("The code is not correct!", Severity.Error);
+        }
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

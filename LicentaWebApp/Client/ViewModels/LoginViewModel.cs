@@ -70,7 +70,6 @@ namespace LicentaWebApp.Client.ViewModels
                 LastName = "last",
                 EmailAddress = loginViewModel.EmailAddress,
                 Password = loginViewModel.Password,
-                DateOfBirth = "fake_date"
             };
         }
     }

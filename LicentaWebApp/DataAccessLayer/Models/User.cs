@@ -17,7 +17,6 @@ namespace DataAccessLayer.Models
         [MaxLength(50)]
         public string LastName { get; set; }
         [Required]
-        [MaxLength(20)]
         public DateTime CreatedDate { get; set; }
         [Required]
         [MaxLength(100)]

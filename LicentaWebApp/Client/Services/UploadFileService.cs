@@ -70,7 +70,7 @@ namespace LicentaWebApp.Client.Services
             byte[] pdf = {0x25, 0x50, 0x44, 0x46};
             if (!payload.FileContent.Take(4).SequenceEqual(pdf))
                 return null;
-
+            
             var res = await _httpClient.PostAsJsonAsync("file/multiple-sign-request", payload);
             return res;
         }
@@ -118,6 +118,21 @@ namespace LicentaWebApp.Client.Services
 
             var result =await _httpClient.PostAsJsonAsync("file/verify-file", payload);
             return !result.IsSuccessStatusCode ? null : "Success";
+        }
+
+        public async Task<string> GenerateOtpCode()
+        {
+            var result = await _httpClient.PostAsync("user/generate-otp",null);
+            return !result.IsSuccessStatusCode ? null : "Success";
+        }
+
+        public async Task<string> TestOtpCode(string otpCode)
+        {
+            var result = await _httpClient.PostAsJsonAsync("user/test-otp", otpCode);
+            if (!result.IsSuccessStatusCode)
+                return null;
+            
+            return "Success!";
         }
     }
 }

@@ -7,6 +7,7 @@
 @inject ISnackbar _snackbar
 @inject IUserViewModel _userViewModel
 
+
 <img src="logo.png" alt="" style="margin: auto; display: block;  padding-bottom: 1rem; max-width: 30%"/>
 <div style="margin: auto; width: 33%">
     @if (TimePassed)
@@ -18,7 +19,7 @@
         <MudText Typo="Typo.h5" Align="Align.Center">@Seconds</MudText>
         <MudCard>
             <MudCardContent>
-                <MudTextField Label="Authentication code" @bind-Value="@InputValue"/>
+                <MudTextField Label="Authentication code" @bind-Value="@InputValue" Style="text-align: center !important;"/>
             </MudCardContent>
             <MudCardActions Style="justify-content: center">
                 <MudButton Disabled="@TimePassed"

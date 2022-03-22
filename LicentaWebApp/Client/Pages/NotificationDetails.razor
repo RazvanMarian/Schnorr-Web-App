@@ -4,6 +4,7 @@
 @inject IDialogService _dialogService
 @inject NavigationManager _navigationManager
 @inject ISnackbar _snackbar
+@inject IUploadFileService _uploadFileService
 @attribute [Authorize]
 
 <MudGrid Spacing="4" Style="height: 90vh">
@@ -64,6 +65,21 @@
 
     private async Task Sign()
     {
+        var resultOtpGeneration = await _uploadFileService.GenerateOtpCode();
+        if (resultOtpGeneration == null)
+        {
+            return;
+        }
+        
+        var dialogOtp = _dialogService.Show<SignDialog>("Prove your identity", new DialogOptions { DisableBackdropClick = true });
+        var dialogResult = await dialogOtp.Result;
+        if (dialogResult.Cancelled)
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("We could not verify your identity", Severity.Error);
+            return;
+        }
+        
         var parameter = new DialogParameters { ["Action"]="SIGN" };
         var dialog = _dialogService.Show<NotificationDialog>("Sign",parameter);
         var result = await dialog.Result;

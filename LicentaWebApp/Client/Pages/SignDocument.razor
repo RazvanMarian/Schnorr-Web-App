@@ -6,6 +6,7 @@
 @using LicentaWebApp.Shared.PayloadModels
 @inject IUploadFileService _uploadFileService
 @inject IJSRuntime _jsRuntime
+@inject IDialogService _dialog
 @attribute [Authorize]
 
 <style>
@@ -29,6 +30,7 @@
 </style>
 
 <MudGrid style="margin: auto; justify-content: center; width: 33%">
+    <MudText Style="padding-bottom: 3rem" Typo="Typo.h3">Sign a document </MudText>
     <MudItem xs="12">
         <MudSelect Label="Select a key" @bind-Value="SelectedKey"
                    AnchorOrigin="Origin.BottomCenter"
@@ -52,7 +54,7 @@
             }
         </MudSelect>
     </MudItem>
-    
+
     <MudItem xs="12">
         <MudPaper Class="drag-drop-zone">
 
@@ -75,7 +77,7 @@
 
 
             <MudItem>
-                <MudButton OnClick="OnClickFunction" Disabled="@_show" Color="Color.Primary" Variant="Variant.Filled"
+                <MudButton OnClick="OnClickFunction" Disabled="@_show" Variant="Variant.Filled"
                            Style="width: 6rem">
                     @if (_processing)
                     {
@@ -88,7 +90,7 @@
                 </MudButton>
             </MudItem>
             <MudItem>
-                <MudButton OnClick="Clear" Color="Color.Primary" Disabled="@(_show)" Variant="Variant.Filled"
+                <MudButton OnClick="Clear" Disabled="@(_show)" Variant="Variant.Filled"
                            Style="width: 6rem">
                     @if (_processing)
                     {
@@ -134,7 +136,6 @@
 
     private async Task OnClickFunction()
     {
-        
         _show = true;
         _processing = true;
 
@@ -142,27 +143,43 @@
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("You did not select a key!", Severity.Error);
-            _processing = false;
-            _fileName = null;
+            Clear();
             return;
         }
-
+        
+        var resultOtpGeneration = await _uploadFileService.GenerateOtpCode();
+        if (resultOtpGeneration == null)
+        {
+            Clear();
+            return;
+        }
+        
+        var dialog = _dialog.Show<SignDialog>("Prove your identity", new DialogOptions { DisableBackdropClick = true });
+        var dialogResult = await dialog.Result;
+        
+        
+        if (dialogResult.Cancelled)
+        {
+            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            _snackbar.Add("We could not verify your identity", Severity.Error);
+            Clear();
+            return;
+        }
+        
         if (!Options.Any())
         {
-            var result = await _uploadFileService.SignFile(_file, SelectedKey,_fileName);
-   
+            var result = await _uploadFileService.SignFile(_file, SelectedKey, _fileName);
             if (result != null)
             {
                 await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
                     "signature.plain");
                 _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("File uploaded", Severity.Success);
-                _fileName = null;
-                _processing = false;
-
+                Clear();
             }
             else
             {
+                Clear();
                 _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("File could not be uploaded!", Severity.Error);
             }
@@ -177,7 +194,6 @@
                     payload.Users.Add(user);
                 }
             }
-
 
             payload.UserKeyName = SelectedKey;
             payload.FileName = _fileName;
@@ -194,17 +210,13 @@
                 _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("Request for signing could not be sent!", Severity.Error);
             }
-
         }
-        
-        _fileName = null;
-        _processing = false;
-        SelectedKey = "";
-        Options = Enumerable.Empty<string>();
+        Clear();
     }
 
     void Clear()
     {
+        _processing = false;
         _fileName = null;
         _show = true;
         Options = Enumerable.Empty<string>();

@@ -16,7 +16,8 @@ else if (!Notifications.Any())
 }
 else
 {
-    <MudText Typo="Typo.h6">Requests that were just accepted</MudText>
+    <MudText Align="Align.Center" Style="padding-bottom: 5rem" Typo="Typo.h3">My History</MudText>
+    <MudText Typo="Typo.h6">Latest requests accepted</MudText>
     <MudExpansionPanels Style="padding-bottom: 2rem">
         @foreach (var notification in Notifications)
         {
@@ -42,7 +43,7 @@ else
 
     <MudDivider/>
 
-    <MudText Typo="Typo.h6">Notifications in pending</MudText>
+    <MudText Typo="Typo.h6">Documents in pending</MudText>
     <MudExpansionPanels Style="padding-top: 2rem; padding-bottom: 2rem">
         @foreach (var notification in Notifications)
         {
@@ -64,7 +65,7 @@ else
     <MudDivider/>
 
     <MudExpansionPanels Style="padding-top: 2rem">
-        <MudText Typo="Typo.h6">Notifications you have been involved in the past</MudText>
+        <MudText Typo="Typo.h6">Past documents that included you</MudText>
         @foreach (var notification in Notifications)
         {
             @if (notification.Status < 0)

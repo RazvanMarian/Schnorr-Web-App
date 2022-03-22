@@ -24,15 +24,6 @@
                                OnClick="() => { _open = !_open; }"/>
                 <MudSpacer/>
 
-                <MudText>
-                    Salutare
-                    @{
-                        System.Diagnostics.Debug.Assert(context.User.Identity != null,
-                            "context.User.Identity != null");
-                    }
-                    @context.User.Identity.Name
-                </MudText>
-
                 <MudTooltip Text="Notifications">
                     <NotificationButton Notifications="@Notifications" NotificationsNumber="@NotificationNumber"/>
                 </MudTooltip>
