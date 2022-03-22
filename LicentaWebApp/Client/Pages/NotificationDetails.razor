@@ -79,6 +79,7 @@
             _snackbar.Add("We could not verify your identity", Severity.Error);
             return;
         }
+        await Task.Delay(100);
         
         var parameter = new DialogParameters { ["Action"]="SIGN" };
         var dialog = _dialogService.Show<NotificationDialog>("Sign",parameter);

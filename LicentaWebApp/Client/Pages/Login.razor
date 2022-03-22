@@ -23,7 +23,7 @@
                               InputType="InputType.Password"/>
             </MudCardContent>
             <MudCardActions>
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                <MudButton Disabled="Processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
                            Class="ml-auto" Style="margin: auto">
                     Login
                 </MudButton>
@@ -37,10 +37,11 @@
 </div>
 
 @code {
-
+    private bool Processing { get; set; } = false;
 
     private async Task AuthenticateJwt()
     {
+        Processing = true;
         var authenticationResponse = await _loginViewModel.AuthenticateJwt();
         if (authenticationResponse.Email != string.Empty)
         {
@@ -53,6 +54,7 @@
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("Username or password are wrong!", Severity.Error);
         }
+        Processing = false;
     }
 
 

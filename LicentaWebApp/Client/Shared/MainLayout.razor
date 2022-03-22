@@ -157,7 +157,7 @@
     private async Task LogoutUser()
     {
         await _localStorageService.RemoveItemAsync("jwt_token");
-        _navigationManager.NavigateTo("/", true);
+        _navigationManager.NavigateTo("/Login", true);
     }
 
 }

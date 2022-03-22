@@ -123,7 +123,10 @@ namespace LicentaWebApp.Client.Services
         public async Task<string> GenerateOtpCode()
         {
             var result = await _httpClient.PostAsync("user/generate-otp",null);
-            return !result.IsSuccessStatusCode ? null : "Success";
+            
+            var content = await result.Content.ReadAsStringAsync();
+            
+            return !result.IsSuccessStatusCode ? null : content;
         }
 
         public async Task<string> TestOtpCode(string otpCode)
@@ -131,6 +134,7 @@ namespace LicentaWebApp.Client.Services
             var result = await _httpClient.PostAsJsonAsync("user/test-otp", otpCode);
             if (!result.IsSuccessStatusCode)
                 return null;
+            
             
             return "Success!";
         }

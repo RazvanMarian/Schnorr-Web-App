@@ -153,19 +153,22 @@
             Clear();
             return;
         }
-        
-        var dialog = _dialog.Show<SignDialog>("Prove your identity", new DialogOptions { DisableBackdropClick = true });
-        var dialogResult = await dialog.Result;
-        
-        
-        if (dialogResult.Cancelled)
+
+        if (resultOtpGeneration != "ALIVE")
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("We could not verify your identity", Severity.Error);
-            Clear();
-            return;
+            var dialog = _dialog.Show<SignDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
+            var dialogResult = await dialog.Result;
+
+
+            if (dialogResult.Cancelled)
+            {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                _snackbar.Add("We could not verify your identity", Severity.Error);
+                Clear();
+                return;
+            }
         }
-        
+
         if (!Options.Any())
         {
             var result = await _uploadFileService.SignFile(_file, SelectedKey, _fileName);

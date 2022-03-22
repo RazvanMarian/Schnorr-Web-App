@@ -208,8 +208,16 @@ namespace LicentaWebApp.Server.Controllers
             if(loggedInUser == null)
                 return BadRequest("Error finding the user");
             
+            var now = DateTime.Now;
+            var ts = now - loggedInUser.OtpCreationTime;
+            if (ts.Minutes < 30)
+            {
+                return Ok("ALIVE");
+            }
+            
             loggedInUser.OtpCode = OTPGenerator.GenerateOTP();
             loggedInUser.OtpCreationTime = DateTime.Now;
+            SendOtpMail(loggedInUser.EmailAddress,loggedInUser.OtpCode);
             Console.WriteLine(loggedInUser.OtpCode);
             await _context.SaveChangesAsync();
 
@@ -235,7 +243,6 @@ namespace LicentaWebApp.Server.Controllers
                 if(loggedInUser == null)
                     return BadRequest("Error finding the user");
                 
-                Console.WriteLine(loggedInUser.OtpCode);
                 if (otpCode == loggedInUser.OtpCode)
                 {
                     var now = DateTime.Now;
