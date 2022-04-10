@@ -6,8 +6,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
+using LicentaWebApp.Shared;
 using LicentaWebApp.Shared.PayloadModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -65,10 +67,32 @@ namespace LicentaWebApp.Server.Controllers
                 
                 if (!System.IO.File.Exists(key.PublicKeyPath))
                     return BadRequest("Error. The key file doesn't exist!");
+
+                var user = await _context.Users.AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.Id == currentUser.Id);
+                if (user == null)
+                    return BadRequest("Error");
+
+                var stringBuilder = new StringBuilder(key.PrivateKeyPath);
+                var tempPrv = stringBuilder.ToString();
+
+                stringBuilder = new StringBuilder(key.PublicKeyPath);
+                var tempPub = stringBuilder.ToString();
+                
+                stringBuilder = new StringBuilder(user.Password);
+                var tempPass = stringBuilder.ToString();
+                
+                
+                DecryptFile(key.PrivateKeyPath,user.Password);
+                DecryptFile(key.PublicKeyPath,user.Password);
                 
                 var result = Sign_Document(payload.Hash, key.PrivateKeyPath, key.PublicKeyPath);
                 if (result != 0)
                     return BadRequest("Error signing the document");
+                
+                
+                EncryptFile(tempPrv,tempPass);
+                EncryptFile(tempPub,tempPass);
                 
                 var notification = new Notification
                 {
@@ -84,6 +108,7 @@ namespace LicentaWebApp.Server.Controllers
                 };
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
+                
                 const string publicKeyFilePath = "/home/razvan/certificates/cert.pem";
                 await using (var fileInput = new FileStream(publicKeyFilePath, FileMode.Open, FileAccess.Read))
                 {
@@ -111,7 +136,43 @@ namespace LicentaWebApp.Server.Controllers
                 return StatusCode(500, $"Internal server error :{ex}");
             }
         }
+        
+        private void DecryptFile(string filepath,string password)
+        {
+            var fileContent = System.IO.File.ReadAllBytes(filepath);
+            var salt = new byte[]
+            {
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            };
+            var iv = new byte[]
+            {
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            };
+            var k1 = new Rfc2898DeriveBytes(Encoding.ASCII.GetBytes(password), salt, 512);
 
+            var encKey = k1.GetBytes(32);
+            var result = AesEncryptor.DecryptStringFromBytes_Aes(fileContent, encKey, iv);
+            System.IO.File.WriteAllText(filepath,result);
+        }
+        
+        private void EncryptFile(string filepath,string password)
+        {
+            var fileContent = System.IO.File.ReadAllText(filepath);
+            var salt = new byte[]
+            {
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            };
+            var iv = new byte[]
+            {
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            };
+            var k1 = new Rfc2898DeriveBytes(Encoding.ASCII.GetBytes(password), salt, 512);
+
+            var encKey = k1.GetBytes(32);
+            var result = AesEncryptor.EncryptStringToBytes_Aes(fileContent, encKey, iv);
+            System.IO.File.WriteAllBytes(filepath,result);
+        }
+        
         [HttpPost]
         [Route("multiple-sign-request")]
         public async Task<ActionResult<string>> MultipleSignDocumentRequest(MultipleSignPayload payload)
@@ -199,6 +260,7 @@ namespace LicentaWebApp.Server.Controllers
                 }
 
                 List<string> keys = new();
+                List<string> passwords = new();
                 foreach (var status in notification.UserStatusList)
                 {
                     var key = _context.Keys
@@ -210,12 +272,20 @@ namespace LicentaWebApp.Server.Controllers
                     if (!System.IO.File.Exists(key.PrivateKeyPath))
                         return BadRequest("Error. The key file doesn't exist!");
 
+                    var user =await _context.Users.FirstOrDefaultAsync(u => u.Id == status.NotifiedUserId);
+                    if (user == null)
+                        return BadRequest("Error. Signing user not found!");
+                    
+                    passwords.Add(user.Password);
                     keys.Add(key.PrivateKeyPath);
                 }
 
                 var currentUserKey = await _context.Keys.FirstOrDefaultAsync(k =>
                     k.UserId == currentUser.Id && k.Name == notification.SelectedKey);
                 keys.Add(currentUserKey?.PrivateKeyPath);
+
+                var currUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == currentUser.Id);
+                passwords.Add(currUser?.Password);
 
                 var path = "/home/razvan" + notification.FilePath;
                 string hashString;
@@ -227,10 +297,36 @@ namespace LicentaWebApp.Server.Controllers
                     hashString = BitConverter.ToString(hash).Replace("-", "").ToLower();
                 }
 
+                if (keys.Count == passwords.Count)
+                {
+                    for (int i = 0; i < keys.Count; i++)
+                    {
+                        var stringBuilder = new StringBuilder(keys[i]);
+                        var tempPrv = stringBuilder.ToString();
+                
+                        stringBuilder = new StringBuilder(passwords[i]);
+                        var tempPass = stringBuilder.ToString();
+                        DecryptFile(tempPrv,tempPass);
+                    }
+                }
+                
                 var result = Multiple_Sign(hashString, keys.ToArray(), keys.Count);
                 if (result != 0)
                     return BadRequest("Error signing the document!");
 
+                if (keys.Count == passwords.Count)
+                {
+                    for (var i = 0; i < keys.Count; i++)
+                    {
+                        var stringBuilder = new StringBuilder(keys[i]);
+                        var tempPrv = stringBuilder.ToString();
+                
+                        stringBuilder = new StringBuilder(passwords[i]);
+                        var tempPass = stringBuilder.ToString();
+                        EncryptFile(tempPrv,tempPass);
+                    }
+                }
+                
                 const string publicKeyFilePath = "/home/razvan/certificates/cert.pem";
                 await using (var fileInput = new FileStream(publicKeyFilePath, FileMode.Open, FileAccess.Read))
                 {

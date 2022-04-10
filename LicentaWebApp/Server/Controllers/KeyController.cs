@@ -1,7 +1,7 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -69,35 +69,16 @@ namespace LicentaWebApp.Server.Controllers
                 k.PublicKeyPath = publicFilename;
                 
                 var user = await _context.Users.Where(u => u.Id == currentUser.Id).FirstOrDefaultAsync();
-                if (user != null)
-                {
-                    var fileContent = await System.IO.File.ReadAllTextAsync(privateFilename);
-                    var salt = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-                    var iv = new byte[]
-                    {
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                    };
-                    var k1 = new Rfc2898DeriveBytes(Encoding.ASCII.GetBytes(user.Password), salt, 512);
-                    var k2=new Rfc2898DeriveBytes(Encoding.ASCII.GetBytes(user.Password), salt, 512);
-
-                    var encKey = k1.GetBytes(32);
-                    Console.WriteLine(Convert.ToBase64String(encKey));
-                    var result = AesEncryptor.EncryptStringToBytes_Aes(fileContent, encKey, iv);
-                    
-                    var decKey=k2.GetBytes(32);
-                    Console.WriteLine(Convert.ToBase64String(decKey));
-                    var res = AesEncryptor.DecryptStringFromBytes_Aes(result, decKey, iv);
-                    Console.WriteLine(res);
-                }
-
-                k.State = "active";
-                
-                if (user != null) user.Keys.Add(k);
-                else
-                {
+                if (user == null)
                     return BadRequest("Error");
-                }
-
+                
+                
+                EncryptFile(privateFilename,user.Password);
+                EncryptFile(publicFilename,user.Password);
+                
+                k.State = "active";
+                user.Keys.Add(k);
+                
                 await _context.SaveChangesAsync();
 
                 return Ok("Success");
@@ -106,6 +87,24 @@ namespace LicentaWebApp.Server.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex}");
             }
+        }
+
+        private void EncryptFile(string filepath,string password)
+        {
+            var fileContent = System.IO.File.ReadAllText(filepath);
+            var salt = new byte[]
+            {
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            };
+            var iv = new byte[]
+            {
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            };
+            var k1 = new Rfc2898DeriveBytes(Encoding.ASCII.GetBytes(password), salt, 512);
+
+            var encKey = k1.GetBytes(32);
+            var result = AesEncryptor.EncryptStringToBytes_Aes(fileContent, encKey, iv);
+            System.IO.File.WriteAllBytes(filepath,result);
         }
 
         [HttpGet]
@@ -178,15 +177,27 @@ namespace LicentaWebApp.Server.Controllers
                     currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 }
 
-
                 var key = _context.Keys.FirstOrDefault(key1 => key1.UserId == currentUser.Id && key1.Id == k.Id);
                 if (key == null) return BadRequest("Key doesn't exist!");
 
                 if (key.Name == k.Name && key.Description == k.Description)
                     return BadRequest("There is nothing new to this key!");
-
+                
+                var sha256 = SHA256.Create();
+                var keyNameHash=BitConverter.
+                    ToString(sha256.ComputeHash(Encoding.ASCII.GetBytes(k.Name)))
+                    .Replace("-", "").ToLower();
+                
+                var privateFilename = "/home/razvan/keys/" + keyNameHash + "_" + currentUser.Id + ".prv";
+                var publicFilename = "/home/razvan/keys/" + keyNameHash + "_" + currentUser.Id + ".pub";
+                
+                System.IO.File.Move(key.PrivateKeyPath,privateFilename);
+                System.IO.File.Move(key.PublicKeyPath,publicFilename);
+                
                 key.Name = k.Name;
                 key.Description = k.Description;
+                key.PrivateKeyPath = privateFilename;
+                key.PublicKeyPath = publicFilename;
                 await _context.SaveChangesAsync();
                 return Ok("Success");
             }

@@ -110,6 +110,8 @@ else if(_initialized)
             {
                 _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("Key could not be renamed !", Severity.Error);
+                await _keyViewModel.InitializeKeys();
+                StateHasChanged();
             }
         }
     }

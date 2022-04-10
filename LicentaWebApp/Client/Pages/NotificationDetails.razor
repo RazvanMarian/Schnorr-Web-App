@@ -70,17 +70,19 @@
         {
             return;
         }
-        
-        var dialogOtp = _dialogService.Show<SignDialog>("Prove your identity", new DialogOptions { DisableBackdropClick = true });
-        var dialogResult = await dialogOtp.Result;
-        if (dialogResult.Cancelled)
+        Console.WriteLine(resultOtpGeneration);
+        if (resultOtpGeneration != "ALIVE")
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("We could not verify your identity", Severity.Error);
-            return;
+            var dialogOtp = _dialogService.Show<SignDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
+            var dialogResult = await dialogOtp.Result;
+            if (dialogResult.Cancelled)
+            {
+                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                _snackbar.Add("We could not verify your identity", Severity.Error);
+                return;
+            }
+            await Task.Delay(100);
         }
-        await Task.Delay(100);
-        
         var parameter = new DialogParameters { ["Action"]="SIGN" };
         var dialog = _dialogService.Show<NotificationDialog>("Sign",parameter);
         var result = await dialog.Result;
