@@ -1,12 +1,16 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using DataAccessLayer.Models;
+using LicentaWebApp.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,8 +24,8 @@ namespace LicentaWebApp.Server.Controllers
     {
         [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int Generate(string privateFilename, string publicFilename);
-        
-        
+
+
         private readonly UserContext _context;
         public KeyController(UserContext context)
         {
@@ -48,9 +52,14 @@ namespace LicentaWebApp.Server.Controllers
 
                 if (keysName.Contains(k.Name))
                     return BadRequest("Key name already used!");
+                
+                var sha256 = SHA256.Create();
+                var keyNameHash=BitConverter.
+                    ToString(sha256.ComputeHash(Encoding.ASCII.GetBytes(k.Name)))
+                    .Replace("-", "").ToLower();
 
-                var privateFilename = "/home/razvan/keys/" + k.Name + "_" + currentUser.Id + ".prv";
-                var publicFilename = "/home/razvan/keys/" + k.Name + "_" + currentUser.Id + ".pub";
+                var privateFilename = "/home/razvan/keys/" + keyNameHash + "_" + currentUser.Id + ".prv";
+                var publicFilename = "/home/razvan/keys/" + keyNameHash + "_" + currentUser.Id + ".pub";
 
                 var returnCode = Generate(privateFilename, publicFilename);
                 if (returnCode != 0)
@@ -58,8 +67,31 @@ namespace LicentaWebApp.Server.Controllers
 
                 k.PrivateKeyPath = privateFilename;
                 k.PublicKeyPath = publicFilename;
-                k.State = "active";
+                
                 var user = await _context.Users.Where(u => u.Id == currentUser.Id).FirstOrDefaultAsync();
+                if (user != null)
+                {
+                    var fileContent = await System.IO.File.ReadAllTextAsync(privateFilename);
+                    var salt = new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                    var iv = new byte[]
+                    {
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                    };
+                    var k1 = new Rfc2898DeriveBytes(Encoding.ASCII.GetBytes(user.Password), salt, 512);
+                    var k2=new Rfc2898DeriveBytes(Encoding.ASCII.GetBytes(user.Password), salt, 512);
+
+                    var encKey = k1.GetBytes(32);
+                    Console.WriteLine(Convert.ToBase64String(encKey));
+                    var result = AesEncryptor.EncryptStringToBytes_Aes(fileContent, encKey, iv);
+                    
+                    var decKey=k2.GetBytes(32);
+                    Console.WriteLine(Convert.ToBase64String(decKey));
+                    var res = AesEncryptor.DecryptStringFromBytes_Aes(result, decKey, iv);
+                    Console.WriteLine(res);
+                }
+
+                k.State = "active";
+                
                 if (user != null) user.Keys.Add(k);
                 else
                 {

@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @inject IKeyViewModel _keyViewModel
 @inject ISnackbar _snackbar
+@inject NavigationManager _navigationManager
 @using LicentaWebApp.Client.ViewModels
 
 
@@ -66,6 +67,7 @@
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("Key generated successfully!", Severity.Success);
+            _navigationManager.NavigateTo("/User-Keys");
         }
         else
         {
