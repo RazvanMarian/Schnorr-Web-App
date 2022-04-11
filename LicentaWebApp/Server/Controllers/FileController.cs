@@ -87,12 +87,14 @@ namespace LicentaWebApp.Server.Controllers
                 DecryptFile(key.PublicKeyPath,user.Password);
                 
                 var result = Sign_Document(payload.Hash, key.PrivateKeyPath, key.PublicKeyPath);
+                
+                EncryptFile(tempPrv,tempPass);
+                EncryptFile(tempPub,tempPass);
                 if (result != 0)
                     return BadRequest("Error signing the document");
                 
                 
-                EncryptFile(tempPrv,tempPass);
-                EncryptFile(tempPub,tempPass);
+                
                 
                 var notification = new Notification
                 {

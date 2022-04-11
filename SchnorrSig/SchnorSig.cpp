@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iterator>
 #include "Certificates.cpp"
+#include "SignatureOutput.cpp"
 
 extern "C"
 {
@@ -59,8 +60,8 @@ extern "C"
             return -1;
         }
 
-        res = Create_Certificate(privateKey, pKey);
-        if (res != 0)
+        X509 *cert = Create_Certificate(privateKey, pKey);
+        if (cert == NULL)
         {
             std::cout << "Eroare la creare certificat!" << std::endl;
             return -1;
@@ -144,12 +145,18 @@ extern "C"
             return -1;
         }
 
-        res = Create_Certificate(sign_key, verify_key);
-        if (res != 0)
+        X509 *cert = Create_Certificate(sign_key, verify_key);
+        if (cert == NULL)
         {
-            std::cout << "Eroare la creare certificat!" << std::endl;
+            std::cout << "Eroare la creare certificat !" << std::endl;
             return -1;
         }
+
+        if (writeSignature(sig, cert) != 0)
+        {
+            printf("n a mers bine ceva!\n");
+        }
+
         return 0;
     }
 
@@ -161,7 +168,7 @@ extern "C"
         int res = SCHNORR_read_private_key(&private_key, privateFilename);
         if (res != 0)
         {
-            std::cout << "Eroare la citirea cheii private!" << std::endl;
+            std::cout << "Eroare la citirea cheii private !" << std::endl;
             return 1;
         }
 
@@ -172,8 +179,8 @@ extern "C"
             return 1;
         }
 
-        res = Create_Certificate(private_key, public_key);
-        if (res != 0)
+        X509 *cert = Create_Certificate(private_key, public_key);
+        if (cert == NULL)
         {
             std::cout << "Eroare la creare certificat!" << std::endl;
             return 1;
