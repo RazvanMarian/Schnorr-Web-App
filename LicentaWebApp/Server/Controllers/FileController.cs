@@ -34,7 +34,7 @@ namespace LicentaWebApp.Server.Controllers
         private static extern int Multiple_Sign(string hash, string[] privateKeys, int signersNumber);
         
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Verify_File(string hash, string signaturePath, string certificatePath);
+        private static extern int Verify_File(string hash, string signaturePath);
 
         private readonly UserContext _context;
 
@@ -92,10 +92,7 @@ namespace LicentaWebApp.Server.Controllers
                 EncryptFile(tempPub,tempPass);
                 if (result != 0)
                     return BadRequest("Error signing the document");
-                
-                
-                
-                
+
                 var notification = new Notification
                 {
                     IdInitiator = currentUser.Id,
@@ -120,7 +117,7 @@ namespace LicentaWebApp.Server.Controllers
                     notification.PublicKey = Convert.ToBase64String(buffer);
                 }
 
-                const string filePath = "/home/razvan/signatures/signature.plain";
+                const string filePath = "/home/razvan/signatures/signature.bin";
                 await using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
                     var memoryStream = new MemoryStream();
@@ -363,20 +360,13 @@ namespace LicentaWebApp.Server.Controllers
         {
             try
             {
-                var path = "/home/razvan/temp_files/signature.plain";
+                var path = "/home/razvan/temp_files/data.bin";
                 var fs = System.IO.File.Create(path);
                 fs.Write(payload.SignatureContent, 0,
                     payload.SignatureContent.Length);
                 fs.Close();
 
-                path = "/home/razvan/temp_files/cert.pem";
-                fs = System.IO.File.Create(path);
-                fs.Write(payload.CertificateContent, 0,
-                    payload.CertificateContent.Length);
-                fs.Close();
-
-                int result = Verify_File(payload.FileHash, "/home/razvan/temp_files/signature.plain",
-                    "/home/razvan/temp_files/cert.pem");
+                var result = Verify_File(payload.FileHash, "/home/razvan/temp_files/data.bin");
                 if (result != 0)
                     return BadRequest("Error verifying the signature");
 

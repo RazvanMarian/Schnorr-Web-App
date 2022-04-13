@@ -71,28 +71,6 @@
         </MudPaper>
     </MudItem>
 
-    <MudItem xs="12">
-        <MudText Typo="Typo.h5">Upload the certificate</MudText>
-    </MudItem>
-
-    <MudItem xs="12">
-        <MudPaper Class="drag-drop-zone">
-
-            <InputFile OnChange="OnChangeCertificate" class="drag-drop-input"/>
-
-            @if (_certificateFile == null)
-            {
-                <MudText Typo="Typo.h6">Upload file</MudText>
-            }
-            else
-            {
-                <MudItem @key="@_certificateFile">
-                    <MudChip Color="Color.Dark" Style="width:60px; overflow:hidden;" Text="@(Path.GetExtension(_certificateFile.Name))"/>
-                    @_certificateFile.Name
-                </MudItem>
-            }
-        </MudPaper>
-    </MudItem>
 </MudGrid>
 <MudGrid Justify="Justify.Center" Spacing="2" Style="padding-top: 2.5rem;max-width: 20rem;margin: auto; ">
     <MudItem>
@@ -128,36 +106,29 @@
 {
     IBrowserFile _documentFile;
     IBrowserFile _signatureFile;
-    IBrowserFile _certificateFile;
     bool _processing;
     bool _disabled = true;
 
     private void OnChangeDocument(InputFileChangeEventArgs e)
     {
         _documentFile = e.File;
-        if (_signatureFile != null && _certificateFile != null && _documentFile != null)
+        if (_signatureFile != null && _documentFile != null)
             _disabled = false;
 
     }
-
-    private void OnChangeCertificate(InputFileChangeEventArgs e)
-    {
-        _certificateFile = e.File;
-        if (_signatureFile != null && _certificateFile != null && _documentFile != null)
-            _disabled = false;
-    }
+    
 
     private void OnChangeSignature(InputFileChangeEventArgs e)
     {
         _signatureFile = e.File;
-        if (_signatureFile != null && _certificateFile != null && _documentFile != null)
+        if (_signatureFile != null  && _documentFile != null)
             _disabled = false;
     }
 
     private async Task UploadFiles()
     {
         _processing = true;
-        var res = await _uploadFileService.VerifyFile(_documentFile, _signatureFile, _certificateFile);
+        var res = await _uploadFileService.VerifyFile(_documentFile, _signatureFile);
 
         if (res != null)
         {
@@ -178,7 +149,6 @@
     {
         _signatureFile = null;
         _documentFile = null;
-        _certificateFile = null;
         _disabled = true;
     }
 }

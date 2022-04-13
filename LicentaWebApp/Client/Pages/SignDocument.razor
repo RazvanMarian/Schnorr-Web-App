@@ -175,7 +175,7 @@
             if (result != null)
             {
                 await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
-                    "signature.plain");
+                    "signature.bin");
                 _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
                 _snackbar.Add("File uploaded", Severity.Success);
                 Clear();

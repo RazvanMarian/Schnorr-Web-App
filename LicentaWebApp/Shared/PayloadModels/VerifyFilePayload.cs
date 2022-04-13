@@ -5,6 +5,4 @@ public class VerifyFilePayload
     public string FileHash { get; set; }
     
     public byte[] SignatureContent { get; set; }
-    
-    public byte[] CertificateContent { get; set; }
 }

@@ -131,7 +131,7 @@ else
             Notifications = await _notificationViewModel.GetAllNotifications();
             StateHasChanged();
             await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
-                "signature.plain");
+                "signature.bin");
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
             _snackbar.Add("The document was signed!", Severity.Success);
         }

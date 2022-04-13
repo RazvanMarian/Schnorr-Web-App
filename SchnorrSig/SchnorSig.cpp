@@ -117,20 +117,20 @@ extern "C"
             return -1;
         }
 
-        res = SCHNORR_write_signature(sig, "/home/razvan/signatures/signature.plain");
-        if (res != 0)
-        {
-            std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
-            return -1;
-        }
-        SCHNORR_SIG *aux_sig;
+        // res = SCHNORR_write_signature(sig, "/home/razvan/signatures/signature.plain");
+        // if (res != 0)
+        // {
+        //     std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
+        //     return -1;
+        // }
+        // SCHNORR_SIG *aux_sig;
 
-        res = SCHNORR_read_signature(aux_sig, "/home/razvan/signatures/signature.plain");
-        if (res != 0)
-        {
-            std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
-            return -1;
-        }
+        // res = SCHNORR_read_signature(aux_sig, "/home/razvan/signatures/signature.plain");
+        // if (res != 0)
+        // {
+        //     std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
+        //     return -1;
+        // }
 
         res = SCHNORR_read_public_key(&verify_key, publicFilename);
         if (res != 0)
@@ -138,23 +138,23 @@ extern "C"
             std::cout << "Eroare la citirea cheii private!" << std::endl;
             return -1;
         }
-        res = SCHNORR_verify(verify_key, hash, SHA256_DIGEST_LENGTH, aux_sig);
-        if (res != 0)
-        {
-            std::cout << "Eroare la verificare!" << std::endl;
-            return -1;
-        }
+        // res = SCHNORR_verify(verify_key, hash, SHA256_DIGEST_LENGTH, aux_sig);
+        // if (res != 0)
+        // {
+        //     std::cout << "Eroare la verificare!" << std::endl;
+        //     return -1;
+        // }
 
         X509 *cert = Create_Certificate(sign_key, verify_key);
         if (cert == NULL)
         {
-            std::cout << "Eroare la creare certificat !" << std::endl;
+            std::cout << "Eroare la creare certificat!" << std::endl;
             return -1;
         }
 
-        if (writeSignature(sig, cert) != 0)
+        if (write_signature(sig, cert) != 0)
         {
-            printf("n a mers bine ceva!\n");
+            printf("n a mers bine ceva !\n");
         }
 
         return 0;
@@ -182,7 +182,7 @@ extern "C"
         X509 *cert = Create_Certificate(private_key, public_key);
         if (cert == NULL)
         {
-            std::cout << "Eroare la creare certificat!" << std::endl;
+            std::cout << "Eroare la creare certificat !" << std::endl;
             return 1;
         }
 
@@ -192,17 +192,19 @@ extern "C"
         return 0;
     }
 
-    int Verify_File(const char *hash, const char *signatureFileName, const char *certificateFileName)
+    int Verify_File(const char *hash, const char *signatureFileName)
     {
         EC_KEY *key = NULL;
-        int res = Read_Public_Key_Certificate(&key, certificateFileName);
 
+        X509 *cert = X509_new();
+        SCHNORR_SIG *sig = SCHNORR_SIG_new();
+        int res = read_signature(signatureFileName, cert, sig);
         if (res != 0)
         {
             return -1;
         }
-        SCHNORR_SIG *sig = SCHNORR_SIG_new();
-        res = SCHNORR_read_signature(sig, signatureFileName);
+
+        res = Get_Public_Key_From_Certificate(&key, cert);
         if (res != 0)
         {
             return -1;
@@ -213,6 +215,7 @@ extern "C"
         {
             return -1;
         }
+
         SCHNORR_SIG_free(sig);
         return res;
     }

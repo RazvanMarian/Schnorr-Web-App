@@ -75,12 +75,11 @@ namespace LicentaWebApp.Client.Services
             return res;
         }
 
-        public async Task<string> VerifyFile(IBrowserFile document, IBrowserFile signatureFile,
-            IBrowserFile publicKeyFile)
+        public async Task<string> VerifyFile(IBrowserFile document, IBrowserFile signatureFile)
         {
             var sha256 = SHA256.Create();
 
-            if (document == null || signatureFile == null || publicKeyFile == null)
+            if (document == null || signatureFile == null)
             {
                 return null;
             }
@@ -101,21 +100,12 @@ namespace LicentaWebApp.Client.Services
                     .Replace("-", "").ToLower();
             }
 
-            if (signatureFile.Size != 64)
-                return null;
-            
             using (var ms = new MemoryStream())
             {
-                await signatureFile.OpenReadStream(64).CopyToAsync(ms);
+                await signatureFile.OpenReadStream().CopyToAsync(ms);
                 payload.SignatureContent = ms.ToArray();
             }
-
-            using (var ms = new MemoryStream())
-            {
-                await publicKeyFile.OpenReadStream(5 * megaBytes).CopyToAsync(ms);
-                payload.CertificateContent = ms.ToArray();
-            }
-
+            
             var result =await _httpClient.PostAsJsonAsync("file/verify-file", payload);
             return !result.IsSuccessStatusCode ? null : "Success";
         }

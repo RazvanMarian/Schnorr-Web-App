@@ -32,7 +32,7 @@ ASN1_SEQUENCE(Content) = {
 DECLARE_ASN1_FUNCTIONS(Content);
 IMPLEMENT_ASN1_FUNCTIONS(Content);
 
-int writeSignature(SCHNORR_SIG *signature, X509 *cert)
+int write_signature(SCHNORR_SIG *signature, X509 *cert)
 {
 
     if (cert == NULL || signature == NULL)
@@ -74,15 +74,59 @@ int writeSignature(SCHNORR_SIG *signature, X509 *cert)
     unsigned char *aux2 = buf;
     i2d_Content(content, &aux2);
 
-    for (int i = 0; i < len; i++)
-    {
-        printf("%x", buf[i]);
-    }
-    printf("\n");
-
-    FILE *fout = fopen("/home/razvan/temp_files/data.bin", "wb");
+    FILE *fout = fopen("/home/razvan/signatures/signature.bin", "wb");
     fwrite(buf, len, 1, fout);
     fclose(fout);
+
+    return 0;
+}
+
+int read_signature(const char *filename, X509 *cert, SCHNORR_SIG *signature)
+{
+    FILE *fin = fopen(filename, "rb");
+    if (fin == NULL)
+        return -1;
+
+    fseek(fin, 0, SEEK_END);
+    int length = ftell(fin);
+    rewind(fin);
+
+    unsigned char *buffer = (unsigned char *)malloc(sizeof(unsigned char) * length);
+
+    fread(buffer, 1, length, fin);
+    fclose(fin);
+
+    auto sig = SIG_new();
+    sig->r = ASN1_INTEGER_new();
+    sig->s = ASN1_INTEGER_new();
+
+    auto content = Content_new();
+    content->cert = ASN1_PRINTABLESTRING_new();
+    content->signature = sig;
+
+    d2i_Content(&content, (const unsigned char **)(&buffer), length);
+
+    BIGNUM *r = ASN1_INTEGER_to_BN(sig->r, NULL);
+
+    int res = SCHNORR_SIG_set_r(signature, r);
+    if (res != 0)
+    {
+        printf("Could not set r of the signature!\n");
+        return -1;
+    }
+    res = SCHNORR_SIG_set_s(signature, ASN1_INTEGER_to_BN(sig->s, NULL));
+    if (res != 0)
+    {
+        printf("Could not set s of the signature!\n");
+        return -1;
+    }
+
+    const unsigned char *x509_buffer = (const unsigned char *)ASN1_STRING_get0_data(content->cert);
+    int len = ASN1_STRING_length(content->cert);
+
+    d2i_X509(&cert, &x509_buffer, len);
+    if (cert == NULL)
+        return -1;
 
     return 0;
 }

@@ -21,7 +21,6 @@ public class Notification
     public string FilePath{ get; set; }
     [Required]
     public string FileName { get; set; }
-    [MaxLength(128)]
     public string Signature { get; set; }
     public string PublicKey { get; set; }
     [AllowNull]

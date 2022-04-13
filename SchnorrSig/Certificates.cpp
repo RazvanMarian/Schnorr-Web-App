@@ -268,3 +268,38 @@ int Read_Public_Key_Certificate(EC_KEY **key, const char *certificatePath)
 
     return 0;
 }
+
+int Get_Public_Key_From_Certificate(EC_KEY **key, X509 *cert)
+{
+
+    OpenSSL_add_all_algorithms();
+    ERR_load_BIO_strings();
+    ERR_load_crypto_strings();
+
+    EVP_PKEY *pkey = NULL;
+
+    if ((pkey = X509_get_pubkey(cert)) == NULL)
+    {
+        printf("Error getting public key from certificate\n");
+        return -1;
+    }
+
+    int result = EVP_PKEY_base_id(pkey);
+    if (result != EVP_PKEY_EC)
+    {
+        printf("The certificate does not contain an EC_KEY type of key\n");
+        return -1;
+    }
+
+    *key = EVP_PKEY_get1_EC_KEY(pkey);
+    if (*key == NULL)
+    {
+        printf("Error extracting the EC_KEY from the EVP_PKEY\n");
+        return -1;
+    }
+
+    X509_free(cert);
+    EVP_PKEY_free(pkey);
+
+    return 0;
+}
