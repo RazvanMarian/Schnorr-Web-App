@@ -147,7 +147,7 @@ else
         var result = await _notificationViewModel.DownloadSignature(notificationId);
         Console.WriteLine(result);
         if (!string.IsNullOrEmpty(result))
-            await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result, "signature.plain");
+            await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result, "signature.bin");
         else
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;

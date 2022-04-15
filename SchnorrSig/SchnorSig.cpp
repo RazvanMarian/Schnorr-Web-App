@@ -67,6 +67,12 @@ extern "C"
             return -1;
         }
 
+        if (write_signature(sig, cert) != 0)
+        {
+            std::cout << "Eroare la scrierea semnaturii!" << std::endl;
+            return -1;
+        }
+
         return 0;
     }
 
@@ -117,33 +123,12 @@ extern "C"
             return -1;
         }
 
-        // res = SCHNORR_write_signature(sig, "/home/razvan/signatures/signature.plain");
-        // if (res != 0)
-        // {
-        //     std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
-        //     return -1;
-        // }
-        // SCHNORR_SIG *aux_sig;
-
-        // res = SCHNORR_read_signature(aux_sig, "/home/razvan/signatures/signature.plain");
-        // if (res != 0)
-        // {
-        //     std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
-        //     return -1;
-        // }
-
         res = SCHNORR_read_public_key(&verify_key, publicFilename);
         if (res != 0)
         {
             std::cout << "Eroare la citirea cheii private!" << std::endl;
             return -1;
         }
-        // res = SCHNORR_verify(verify_key, hash, SHA256_DIGEST_LENGTH, aux_sig);
-        // if (res != 0)
-        // {
-        //     std::cout << "Eroare la verificare!" << std::endl;
-        //     return -1;
-        // }
 
         X509 *cert = Create_Certificate(sign_key, verify_key);
         if (cert == NULL)
@@ -154,7 +139,8 @@ extern "C"
 
         if (write_signature(sig, cert) != 0)
         {
-            printf("n a mers bine ceva !\n");
+            std::cout << "Eroare la scrierea semnaturii!" << std::endl;
+            return -1;
         }
 
         return 0;

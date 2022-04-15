@@ -335,7 +335,7 @@ namespace LicentaWebApp.Server.Controllers
                     notification.PublicKey = Convert.ToBase64String(buffer);
                 }
 
-                const string signatureFilePath = "/home/razvan/signatures/signature.plain";
+                const string signatureFilePath = "/home/razvan/signatures/signature.bin";
                 await using (var fileInput = new FileStream(signatureFilePath, FileMode.Open, FileAccess.Read))
                 {
                     var memoryStream = new MemoryStream();
