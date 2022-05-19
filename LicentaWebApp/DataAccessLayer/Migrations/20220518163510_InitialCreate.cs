@@ -30,13 +30,13 @@ namespace DataAccessLayer.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Password = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    DateOfBirth = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    DarkTheme = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EmailAddress = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    OtpCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OtpCreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CompanyId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -88,7 +88,9 @@ namespace DataAccessLayer.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Signature = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PublicKey = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>

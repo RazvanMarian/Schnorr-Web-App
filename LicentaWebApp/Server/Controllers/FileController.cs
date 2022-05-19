@@ -83,13 +83,13 @@ namespace LicentaWebApp.Server.Controllers
                 var tempPass = stringBuilder.ToString();
                 
                 
-                DecryptFile(key.PrivateKeyPath,user.Password);
-                DecryptFile(key.PublicKeyPath,user.Password);
+                Encryptor.DecryptFile(key.PrivateKeyPath,user.Password);
+                Encryptor.DecryptFile(key.PublicKeyPath,user.Password);
                 
                 var result = Sign_Document(payload.Hash, key.PrivateKeyPath, key.PublicKeyPath);
                 
-                EncryptFile(tempPrv,tempPass);
-                EncryptFile(tempPub,tempPass);
+                Encryptor.EncryptFile(tempPrv,tempPass);
+                Encryptor.EncryptFile(tempPub,tempPass);
                 if (result != 0)
                     return BadRequest("Error signing the document");
 
@@ -136,41 +136,6 @@ namespace LicentaWebApp.Server.Controllers
             }
         }
         
-        private void DecryptFile(string filepath,string password)
-        {
-            var fileContent = System.IO.File.ReadAllBytes(filepath);
-            var salt = new byte[]
-            {
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-            };
-            var iv = new byte[]
-            {
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-            };
-            var k1 = new Rfc2898DeriveBytes(Encoding.ASCII.GetBytes(password), salt, 512);
-
-            var encKey = k1.GetBytes(32);
-            var result = AesEncryptor.DecryptStringFromBytes_Aes(fileContent, encKey, iv);
-            System.IO.File.WriteAllText(filepath,result);
-        }
-        
-        private void EncryptFile(string filepath,string password)
-        {
-            var fileContent = System.IO.File.ReadAllText(filepath);
-            var salt = new byte[]
-            {
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-            };
-            var iv = new byte[]
-            {
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-            };
-            var k1 = new Rfc2898DeriveBytes(Encoding.ASCII.GetBytes(password), salt, 512);
-
-            var encKey = k1.GetBytes(32);
-            var result = AesEncryptor.EncryptStringToBytes_Aes(fileContent, encKey, iv);
-            System.IO.File.WriteAllBytes(filepath,result);
-        }
         
         [HttpPost]
         [Route("multiple-sign-request")]
@@ -305,7 +270,7 @@ namespace LicentaWebApp.Server.Controllers
                 
                         stringBuilder = new StringBuilder(passwords[i]);
                         var tempPass = stringBuilder.ToString();
-                        DecryptFile(tempPrv,tempPass);
+                        Encryptor.DecryptFile(tempPrv,tempPass);
                     }
                 }
                 
@@ -322,7 +287,7 @@ namespace LicentaWebApp.Server.Controllers
                 
                         stringBuilder = new StringBuilder(passwords[i]);
                         var tempPass = stringBuilder.ToString();
-                        EncryptFile(tempPrv,tempPass);
+                        Encryptor.EncryptFile(tempPrv,tempPass);
                     }
                 }
                 

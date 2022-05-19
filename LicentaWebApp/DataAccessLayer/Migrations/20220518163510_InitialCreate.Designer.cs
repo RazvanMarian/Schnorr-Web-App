@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20220316162929_2FAUserUpdate")]
-    partial class _2FAUserUpdate
+    [Migration("20220518163510_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -127,8 +127,7 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Signature")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -185,7 +184,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasMaxLength(20)
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EmailAddress")
