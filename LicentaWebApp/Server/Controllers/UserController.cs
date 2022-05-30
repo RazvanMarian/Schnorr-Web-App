@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
@@ -63,7 +64,28 @@ namespace LicentaWebApp.Server.Controllers
             return tokenHandler.WriteToken(token);
         }
 
-        [HttpPost("authenticate")]
+        [HttpPost("authenticate-credentials")]
+        public async Task<ActionResult<AuthenticationResponse>> AuthenticateCredentials(
+            AuthenticationRequest authenticationRequest)
+        {
+            var loggedInUser = await _context.Users.Where(
+                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
+            if (loggedInUser != null)
+            {
+                var passwordHasher = new PasswordHasher(new HashingOptions());
+                var res = passwordHasher
+                    .Check(loggedInUser.Password, authenticationRequest.Password);
+                if (res.Verified)
+                {
+                    return await Task.FromResult(new AuthenticationResponse
+                        {Email = authenticationRequest.EmailAddress});
+                }
+            }
+            
+            return await Task.FromResult(new AuthenticationResponse() {Email = string.Empty});
+        }
+
+        [HttpPost("authenticate-jwt")]
         public async Task<ActionResult<AuthenticationResponse>> AuthenticateJwt(
             AuthenticationRequest authenticationRequest)
         {
@@ -95,7 +117,7 @@ namespace LicentaWebApp.Server.Controllers
         }
 
         [HttpPost]
-        [Route("authenticate-challenge")]
+        [Route("authenticate-challenge-otp")]
         public async Task<ActionResult<AuthenticationResponse>> AuthenticateOtp
             (AuthenticationRequest authenticationRequest)
         {
@@ -121,6 +143,68 @@ namespace LicentaWebApp.Server.Controllers
             return await Task.FromResult(new AuthenticationResponse() {Token = token});
         }
 
+        [HttpPost("generate-card-code")]
+        public async Task<ActionResult<AuthenticationResponse>> GenerateCardCode(
+            AuthenticationRequest authenticationRequest)
+        {
+            var loggedInUser = await _context.Users.Where(
+                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
+
+            if (loggedInUser != null)
+            {
+                var passwordHasher = new PasswordHasher(new HashingOptions());
+                var res = passwordHasher
+                    .Check(loggedInUser.Password, authenticationRequest.Password);
+                if (res.Verified)
+                {
+                    
+                    loggedInUser.CardCodeCreationTime=DateTime.Now;
+                    _context.SaveChanges();
+
+                    var (code, helper) = CardCodeGenerator.GenerateCode(loggedInUser.Password);
+                    
+                    return await Task.FromResult(new AuthenticationResponse
+                        {Email = authenticationRequest.EmailAddress,helperCode = helper});
+                }
+            }
+      
+
+            return await Task.FromResult(new AuthenticationResponse() {Email = string.Empty});
+        }
+        
+        [HttpPost("authenticate-challenge-card")]
+        public async Task<ActionResult<AuthenticationResponse>> AuthenticateCard
+            (AuthenticationRequest authenticationRequest)
+        {
+            var token = string.Empty;
+            var loggedInUser = await _context.Users.Where(
+                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
+            
+            
+            if (loggedInUser != null)
+            {
+                var (code, helper) = CardCodeGenerator.GenerateCode(loggedInUser.Password);
+                
+                
+                authenticationRequest.SmartCardCode = authenticationRequest.SmartCardCode
+                    .Take(authenticationRequest.SmartCardCode.Length - 2).ToArray();
+                
+                
+                if ( authenticationRequest.SmartCardCode.SequenceEqual(code))
+                {
+                    var now = DateTime.Now;
+                    var ts = now - loggedInUser.CardCodeCreationTime;
+                    if (ts.Seconds > 60)
+                    {
+                        return await Task.FromResult(new AuthenticationResponse() {Token = token});
+                    }
+                    
+                    token = GenerateJwtToken(loggedInUser);
+                }
+            }
+
+            return await Task.FromResult(new AuthenticationResponse() {Token = token});
+        }
         
         
         [HttpPost("getuserbyjwt")]

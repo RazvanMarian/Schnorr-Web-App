@@ -8,5 +8,7 @@ namespace LicentaWebApp.Shared
         public string Password { get; set; }
         
         public string OtpCode { get; set; }
+        
+        public int[] SmartCardCode { get; set; }
     }
 }

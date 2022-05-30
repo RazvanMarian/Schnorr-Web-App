@@ -1,32 +1,44 @@
 @page "/Login"
 
 @using LicentaWebApp.Client.ViewModels
-@using Blazored.LocalStorage
-@inject ILoginViewModel _loginViewModel
-@inject NavigationManager _navigationManager
-@inject ISnackbar _snackbar
-@inject ILocalStorageService _localStorageService
-@inject IUserViewModel _userViewModel
+@using LicentaWebApp.Shared.Models
+@inject ILoginViewModel LoginViewModel
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IUserViewModel UserViewModel
+@inject IDialogService DialogService
 
 <div style="max-width: 400px; margin: auto">
 
     <img src="logo.png" alt="" style="margin: auto; display: block;  padding-bottom: 1rem; max-width: 100%"/>
-    <EditForm Model="@_loginViewModel" OnValidSubmit="AuthenticateJwt">
+    <EditForm Model="@LoginViewModel" OnValidSubmit="AuthenticateJwt">
 
         <DataAnnotationsValidator/>
         <MudCard>
             <MudCardContent>
                 <MudTextField Label="Email" Class="mt-3"
-                              @bind-Value="_loginViewModel.EmailAddress" For="@(() => _loginViewModel.EmailAddress)"/>
+                              @bind-Value="LoginViewModel.EmailAddress" For="@(() => LoginViewModel.EmailAddress)"/>
                 <MudTextField Label="Password" HelperText="I hope you did not forget your password.." Class="mt-3"
-                              @bind-Value="_loginViewModel.Password" For="@(() => _loginViewModel.Password)"
+                              @bind-Value="LoginViewModel.Password" For="@(() => LoginViewModel.Password)"
                               InputType="InputType.Password"/>
             </MudCardContent>
             <MudCardActions>
+                
+                
                 <MudButton Disabled="Processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
                            Class="ml-auto" Style="margin: auto">
-                    Login
+                    
+                    @if (!Processing)
+                    {
+                        <MudText>Login</MudText>
+                    }
+                    else
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                        <MudText Style="margin-left: 0.5rem">Log in</MudText>
+                    }
                 </MudButton>
+                
             </MudCardActions>
         </MudCard>
         <MudText Typo="Typo.body2" Align="Align.Center" Class="my-4">
@@ -42,20 +54,60 @@
     private async Task AuthenticateJwt()
     {
         Processing = true;
-        var authenticationResponse = await _loginViewModel.AuthenticateJwt();
+        var authenticationResponse = await LoginViewModel.AuthenticateCredentials();
         if (authenticationResponse.Email != string.Empty)
         {
-            _userViewModel.EmailAddress = authenticationResponse.Email;
-            _userViewModel.ValidOtp = true;
-            _navigationManager.NavigateTo("/Login/Challenge");
+            var dialog = OpenDialog();
+            var dialogResult = await dialog.Result;
+
+            if (dialogResult.Cancelled)
+            {
+                Clear();
+                return;
+            }
+            if (dialogResult.Data.ToString() == "email")
+            {
+                authenticationResponse = await LoginViewModel.AuthenticateJwt();
+                if (authenticationResponse.Email != string.Empty)
+                {
+                    UserViewModel.EmailAddress = authenticationResponse.Email;
+                    UserViewModel.ValidOtp = true;
+                    NavigationManager.NavigateTo("/Login/Challenge");
+                }
+            }
+
+            if (dialogResult.Data.ToString() == "card")
+            {
+                authenticationResponse = await LoginViewModel.GenerateCardCode();
+                
+                if (authenticationResponse.Email != string.Empty)
+                {
+                    UserViewModel.EmailAddress = authenticationResponse.Email;
+                    UserViewModel.ValidSmartCard = true;
+                    UserViewModel.SmartCardCode = authenticationResponse.helperCode;
+                    NavigationManager.NavigateTo("/Login/Card-Challenge");
+                }
+            }
         }
         else
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("Username or password are wrong!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Username or password are wrong!", Severity.Error);
         }
-        Processing = false;
+        Clear();
     }
 
-
+    private void Clear()
+    {
+        LoginViewModel.EmailAddress = "";
+        LoginViewModel.Password = "";
+        Processing = false;
+    }
+    
+    
+    private IDialogReference OpenDialog()
+    {
+        return DialogService.Show<LoginDialog>("Simple Dialog", new DialogOptions {DisableBackdropClick = true});
+    }
+    
 }

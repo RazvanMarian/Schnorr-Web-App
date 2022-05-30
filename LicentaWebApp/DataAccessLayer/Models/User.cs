@@ -24,6 +24,7 @@ namespace DataAccessLayer.Models
         public string EmailAddress { get; set; }
         public string OtpCode { get; set; }
         public DateTime OtpCreationTime { get; set; }
+        public DateTime CardCodeCreationTime { get; set; }
         public List<Key> Keys { get; set; } = new List<Key>();
         [Required]
         public Company Company { get; set; } = new Company();

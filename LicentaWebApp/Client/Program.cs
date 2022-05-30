@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
@@ -55,7 +56,6 @@ namespace LicentaWebApp.Client
             //authentication http clients
             builder.Services.AddHttpClient<ILoginViewModel, LoginViewModel>
                 ("LoginViewModelClient", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
-            
         }
     }
 }

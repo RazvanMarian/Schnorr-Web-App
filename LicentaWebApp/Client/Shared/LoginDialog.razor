@@ -1,0 +1,44 @@
+<MudDialog Style="max-width: 20rem">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Login" Class="mr-3 mb-n1"/>
+            Choose your two factor authentication method
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper>
+            <MudList Clickable="true">
+                <MudListItem Icon="@Icons.Material.Filled.Mail" OnClick="EmailAuth">
+                    E-mail code
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.CreditCard" OnClick="CardAuth">
+                    Smart card
+                </MudListItem>
+            </MudList>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void EmailAuth()
+    {
+        MudDialog.Close(DialogResult.Ok("email"));
+    }
+
+    private void CardAuth()
+    {
+        MudDialog.Close(DialogResult.Ok("card"));
+    }
+
+}

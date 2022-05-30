@@ -11,6 +11,8 @@ namespace LicentaWebApp.Client.ViewModels
         public string LastName { get; set; }
         public string EmailAddress { get; set; }
         public bool ValidOtp { get; set; }
+        public bool ValidSmartCard { get; set; }
+        public int[] SmartCardCode { get; set; }
 
 
     }

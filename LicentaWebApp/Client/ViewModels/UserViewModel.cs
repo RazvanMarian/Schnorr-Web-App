@@ -13,6 +13,8 @@ namespace LicentaWebApp.Client.ViewModels
         public string LastName { get; set; }
         public string EmailAddress { get; set; }
         public bool ValidOtp { get; set; } = false;
+        public bool ValidSmartCard { get; set; } = false;
+        public int[] SmartCardCode { get; set; }
         public Company Company { get; set; }
 
         private void LoadCurrentObject(UserViewModel user)
