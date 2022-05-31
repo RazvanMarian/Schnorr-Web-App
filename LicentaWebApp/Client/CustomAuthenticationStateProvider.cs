@@ -49,7 +49,7 @@ namespace LicentaWebApp.Client
                 if (jwtToken == null)
                     return null;
 
-                var requestMessage = new HttpRequestMessage(HttpMethod.Post, "user/getuserbyjwt");
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, "user/get-user-by-jwt");
                 requestMessage.Content = new StringContent(jwtToken);
 
                 requestMessage.Content.Headers.ContentType

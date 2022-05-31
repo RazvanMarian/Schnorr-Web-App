@@ -1,17 +1,17 @@
 @page "/User-Keys"
 @using LicentaWebApp.Client.ViewModels
 @using LicentaWebApp.Shared.Models
-@inject IKeyViewModel _keyViewModel
-@inject IDialogService _dialogService
-@inject ISnackbar _snackbar
-@inject IJSRuntime _jsRuntime
+@inject IKeyViewModel KeyViewModel
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
 @attribute [Authorize]
 
 
-@if (_keyViewModel.Keys.Any())
+@if (KeyViewModel.Keys.Any())
 {
     <MudGrid Spacing="2" Justify="Justify.FlexStart">
-        @foreach (var k in _keyViewModel.Keys)
+        @foreach (var k in KeyViewModel.Keys)
         {
             <MudItem xs="3" Style="min-width: 20rem">
                 <MudCard>
@@ -57,7 +57,7 @@ else if(_initialized)
     private bool _initialized;
     protected override async Task OnInitializedAsync()
     {
-        await _keyViewModel.InitializeKeys();
+        await KeyViewModel.InitializeKeys();
         _initialized = true;
     }
     
@@ -66,23 +66,23 @@ else if(_initialized)
     {
         var parameters = new DialogParameters { ["key"]=key };
 
-        var dialog = _dialogService.Show<KeyDialog>("Delete Key", parameters);
+        var dialog = DialogService.Show<KeyDialog>("Delete Key", parameters);
         var result = await dialog.Result;
 
         if (!result.Cancelled)
         {
-            var res = await _keyViewModel.DeleteKey(key);
+            var res = await KeyViewModel.DeleteKey(key);
             if (res.IsSuccessStatusCode)
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("Key Deleted", Severity.Success);
-                await _keyViewModel.InitializeKeys();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Key Deleted", Severity.Success);
+                await KeyViewModel.InitializeKeys();
                 StateHasChanged();
             }
             else
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("Key could not be deleted!", Severity.Error);
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Key could not be deleted!", Severity.Error);
             }
         }
     }
@@ -91,26 +91,26 @@ else if(_initialized)
     {
         var parameters = new DialogParameters { ["key"]=key };
 
-        var dialog = _dialogService.Show<KeyRenameDialog>("Rename key", parameters);
+        var dialog = DialogService.Show<KeyRenameDialog>("Rename key", parameters);
         var result = await dialog.Result;
 
 
         if (!result.Cancelled)
         {
             
-            var res = await _keyViewModel.RenameKey(key);
+            var res = await KeyViewModel.RenameKey(key);
             if (res.IsSuccessStatusCode)
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("Key renamed", Severity.Success);
-                await _keyViewModel.InitializeKeys();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Key renamed", Severity.Success);
+                await KeyViewModel.InitializeKeys();
                 StateHasChanged();
             }
             else
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("Key could not be renamed !", Severity.Error);
-                await _keyViewModel.InitializeKeys();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Key could not be renamed !", Severity.Error);
+                await KeyViewModel.InitializeKeys();
                 StateHasChanged();
             }
         }
@@ -118,17 +118,17 @@ else if(_initialized)
     
     async Task ExportKey(Key key)
     {
-        var res = await _keyViewModel.GenerateCertificate(key);
+        var res = await KeyViewModel.GenerateCertificate(key);
         if (res!="ERROR")
         {
-            await _jsRuntime.InvokeVoidAsync("downloadFile", "application/x-pem-file",res,"cert.pem");
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("Key exported!", Severity.Success);
+            await JsRuntime.InvokeVoidAsync("downloadFile", "application/x-pem-file",res,"cert.pem");
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Key exported!", Severity.Success);
         }
         else
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("Key could not be exported!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Key could not be exported!", Severity.Error);
         }
     }
 }

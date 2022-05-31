@@ -1,9 +1,9 @@
 @page "/Activity"
 @using LicentaWebApp.Shared.Models
 @using System.Security.Claims
-@inject ViewModels.INotificationViewModel _notificationViewModel
-@inject ISnackbar _snackbar
-@inject IJSRuntime _jsRuntime
+@inject ViewModels.INotificationViewModel NotificationViewModel
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
 @attribute [Authorize]
 
 @if (Notifications == null)
@@ -120,51 +120,51 @@ else
             if (claim != null) UserId = int.Parse(claim.Value);
         }
 
-        Notifications = await _notificationViewModel.GetAllNotifications();
+        Notifications = await NotificationViewModel.GetAllNotifications();
     }
 
     private async Task OnClickFunction(int notificationId)
     {
-        var result = await _notificationViewModel.MultipleSignFinish(notificationId);
+        var result = await NotificationViewModel.MultipleSignFinish(notificationId);
         if (result != null)
         {
-            Notifications = await _notificationViewModel.GetAllNotifications();
+            Notifications = await NotificationViewModel.GetAllNotifications();
             StateHasChanged();
-            await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
+            await JsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
                 "signature.bin");
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("The document was signed!", Severity.Success);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("The document was signed!", Severity.Success);
         }
         else
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("The document could not be signed!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("The document could not be signed!", Severity.Error);
         }
     }
 
     private async Task DownloadSignature(int notificationId)
     {
-        var result = await _notificationViewModel.DownloadSignature(notificationId);
+        var result = await NotificationViewModel.DownloadSignature(notificationId);
         Console.WriteLine(result);
         if (!string.IsNullOrEmpty(result))
-            await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result, "signature.bin");
+            await JsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result, "signature.bin");
         else
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("The signature could not be downloaded!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("The signature could not be downloaded!", Severity.Error);
         }
     }
 
     private async Task DownloadCertificate(int notificationId)
     {
-        var result = await _notificationViewModel.DownloadCertificate(notificationId);
+        var result = await NotificationViewModel.DownloadCertificate(notificationId);
         Console.WriteLine(result);
         if (!string.IsNullOrEmpty(result))
-            await _jsRuntime.InvokeVoidAsync("downloadFile", "application/x-pem-file", result, "cert.pem");
+            await JsRuntime.InvokeVoidAsync("downloadFile", "application/x-pem-file", result, "cert.pem");
         else
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("The certificate could not be exported!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("The certificate could not be exported!", Severity.Error);
         }
     }
 

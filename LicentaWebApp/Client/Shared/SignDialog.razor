@@ -1,5 +1,6 @@
-@inject IUploadFileService _uploadFileService
-@inject ISnackbar _snackbar
+@using System.Buffers
+@inject IUploadFileService UploadFileService
+@inject ISnackbar Snackbar
 
 <MudDialog>
     <DialogContent>
@@ -25,6 +26,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var result = await UploadFileService.GenerateOtpCode();
+        if (result == "Error")
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Error generating otp code!", Severity.Error);
+            MudDialog.Cancel();
+        }
         while (Seconds > 0)
         {
             await Task.Delay(1000);
@@ -36,13 +44,13 @@
 
     async Task Submit()
     {
-        var result = await _uploadFileService.TestOtpCode(InputValue.ToUpper());
+        var result = await UploadFileService.TestOtpCode(InputValue.ToUpper());
         if(result!=null)
             MudDialog.Close(DialogResult.Ok(true));
         else
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("The code is not correct!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("The code is not correct!", Severity.Error);
         }
     }
 

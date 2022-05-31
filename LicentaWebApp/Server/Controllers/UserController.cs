@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Mail;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
@@ -68,50 +66,66 @@ namespace LicentaWebApp.Server.Controllers
         public async Task<ActionResult<AuthenticationResponse>> AuthenticateCredentials(
             AuthenticationRequest authenticationRequest)
         {
-            var loggedInUser = await _context.Users.Where(
-                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
-            if (loggedInUser != null)
+            try
             {
-                var passwordHasher = new PasswordHasher(new HashingOptions());
-                var res = passwordHasher
-                    .Check(loggedInUser.Password, authenticationRequest.Password);
-                if (res.Verified)
+                var loggedInUser = await _context.Users.Where(
+                    u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
+                if (loggedInUser != null)
                 {
-                    return await Task.FromResult(new AuthenticationResponse
-                        {Email = authenticationRequest.EmailAddress});
+                    var passwordHasher = new PasswordHasher(new HashingOptions());
+                    var res = passwordHasher
+                        .Check(loggedInUser.Password, authenticationRequest.Password);
+                    if (res.Verified)
+                    {
+                        return await Task.FromResult(new AuthenticationResponse
+                            { Email = authenticationRequest.EmailAddress });
+                    }
                 }
             }
-            
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
+
             return await Task.FromResult(new AuthenticationResponse() {Email = string.Empty});
         }
 
-        [HttpPost("authenticate-jwt")]
-        public async Task<ActionResult<AuthenticationResponse>> AuthenticateJwt(
+        [HttpPost("authenticate-generate-otp")]
+        public async Task<ActionResult<AuthenticationResponse>> AuthenticateGenerateOtp(
             AuthenticationRequest authenticationRequest)
         {
-            var loggedInUser = await _context.Users.Where(
-                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
-
-            if (loggedInUser != null)
+            try
             {
-                var passwordHasher = new PasswordHasher(new HashingOptions());
-                var res = passwordHasher
-                    .Check(loggedInUser.Password, authenticationRequest.Password);
-                if (res.Verified)
+                var loggedInUser = await _context.Users.Where(
+                    u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
+
+                if (loggedInUser != null)
                 {
-                    
-                    loggedInUser.OtpCode = OTPGenerator.GenerateOTP();
-                    loggedInUser.OtpCreationTime=DateTime.Now;
-                    _context.SaveChanges();
-                    
-                    Console.WriteLine(loggedInUser.OtpCode);
-                    SendOtpMail(loggedInUser.EmailAddress,loggedInUser.OtpCode);
-                    
-                    return await Task.FromResult(new AuthenticationResponse
-                        {Email = authenticationRequest.EmailAddress});
+                    var passwordHasher = new PasswordHasher(new HashingOptions());
+                    var res = passwordHasher
+                        .Check(loggedInUser.Password, authenticationRequest.Password);
+                    if (res.Verified)
+                    {
+
+                        loggedInUser.OtpCode = OTPGenerator.GenerateOTP();
+                        loggedInUser.OtpCreationTime = DateTime.Now;
+                        _context.SaveChanges();
+
+                        Console.WriteLine(loggedInUser.OtpCode);
+                        SendOtpMail(loggedInUser.EmailAddress, loggedInUser.OtpCode);
+
+                        return await Task.FromResult(new AuthenticationResponse
+                            { Email = authenticationRequest.EmailAddress });
+                    }
                 }
             }
-      
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
+
 
             return await Task.FromResult(new AuthenticationResponse() {Email = string.Empty});
         }
@@ -122,22 +136,30 @@ namespace LicentaWebApp.Server.Controllers
             (AuthenticationRequest authenticationRequest)
         {
             var token = string.Empty;
-            var loggedInUser = await _context.Users.Where(
-                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
-            
-            if (loggedInUser != null)
+            try
             {
-                if (authenticationRequest.OtpCode == loggedInUser.OtpCode)
+                var loggedInUser = await _context.Users.Where(
+                    u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
+
+                if (loggedInUser != null)
                 {
-                    var now = DateTime.Now;
-                    var ts = now - loggedInUser.OtpCreationTime;
-                    if (ts.Seconds > 60)
+                    if (authenticationRequest.OtpCode == loggedInUser.OtpCode)
                     {
-                        return await Task.FromResult(new AuthenticationResponse() {Token = token});
+                        var now = DateTime.Now;
+                        var ts = now - loggedInUser.OtpCreationTime;
+                        if (ts.Seconds > 60)
+                        {
+                            return await Task.FromResult(new AuthenticationResponse() { Token = token });
+                        }
+
+                        token = GenerateJwtToken(loggedInUser);
                     }
-                    
-                    token = GenerateJwtToken(loggedInUser);
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
             }
 
             return await Task.FromResult(new AuthenticationResponse() {Token = token});
@@ -147,27 +169,34 @@ namespace LicentaWebApp.Server.Controllers
         public async Task<ActionResult<AuthenticationResponse>> GenerateCardCode(
             AuthenticationRequest authenticationRequest)
         {
-            var loggedInUser = await _context.Users.Where(
-                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
-
-            if (loggedInUser != null)
+            try
             {
-                var passwordHasher = new PasswordHasher(new HashingOptions());
-                var res = passwordHasher
-                    .Check(loggedInUser.Password, authenticationRequest.Password);
-                if (res.Verified)
-                {
-                    
-                    loggedInUser.CardCodeCreationTime=DateTime.Now;
-                    _context.SaveChanges();
+                var loggedInUser = await _context.Users.Where(
+                    u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
 
-                    var (code, helper) = CardCodeGenerator.GenerateCode(loggedInUser.Password);
-                    
-                    return await Task.FromResult(new AuthenticationResponse
-                        {Email = authenticationRequest.EmailAddress,helperCode = helper});
+                if (loggedInUser != null)
+                {
+                    var passwordHasher = new PasswordHasher(new HashingOptions());
+                    var res = passwordHasher
+                        .Check(loggedInUser.Password, authenticationRequest.Password);
+                    if (res.Verified)
+                    {
+
+                        loggedInUser.CardCodeCreationTime = DateTime.Now;
+                        _context.SaveChanges();
+
+                        var (_, helper) = CardCodeGenerator.GenerateCode(loggedInUser.Password);
+
+                        return await Task.FromResult(new AuthenticationResponse
+                            { Email = authenticationRequest.EmailAddress, helperCode = helper });
+                    }
                 }
             }
-      
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
 
             return await Task.FromResult(new AuthenticationResponse() {Email = string.Empty});
         }
@@ -177,37 +206,45 @@ namespace LicentaWebApp.Server.Controllers
             (AuthenticationRequest authenticationRequest)
         {
             var token = string.Empty;
-            var loggedInUser = await _context.Users.Where(
-                u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
-            
-            
-            if (loggedInUser != null)
+            try
             {
-                var (code, helper) = CardCodeGenerator.GenerateCode(loggedInUser.Password);
-                
-                
-                authenticationRequest.SmartCardCode = authenticationRequest.SmartCardCode
-                    .Take(authenticationRequest.SmartCardCode.Length - 2).ToArray();
-                
-                
-                if ( authenticationRequest.SmartCardCode.SequenceEqual(code))
+                var loggedInUser = await _context.Users.Where(
+                    u => u.EmailAddress == authenticationRequest.EmailAddress).FirstOrDefaultAsync();
+
+
+                if (loggedInUser != null)
                 {
-                    var now = DateTime.Now;
-                    var ts = now - loggedInUser.CardCodeCreationTime;
-                    if (ts.Seconds > 60)
+                    var (code, _) = CardCodeGenerator.GenerateCode(loggedInUser.Password);
+
+
+                    authenticationRequest.SmartCardCode = authenticationRequest.SmartCardCode
+                        .Take(authenticationRequest.SmartCardCode.Length - 2).ToArray();
+
+
+                    if (authenticationRequest.SmartCardCode.SequenceEqual(code))
                     {
-                        return await Task.FromResult(new AuthenticationResponse() {Token = token});
+                        var now = DateTime.Now;
+                        var ts = now - loggedInUser.CardCodeCreationTime;
+                        if (ts.TotalSeconds > 60)
+                        {
+                            return await Task.FromResult(new AuthenticationResponse() { Token = token });
+                        }
+
+                        token = GenerateJwtToken(loggedInUser);
                     }
-                    
-                    token = GenerateJwtToken(loggedInUser);
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
             }
 
             return await Task.FromResult(new AuthenticationResponse() {Token = token});
         }
         
         
-        [HttpPost("getuserbyjwt")]
+        [HttpPost("get-user-by-jwt")]
         public async Task<ActionResult<User>> GetUserByJwt([FromBody] string jwtToken)
         {
             try
@@ -246,10 +283,9 @@ namespace LicentaWebApp.Server.Controllers
             return null;
         }
         
-        
         [HttpGet]
         [Authorize]
-        [Route("getcompanyusers")]
+        [Route("get-company-users")]
         public async Task<List<User>> GetCompanyUsers()
         {
             try
@@ -277,37 +313,159 @@ namespace LicentaWebApp.Server.Controllers
         }
 
         [HttpPost]
-        [Route("generate-otp")]
-        public async Task<ActionResult<string>> GenerateOtp()
+        [Route("test-auth-state")]
+        public async Task<ActionResult<string>> TestAuthState()
         {
-            var currentUser = new User();
-            if (User.Identity is {IsAuthenticated: true})
+            try
             {
-                currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
-                currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            }
-            var loggedInUser = await _context.Users.Where(
-                u => u.Id == currentUser.Id).FirstOrDefaultAsync();
-            
-            if(loggedInUser == null)
-                return BadRequest("Error finding the user");
-            
-            var now = DateTime.Now;
-            var ts = now - loggedInUser.OtpCreationTime;
-            if (ts.Minutes < 30)
-            {
-                return Ok("ALIVE");
-            }
-            
-            loggedInUser.OtpCode = OTPGenerator.GenerateOTP();
-            loggedInUser.OtpCreationTime = DateTime.Now;
-            SendOtpMail(loggedInUser.EmailAddress,loggedInUser.OtpCode);
-            Console.WriteLine(loggedInUser.OtpCode);
-            await _context.SaveChangesAsync();
+                var currentUser = new User();
+                if (User.Identity is { IsAuthenticated: true })
+                {
+                    currentUser.EmailAddress = User.FindFirstValue(ClaimTypes.Name);
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
 
-            return Ok("Success!");
+                var loggedInUser = await _context.Users.Where(
+                    u => u.Id == currentUser.Id).FirstOrDefaultAsync();
+
+                if (loggedInUser == null)
+                    return BadRequest("DEAD");
+
+                var now = DateTime.Now;
+                var ts = now - loggedInUser.OtpCreationTime;
+                var cardTs = now - loggedInUser.CardCodeCreationTime;
+                if (ts.TotalMinutes < 30)
+                    return Ok("ALIVE");
+
+                if (cardTs.TotalMinutes < 30)
+                    return Ok("ALIVE");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
+
+            return BadRequest("DEAD");
         }
 
+
+        [HttpPost("generate-otp-code-auth")]
+        [Authorize]
+        public async Task<ActionResult<string>> GenerateOtpCodeAuth()
+        {
+            try
+            {
+                var currentUser = new User();
+                if (User.Identity is { IsAuthenticated: true })
+                {
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
+
+                var loggedInUser = await _context.Users.Where(
+                    u => u.Id == currentUser.Id).FirstOrDefaultAsync();
+
+                if (loggedInUser != null)
+                {
+                    loggedInUser.OtpCode = OTPGenerator.GenerateOTP();
+                    loggedInUser.OtpCreationTime = DateTime.Now;
+                    SendOtpMail(loggedInUser.EmailAddress, loggedInUser.OtpCode);
+                    Console.WriteLine(loggedInUser.OtpCode);
+                    await _context.SaveChangesAsync();
+
+                    return Ok("Success");
+                }
+
+                return BadRequest("Error");
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
+        }
+
+
+        [HttpPost("generate-card-code-auth")]
+        [Authorize]
+        public async Task<ActionResult<AuthenticationResponse>> GenerateCardCodeAuth()
+        {
+            try
+            {
+                var currentUser = new User();
+                if (User.Identity is {IsAuthenticated: true})
+                {
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
+                
+                var loggedInUser = await _context.Users.Where(
+                    u => u.Id == currentUser.Id).FirstOrDefaultAsync();
+
+                if (loggedInUser != null)
+                {
+                    loggedInUser.CardCodeCreationTime=DateTime.Now;
+                    _context.SaveChanges();
+
+                    var (_, helper) = CardCodeGenerator.GenerateCode(loggedInUser.Password);
+                    
+                    return await Task.FromResult(new AuthenticationResponse
+                        {helperCode = helper});
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
+
+            return await Task.FromResult(new AuthenticationResponse() {Email = string.Empty});
+        }
+        
+        [HttpPost("authenticate-challenge-card-auth")]
+        [Authorize]
+        public async Task<ActionResult<string>> AuthenticateCardAuth
+            (AuthenticationRequest authenticationRequest)
+        {
+            try
+            {
+                var currentUser = new User();
+                if (User.Identity is {IsAuthenticated: true})
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                
+                var loggedInUser = await _context.Users.Where(
+                    u => u.Id == currentUser.Id).FirstOrDefaultAsync();
+                
+                if (loggedInUser != null)
+                {
+                    var (code, _) = CardCodeGenerator.GenerateCode(loggedInUser.Password);
+                    
+                    authenticationRequest.SmartCardCode = authenticationRequest.SmartCardCode
+                        .Take(authenticationRequest.SmartCardCode.Length - 2).ToArray();
+                    
+                    if ( authenticationRequest.SmartCardCode.SequenceEqual(code))
+                    {
+                        var now = DateTime.Now;
+                        var ts = now - loggedInUser.CardCodeCreationTime;
+                        if (ts.TotalSeconds > 60)
+                        {
+                            return BadRequest("Error");
+                        }
+
+                        return Ok("Success!");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
+            
+            return BadRequest("Error");
+        }
+        
+        
         [HttpPost]
         [Route("test-otp")]
         public async Task<ActionResult<string>> TestOtp([FromBody]string otpCode)
@@ -331,7 +489,45 @@ namespace LicentaWebApp.Server.Controllers
                 {
                     var now = DateTime.Now;
                     var ts = now - loggedInUser.OtpCreationTime;
-                    if (ts.Seconds > 60)
+                    if (ts.TotalSeconds > 60)
+                    {
+                        return BadRequest("Otp code expired!");
+                    }
+
+                    return Ok("Success!");
+                }
+                return BadRequest("The code is not correct");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
+        }
+        
+        [HttpPost]
+        [Route("test-otp-auth")]
+        public async Task<ActionResult<string>> TestOtpAuth([FromBody]string otpCode)
+        {
+            try
+            {
+                var currentUser = new User();
+                if (User.Identity is {IsAuthenticated: true})
+                {
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
+                
+                var loggedInUser = await _context.Users.Where(
+                    u => u.Id == currentUser.Id).FirstOrDefaultAsync();
+                
+                if(loggedInUser == null)
+                    return BadRequest("Error finding the user");
+                
+                if (otpCode == loggedInUser.OtpCode)
+                {
+                    var now = DateTime.Now;
+                    var ts = now - loggedInUser.OtpCreationTime;
+                    if (ts.TotalSeconds > 60)
                     {
                         return BadRequest("Otp code expired!");
                     }
@@ -347,9 +543,42 @@ namespace LicentaWebApp.Server.Controllers
             }
         }
 
+        [HttpPost("reset-timers")]
+        [Authorize]
+        public async Task<ActionResult<string>> ResetCodeTimers()
+        {
+            try
+            {
+                var currentUser = new User();
+                if (User.Identity is { IsAuthenticated: true })
+                {
+                    currentUser.Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                }
+
+                var loggedInUser = await _context.Users.Where(
+                    u => u.Id == currentUser.Id).FirstOrDefaultAsync();
+
+                if (loggedInUser != null)
+                {
+                    loggedInUser.OtpCreationTime = DateTime.UnixEpoch;
+                    loggedInUser.CardCodeCreationTime=DateTime.UnixEpoch;
+                    await _context.SaveChangesAsync();
+
+                    return Ok("Success");
+                }
+
+                return BadRequest("Error");
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception : " + e.Message);
+                return null;
+            }
+        }
+        
         private void SendOtpMail(string email, string otp)
         {
-            
             string to = email;
             const string from = "schnorrsign@gmail.com"; 
             const string password = "Minge789?";

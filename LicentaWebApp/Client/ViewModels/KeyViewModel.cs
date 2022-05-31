@@ -61,7 +61,7 @@ namespace LicentaWebApp.Client.ViewModels
         public Task<List<User>> GetCompanyUsers()
         {
             var companyUserList = _httpClient
-                .GetFromJsonAsync<List<User>>("/user/getcompanyusers");
+                .GetFromJsonAsync<List<User>>("/user/get-company-users");
 
             return companyUserList;
         }

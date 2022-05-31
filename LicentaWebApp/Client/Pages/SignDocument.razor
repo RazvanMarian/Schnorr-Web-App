@@ -1,12 +1,15 @@
 @page "/Sign-Document"
 @using LicentaWebApp.Shared.Models
-@inject ISnackbar _snackbar
-@inject ViewModels.IKeyViewModel _keyViewModel
+@inject ISnackbar Snackbar
+@inject ViewModels.IKeyViewModel KeyViewModel
 @using System.IO
+@using Blazored.LocalStorage
 @using LicentaWebApp.Shared.PayloadModels
-@inject IUploadFileService _uploadFileService
-@inject IJSRuntime _jsRuntime
-@inject IDialogService _dialog
+@inject IUploadFileService UploadFileService
+@inject IJSRuntime JsRuntime
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorageService
 @attribute [Authorize]
 
 <style>
@@ -35,7 +38,7 @@
         <MudSelect Label="Select a key" @bind-Value="SelectedKey"
                    AnchorOrigin="Origin.BottomCenter"
                    Placeholder="Please select a key" AdornmentIcon="@Icons.Material.Filled.VpnKey" AdornmentColor="Color.Primary">
-            @foreach (var key in _keyViewModel.Keys)
+            @foreach (var key in KeyViewModel.Keys)
             {
                 <MudSelectItem Value="@key.Name">@key.Name</MudSelectItem>
             }
@@ -77,7 +80,7 @@
 
 
             <MudItem>
-                <MudButton OnClick="OnClickFunction" Disabled="@_show" Variant="Variant.Filled"
+                <MudButton OnClick="UploadDocument" Disabled="@_show" Variant="Variant.Filled"
                            Style="width: 6rem">
                     @if (_processing)
                     {
@@ -122,8 +125,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        CompanyUsers = await _keyViewModel.GetCompanyUsers();
-        await _keyViewModel.InitializeKeys();
+        CompanyUsers = await KeyViewModel.GetCompanyUsers();
+        await KeyViewModel.InitializeKeys();
     }
 
     void OnInputFileChanged(InputFileChangeEventArgs e)
@@ -134,89 +137,172 @@
         _show = false;
     }
 
-    private async Task OnClickFunction()
+    private async Task UploadDocument()
     {
-        _show = true;
-        _processing = true;
-
+        
         if (string.IsNullOrEmpty(SelectedKey))
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("You did not select a key!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("You did not select a key!", Severity.Error);
             Clear();
             return;
         }
         
-        var resultOtpGeneration = await _uploadFileService.GenerateOtpCode();
-        if (resultOtpGeneration == null)
+        var resultAuthState = await UploadFileService.TestAuthState();
+        if (resultAuthState == null)
         {
             Clear();
             return;
         }
 
-        if (resultOtpGeneration != "ALIVE")
+        if (resultAuthState == "DEAD")
         {
-            var dialog = _dialog.Show<SignDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
+            var dialog = OpenDialog();
             var dialogResult = await dialog.Result;
-
 
             if (dialogResult.Cancelled)
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("We could not verify your identity", Severity.Error);
-                Clear();
                 return;
             }
-        }
-
-        if (!Options.Any())
-        {
-            var result = await _uploadFileService.SignFile(_file, SelectedKey, _fileName);
-            if (result != null)
+            
+            if (dialogResult.Data.ToString() == "email")
             {
-                await _jsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
-                    "signature.bin");
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("File uploaded", Severity.Success);
-                Clear();
-            }
-            else
-            {
-                Clear();
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("File could not be uploaded!", Severity.Error);
-            }
-        }
-        else
-        {
-            var payload = new MultipleSignPayload();
-            foreach (var email in Options)
-            {
-                foreach (var user in CompanyUsers.Where(user => email == user.EmailAddress))
+                await Task.Delay(100);
+                var status = await EmailFactorAuth();
+                if (!status)
                 {
-                    payload.Users.Add(user);
+                    var result = await UploadFileService.ResetTimers();
+                    if (result == null)
+                    {
+                        await LogoutUser();
+                    }
+                    return;
                 }
             }
 
-            payload.UserKeyName = SelectedKey;
-            payload.FileName = _fileName;
-
-            var res = await _uploadFileService.MultipleSignFile(_file, payload);
-
-            if (res.IsSuccessStatusCode)
+            if (dialogResult.Data.ToString() == "card")
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("Request was sent!", Severity.Success);
+                var status = await CardFactorAuth();
+
+                if (!status)
+                {
+                    var result = await UploadFileService.ResetTimers();
+                    if (result == null)
+                    {
+                        await LogoutUser();
+                    }
+                    return;
+                }
+            }
+            
+        }
+
+        _show = true;
+        _processing = true;
+
+        
+        //Simple signing case
+        if (!Options.Any())
+        {
+            var result = await UploadFileService.SignFile(_file, SelectedKey, _fileName);
+            if (result != null)
+            {
+                await JsRuntime.InvokeVoidAsync("downloadFile", "application/octet-stream", result,
+                    "signature.bin");
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("File uploaded", Severity.Success);
+                Clear();
             }
             else
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("Request for signing could not be sent!", Severity.Error);
+                Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("File could not be uploaded!", Severity.Error);
+            }
+            
+            Clear();
+            return;
+        }
+        
+        //Multiple sign case
+        var payload = new MultipleSignPayload();
+        foreach (var email in Options)
+        {
+            foreach (var user in CompanyUsers.Where(user => email == user.EmailAddress))
+            {
+                payload.Users.Add(user);
             }
         }
+
+        payload.UserKeyName = SelectedKey;
+        payload.FileName = _fileName;
+
+        var res = await UploadFileService.MultipleSignFile(_file, payload);
+
+        if (res.IsSuccessStatusCode)
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Request was sent!", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Request for signing could not be sent!", Severity.Error);
+        }
+
+
         Clear();
     }
 
+    private async Task<bool> EmailFactorAuth()
+    {
+        
+        var dialog = DialogService.Show<SignDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
+        var dialogResult = await dialog.Result;
+
+
+        if (dialogResult.Cancelled)
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("We could not verify your identity", Severity.Error);
+            Clear();
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<bool> CardFactorAuth()
+    {
+        var response = await UploadFileService.GenerateCardCode();
+        
+        if (response.helperCode.Length == 32)
+        {
+            var status = await UploadFileService.AuthenticateSmartCard(response.helperCode);
+            
+            if (status == "reader not connected")
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Smart card reader card is not connected!", Severity.Error);
+
+                return false;
+            }
+
+            if (status == "card not connected")
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Smart card is not connected!", Severity.Error);
+
+                return false;
+            }
+            
+            if (status == "Success!")
+                return true;
+        }
+
+        return false;
+    }
+    
     void Clear()
     {
         _processing = false;
@@ -225,5 +311,15 @@
         Options = Enumerable.Empty<string>();
         SelectedKey = "";
     }
-
+    
+    private IDialogReference OpenDialog()
+    {
+        return DialogService.Show<LoginDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
+    }
+    
+    private async Task LogoutUser()
+    {
+        await LocalStorageService.RemoveItemAsync("jwt_token");
+        NavigationManager.NavigateTo("/Login", true);
+    }
 }

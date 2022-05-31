@@ -1,10 +1,10 @@
 @page "/Notification/{NotificationId}"
 @using LicentaWebApp.Shared.Models
-@inject ViewModels.INotificationViewModel _notificationViewModel
-@inject IDialogService _dialogService
-@inject NavigationManager _navigationManager
-@inject ISnackbar _snackbar
-@inject IUploadFileService _uploadFileService
+@inject ViewModels.INotificationViewModel NotificationViewModel
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IUploadFileService UploadFileService
 @attribute [Authorize]
 
 <MudGrid Spacing="4" Style="height: 90vh">
@@ -54,18 +54,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Notification = await _notificationViewModel.GetNotificationById(int.Parse(NotificationId));
+        Notification = await NotificationViewModel.GetNotificationById(int.Parse(NotificationId));
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        Notification = await _notificationViewModel.GetNotificationById(int.Parse(NotificationId));
+        Notification = await NotificationViewModel.GetNotificationById(int.Parse(NotificationId));
     }
 
 
     private async Task Sign()
     {
-        var resultOtpGeneration = await _uploadFileService.GenerateOtpCode();
+        var resultOtpGeneration = await UploadFileService.TestAuthState();
         if (resultOtpGeneration == null)
         {
             return;
@@ -73,37 +73,37 @@
         Console.WriteLine(resultOtpGeneration);
         if (resultOtpGeneration != "ALIVE")
         {
-            var dialogOtp = _dialogService.Show<SignDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
+            var dialogOtp = DialogService.Show<SignDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
             var dialogResult = await dialogOtp.Result;
             if (dialogResult.Cancelled)
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("We could not verify your identity", Severity.Error);
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("We could not verify your identity", Severity.Error);
                 return;
             }
             await Task.Delay(100);
         }
         var parameter = new DialogParameters { ["Action"]="SIGN" };
-        var dialog = _dialogService.Show<NotificationDialog>("Sign",parameter);
+        var dialog = DialogService.Show<NotificationDialog>("Sign",parameter);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
             var key = result.Data.ToString();
             if (string.IsNullOrEmpty(key))
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("The request could not be accepted!", Severity.Error);
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("The request could not be accepted!", Severity.Error);
                 return;
             }
-            var res = await _notificationViewModel.AcceptNotification(Notification.Id, key);
+            var res = await NotificationViewModel.AcceptNotification(Notification.Id, key);
             if (res.IsSuccessStatusCode)
             {
-                _navigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/");
             }
             else
             {
-                _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                _snackbar.Add("The request could not be accepted!", Severity.Error);
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("The request could not be accepted!", Severity.Error);
             }
         }
     }
@@ -111,16 +111,16 @@
     private async Task Deny()
     {
         var parameter = new DialogParameters { ["Action"]="DENY" };
-        var dialog = _dialogService.Show<NotificationDialog>("Deny",parameter);
+        var dialog = DialogService.Show<NotificationDialog>("Deny",parameter);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
             var reason = result.Data.ToString();
-            var res = await _notificationViewModel.DenyNotification(Notification.Id, reason);
+            var res = await NotificationViewModel.DenyNotification(Notification.Id, reason);
 
             if (res.IsSuccessStatusCode)
             {
-                _navigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/");
             }
         }
     }

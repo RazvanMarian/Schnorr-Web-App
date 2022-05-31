@@ -4,9 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Net.Security;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using LicentaWebApp.Shared;
 using LicentaWebApp.Shared.Models;
@@ -54,22 +51,9 @@ namespace LicentaWebApp.Client.ViewModels
                 Password = this.Password
             };
             
-            
-
-            // var url = "https://192.168.94.67:8443/test-route";
-            //
-            // ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
-            //
-            // int[] array = { 0,1,2,3,4,5 };
-            //
-            // var response = await _httpClient.PostAsJsonAsync(url,array);
-            //
-            // var content = await response.Content.ReadAsStringAsync();
-            // Console.WriteLine(content);
-
             var httpMessageResponse =
                 await _httpClient.
-                    PostAsJsonAsync($"user/authenticate-jwt", authenticationRequest);
+                    PostAsJsonAsync($"user/authenticate-generate-otp", authenticationRequest);
             
             return await httpMessageResponse.Content.ReadFromJsonAsync<AuthenticationResponse>();
         }
@@ -90,9 +74,9 @@ namespace LicentaWebApp.Client.ViewModels
 
         public async Task<AuthenticationResponse> AuthenticateSmartCard(int[] helper)
         {
-            var url = "https://192.168.94.67:8443/test-route";
+            var url = "https://192.168.94.67:8443/auth-card";
             
-            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+            ServicePointManager.ServerCertificateValidationCallback += (_, _, _, _) => true;
             
             var response = await _httpClient.PostAsJsonAsync(url,helper);
             

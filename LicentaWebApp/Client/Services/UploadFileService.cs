@@ -2,11 +2,12 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using LicentaWebApp.Shared.Models;
+using LicentaWebApp.Shared;
 using LicentaWebApp.Shared.PayloadModels;
 
 namespace LicentaWebApp.Client.Services
@@ -112,7 +113,27 @@ namespace LicentaWebApp.Client.Services
 
         public async Task<string> GenerateOtpCode()
         {
-            var result = await _httpClient.PostAsync("user/generate-otp",null);
+            var httpMessageResponse =
+                await _httpClient.
+                    PostAsync($"user/generate-otp-code-auth",null);
+            
+            return !httpMessageResponse.IsSuccessStatusCode ? "Error" : "Success";
+        }
+
+        public async Task<string> TestAuthState()
+        {
+            var result = await _httpClient.PostAsync("user/test-auth-state",null);
+            
+            var content = await result.Content.ReadAsStringAsync();
+            
+            Console.WriteLine(content);
+            
+            return !result.IsSuccessStatusCode ? "DEAD" : content;
+        }
+
+        public async Task<string> ResetTimers()
+        {
+            var result = await _httpClient.PostAsync("user/reset-timers",null);
             
             var content = await result.Content.ReadAsStringAsync();
             
@@ -125,6 +146,52 @@ namespace LicentaWebApp.Client.Services
             if (!result.IsSuccessStatusCode)
                 return null;
             
+            
+            return "Success!";
+        }
+        
+        public async Task<AuthenticationResponse> GenerateCardCode()
+        {
+            var httpMessageResponse =
+                await _httpClient.
+                    PostAsync($"user/generate-card-code-auth",null);
+            
+            return await httpMessageResponse.Content.ReadFromJsonAsync<AuthenticationResponse>();
+        }
+        
+        public async Task<string> AuthenticateSmartCard(int[] helper)
+        {
+            var url = "https://192.168.94.67:8443/auth-card";
+            
+            ServicePointManager.ServerCertificateValidationCallback += (_, _, _, _) => true;
+            
+            var response = await _httpClient.PostAsJsonAsync(url,helper);
+            
+            var content = await response.Content.ReadAsStringAsync();
+            content = content.Trim('[', ']');
+            Console.WriteLine(content);
+
+            if (content == "sun.security.smartcardio.PCSCException: SCARD_E_SERVICE_STOPPED")
+            {
+                return "reader not connected";
+            }
+
+            if (content == "sun.security.smartcardio.PCSCException: SCARD_W_REMOVED_CARD")
+            {
+                return "card not connected";
+            }
+            
+            var authenticationRequest = new AuthenticationRequest
+            {
+                SmartCardCode = content.Split(",").Select(Int32.Parse).ToArray()
+            };
+            
+
+            var httpMessageResponse =
+                await _httpClient.
+                    PostAsJsonAsync($"user/authenticate-challenge-card-auth", authenticationRequest);
+            if (!httpMessageResponse.IsSuccessStatusCode)
+                return null;
             
             return "Success!";
         }

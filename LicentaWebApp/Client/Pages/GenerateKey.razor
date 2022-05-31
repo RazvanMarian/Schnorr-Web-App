@@ -1,21 +1,21 @@
 @page "/Generate-Key"
 @attribute [Authorize]
-@inject IKeyViewModel _keyViewModel
-@inject ISnackbar _snackbar
-@inject NavigationManager _navigationManager
+@inject IKeyViewModel KeyViewModel
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
 @using LicentaWebApp.Client.ViewModels
 
 
 <div style="max-width: 400px; margin: auto">
     <MudText Align="Align.Center" Style="padding-bottom: 5rem" Typo="Typo.h3">Generate a key </MudText>
-    <EditForm Model="@_keyViewModel" OnValidSubmit="OnClickFunction">
+    <EditForm Model="@KeyViewModel" OnValidSubmit="OnClickFunction">
         <DataAnnotationsValidator/>
         <MudCard>
             <MudCardContent>
                 <MudTextField Label="Key Name" HelperText="Used for differentiating your keys"
-                              @bind-Value="_keyViewModel.Name" For="@(() => _keyViewModel.Name)"/>
+                              @bind-Value="KeyViewModel.Name" For="@(() => KeyViewModel.Name)"/>
                 <MudTextField Label="Key description" Class="mt-3"
-                              @bind-Value="_keyViewModel.Description" For="@(() => _keyViewModel.Description)"/>
+                              @bind-Value="KeyViewModel.Description" For="@(() => KeyViewModel.Description)"/>
             </MudCardContent>
             <MudCardActions Style="justify-content: center">
                 <MudButton Disabled="@_processing" ButtonType="ButtonType.Submit"
@@ -42,42 +42,42 @@
     private async Task OnClickFunction()
     {
         _processing = true;
-        if (_keyViewModel.Name == null)
+        if (KeyViewModel.Name == null)
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("You have to give a name to your key!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("You have to give a name to your key!", Severity.Error);
             _processing = false;
             _processing = false;
             return;
         }
 
-        if (_keyViewModel.Name.Length > 20 || _keyViewModel.Description?.Length > 30)
+        if (KeyViewModel.Name.Length > 20 || KeyViewModel.Description?.Length > 30)
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("Your key name is too long!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Your key name is too long!", Severity.Error);
             _processing = false;
             _processing = false;
-            _keyViewModel.Name = null;
-            _keyViewModel.Description = null;
+            KeyViewModel.Name = null;
+            KeyViewModel.Description = null;
             return;
         }
 
-        var result = await _keyViewModel.GenerateKey();
+        var result = await KeyViewModel.GenerateKey();
         if (result.IsSuccessStatusCode)
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("Key generated successfully!", Severity.Success);
-            _navigationManager.NavigateTo("/User-Keys");
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Key generated successfully!", Severity.Success);
+            NavigationManager.NavigateTo("/User-Keys");
         }
         else
         {
-            _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-            _snackbar.Add("Key generation failed!", Severity.Error);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Key generation failed!", Severity.Error);
         }
 
         _processing = false;
-        _keyViewModel.Name = null;
-        _keyViewModel.Description = null;
+        KeyViewModel.Name = null;
+        KeyViewModel.Description = null;
     }
 
 }

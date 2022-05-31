@@ -1,7 +1,6 @@
 @page "/Login"
 
 @using LicentaWebApp.Client.ViewModels
-@using LicentaWebApp.Shared.Models
 @inject ILoginViewModel LoginViewModel
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -49,7 +48,7 @@
 </div>
 
 @code {
-    private bool Processing { get; set; } = false;
+    private bool Processing { get; set; }
 
     private async Task AuthenticateJwt()
     {

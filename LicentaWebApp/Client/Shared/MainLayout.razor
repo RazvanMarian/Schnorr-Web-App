@@ -2,9 +2,9 @@
 @using LicentaWebApp.Client.ViewModels
 @using LicentaWebApp.Shared.Models
 @inherits LayoutComponentBase
-@inject NavigationManager _navigationManager
-@inject ILocalStorageService _localStorageService
-@inject INotificationViewModel _notificationViewModel
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorageService
+@inject INotificationViewModel NotificationViewModel
 
 <MudThemeProvider Theme="_currentTheme"/>
 <MudDialogProvider/>
@@ -103,7 +103,7 @@
 
             if (user.Identity is {IsAuthenticated: true })
             {
-                Notifications = await _notificationViewModel.GetNotifications();
+                Notifications = await NotificationViewModel.GetNotifications();
 
                 NotificationNumber = Notifications?.Count ?? 0;
             }
@@ -156,8 +156,8 @@
 
     private async Task LogoutUser()
     {
-        await _localStorageService.RemoveItemAsync("jwt_token");
-        _navigationManager.NavigateTo("/Login", true);
+        await LocalStorageService.RemoveItemAsync("jwt_token");
+        NavigationManager.NavigateTo("/Login", true);
     }
 
 }
