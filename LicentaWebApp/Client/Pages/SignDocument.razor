@@ -24,8 +24,8 @@
 
     .drag-drop-input {
         position: absolute;
-        width: 33%;
-        height: 28%;
+        width: 20%;
+        height: 15%;
         opacity: 0;
         cursor: pointer;
         z-index: 2;
@@ -33,7 +33,7 @@
 </style>
 
 <MudGrid style="margin: auto; justify-content: center; width: 33%">
-    <MudText Style="padding-bottom: 3rem" Typo="Typo.h3">Sign a document </MudText>
+    <MudText Typo="Typo.h3" Style="margin-bottom: 1.5rem">Sign a document </MudText>
     <MudItem xs="12">
         <MudSelect Label="Select a key" @bind-Value="SelectedKey"
                    AnchorOrigin="Origin.BottomCenter"
@@ -140,6 +140,10 @@
     private async Task UploadDocument()
     {
         
+        _show = true;
+        _processing = true;
+
+        
         if (string.IsNullOrEmpty(SelectedKey))
         {
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
@@ -197,9 +201,7 @@
             
         }
 
-        _show = true;
-        _processing = true;
-
+    
         
         //Simple signing case
         if (!Options.Any())

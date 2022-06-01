@@ -1,18 +1,20 @@
 @page "/Notification/{NotificationId}"
 @using LicentaWebApp.Shared.Models
+@using Blazored.LocalStorage
 @inject ViewModels.INotificationViewModel NotificationViewModel
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 @inject IUploadFileService UploadFileService
 @attribute [Authorize]
+@inject ILocalStorageService LocalStorageService
 
 <MudGrid Spacing="4" Style="height: 90vh">
     <MudItem xs="12" Style="height: 80%">
         @if (Notification != null)
         {
-            <div class="d-flex flex-column py-1">
-                <MudText>You we're asked to sign the following document by Marian Razvan created on @Notification.CreatedAt</MudText>
+            <div class="d-flex flex-column py-1" style="margin-bottom: 0.5rem">
+                <MudText Typo="Typo.h5">You we're asked to sign the following document by Marian Razvan on @Notification.CreatedAt</MudText>
             </div>
         }
         else
@@ -22,10 +24,6 @@
         @if (Notification != null)
         {
             <embed src="@Notification.FilePath" type="application/pdf" width="100%" height="100%"/>
-        }
-        else
-        {
-            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7"/>
         }
     </MudItem>
 
@@ -65,30 +63,65 @@
 
     private async Task Sign()
     {
-        var resultOtpGeneration = await UploadFileService.TestAuthState();
-        if (resultOtpGeneration == null)
+        
+        
+        
+        var resultAuthState = await UploadFileService.TestAuthState();
+        if (resultAuthState == null)
         {
             return;
         }
-        Console.WriteLine(resultOtpGeneration);
-        if (resultOtpGeneration != "ALIVE")
+        
+        if (resultAuthState == "DEAD")
         {
-            var dialogOtp = DialogService.Show<SignDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
-            var dialogResult = await dialogOtp.Result;
+            var dialog = OpenDialog();
+            var dialogResult = await dialog.Result;
+
             if (dialogResult.Cancelled)
             {
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
-                Snackbar.Add("We could not verify your identity", Severity.Error);
                 return;
             }
-            await Task.Delay(100);
+            
+            if (dialogResult.Data.ToString() == "email")
+            {
+                await Task.Delay(100);
+                var status = await EmailFactorAuth();
+                if (!status)
+                {
+                    var result = await UploadFileService.ResetTimers();
+                    if (result == null)
+                    {
+                        await LogoutUser();
+                    }
+                    return;
+                }
+            }
+
+            if (dialogResult.Data.ToString() == "card")
+            {
+                var status = await CardFactorAuth();
+
+                if (!status)
+                {
+                    var result = await UploadFileService.ResetTimers();
+                    if (result == null)
+                    {
+                        await LogoutUser();
+                    }
+                    return;
+                }
+            }
+            
         }
+
+        await Task.Delay(100);
+
         var parameter = new DialogParameters { ["Action"]="SIGN" };
-        var dialog = DialogService.Show<NotificationDialog>("Sign",parameter);
-        var result = await dialog.Result;
-        if (!result.Cancelled)
+        var dialogSign = DialogService.Show<NotificationDialog>("Sign",parameter);
+        var resultKey = await dialogSign.Result;
+        if (!resultKey.Cancelled)
         {
-            var key = result.Data.ToString();
+            var key = resultKey.Data.ToString();
             if (string.IsNullOrEmpty(key))
             {
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
@@ -97,7 +130,7 @@
             }
             var res = await NotificationViewModel.AcceptNotification(Notification.Id, key);
             if (res.IsSuccessStatusCode)
-            {
+            {   
                 NavigationManager.NavigateTo("/");
             }
             else
@@ -123,6 +156,67 @@
                 NavigationManager.NavigateTo("/");
             }
         }
+    }
+    
+    
+    
+    private IDialogReference OpenDialog()
+    {
+        return DialogService.Show<LoginDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
+    }
+    
+    private async Task LogoutUser()
+    {
+        await LocalStorageService.RemoveItemAsync("jwt_token");
+        NavigationManager.NavigateTo("/Login", true);
+    }
+    
+    private async Task<bool> EmailFactorAuth()
+    {
+        
+        var dialog = DialogService.Show<SignDialog>("Prove your identity", new DialogOptions {DisableBackdropClick = true});
+        var dialogResult = await dialog.Result;
+
+
+        if (dialogResult.Cancelled)
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("We could not verify your identity", Severity.Error);
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<bool> CardFactorAuth()
+    {
+        var response = await UploadFileService.GenerateCardCode();
+        
+        if (response.helperCode.Length == 32)
+        {
+            var status = await UploadFileService.AuthenticateSmartCard(response.helperCode);
+            
+            if (status == "reader not connected")
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Smart card reader card is not connected!", Severity.Error);
+
+                return false;
+            }
+
+            if (status == "card not connected")
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Smart card is not connected!", Severity.Error);
+
+                return false;
+            }
+            
+            if (status == "Success!")
+                return true;
+        }
+
+        return false;
     }
 
 }

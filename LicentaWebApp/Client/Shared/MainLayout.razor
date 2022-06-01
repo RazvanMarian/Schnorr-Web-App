@@ -27,18 +27,7 @@
                 <MudTooltip Text="Notifications">
                     <NotificationButton Notifications="@Notifications" NotificationsNumber="@NotificationNumber"/>
                 </MudTooltip>
-
-                <MudTooltip Text="DarkMode">
-                    @if (_currentTheme == _darkTheme)
-                    {
-                        <MudIconButton Icon="@Icons.Material.Filled.WbSunny" OnClick="@(_ => DarkMode())"></MudIconButton>
-                    }
-                    else
-                    {
-                        <MudIconButton Icon="@Icons.Material.Filled.ModeNight" OnClick="@(_ => DarkMode())"></MudIconButton>
-                    }
-                </MudTooltip>
-
+                
                 <MudTooltip Text="Github">
                     <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
                                    Link="https://github.com/RazvanMarian/Schnorr-Web-App" Target="_blank"/>

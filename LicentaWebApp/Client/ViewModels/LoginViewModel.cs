@@ -84,7 +84,8 @@ namespace LicentaWebApp.Client.ViewModels
             content = content.Trim('[', ']');
             Console.WriteLine(content);
 
-            if (content == "sun.security.smartcardio.PCSCException: SCARD_E_SERVICE_STOPPED")
+            if (content is "sun.security.smartcardio.PCSCException: SCARD_E_SERVICE_STOPPED" or 
+                "sun.security.smartcardio.PCSCException: SCARD_E_NO_READERS_AVAILABLE")
             {
                 return new AuthenticationResponse() { Token = "reader not connected" };
             }

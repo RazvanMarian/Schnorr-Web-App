@@ -18,7 +18,7 @@ else
 {
     <MudText Align="Align.Center" Style="padding-bottom: 5rem" Typo="Typo.h3">My History</MudText>
     <MudText Typo="Typo.h6">Latest requests accepted</MudText>
-    <MudExpansionPanels Style="padding-bottom: 2rem">
+    <MudExpansionPanels Style="margin-bottom: 1rem">
         @foreach (var notification in Notifications)
         {
             @if (notification.Status == 0)
@@ -43,8 +43,8 @@ else
 
     <MudDivider/>
 
-    <MudText Typo="Typo.h6">Documents in pending</MudText>
-    <MudExpansionPanels Style="padding-top: 2rem; padding-bottom: 2rem">
+    <MudText Typo="Typo.h6" Style="margin-top: 1rem">Documents in pending</MudText>
+    <MudExpansionPanels Style="margin-top: 1rem; margin-bottom: 1rem">
         @foreach (var notification in Notifications)
         {
             @if (notification.Status > 0 && notification.IdInitiator == UserId)
@@ -64,8 +64,8 @@ else
 
     <MudDivider/>
 
-    <MudExpansionPanels Style="padding-top: 2rem">
-        <MudText Typo="Typo.h6">Past documents that included you</MudText>
+    <MudText Typo="Typo.h6" Style="margin-top: 1rem">Past documents that included you</MudText>
+    <MudExpansionPanels Style="padding-top: 1rem">
         @foreach (var notification in Notifications)
         {
             @if (notification.Status < 0)
@@ -82,19 +82,20 @@ else
                         }
                         <MudText>- created at: @notification.CreatedAt</MudText>
                         <MudText>- created by: @notification.InitiatorEmailAddress</MudText>
+                        
+                        @if (notification.Status == -1)
+                        {
+                            <MudItem Style="flex: auto">
+                                <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="() => DownloadSignature(notification.Id)">
+                                    Download signature
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="() => DownloadCertificate(notification.Id)">
+                                    Export public key
+                                </MudButton>
+                            </MudItem>
+                        }
+                        
                     </MudItem>
-                    @if (notification.Status == -1)
-                    {
-                        <MudItem style="display: inline-block">
-                            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="() => DownloadSignature(notification.Id)">
-                                Download signature
-                            </MudButton>
-                            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="() => DownloadCertificate(notification.Id)">
-                                Export public key
-                            </MudButton>
-                        </MudItem>
-                    }
-
                 </MudExpansionPanel>
             }
         }

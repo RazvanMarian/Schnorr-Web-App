@@ -1,7 +1,7 @@
 @using LicentaWebApp.Shared.Models
 @using System.Threading
-@inject IDialogService _dialogService
-@inject NavigationManager _navigationManager
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
 
 <MudMenu Disabled="@(NotificationsNumber == 0)" MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
     <ActivatorContent>
@@ -9,7 +9,7 @@
         {
             <MudBadge Overlap="true" Content="NotificationsNumber" Color="Color.Primary">
                 <MudIconButton Icon="@Icons.Material.Outlined.Notifications"></MudIconButton>
-            </MudBadge>
+                </MudBadge>
         }
         else
         {
@@ -21,17 +21,11 @@
     <ChildContent>
         @foreach (var notification in Notifications)
         {
-            <MudMenuItem OnClick="@(_ => OpenNotification(@notification))" Style="max-width: 240px">
-                <MudCard>
-                    <MudCardContent>
-                        <MudText>@notification.InitiatorFirstName @notification.InitiatorLastName sent you a signature request</MudText>
-                        <MudText Typo="Typo.body2">@notification.FileName</MudText>
-                    </MudCardContent>
-                    <MudCardActions Style="display: block">
-                        <MudText>Created on: @notification.CreatedAt.Day-@notification.CreatedAt.Month-@notification.CreatedAt.Year</MudText>
-                        <MudText>At: @notification.CreatedAt.Hour:@notification.CreatedAt.Minute @notification.CreatedAt.ToString("tt")</MudText>
-                    </MudCardActions>
-                </MudCard>
+            <MudMenuItem OnClick="@(_ => OpenNotification(notification))" Style="max-width: 240px">
+                <MudText>@notification.FileName</MudText>
+                <MudText Typo="Typo.body2">Started by: @notification.InitiatorFirstName @notification.InitiatorLastName</MudText>
+                <MudText Typo="Typo.body2">Created on: @notification.CreatedAt.Day-@notification.CreatedAt.Month-@notification.CreatedAt.Year</MudText>
+                @* <MudText>At: @notification.CreatedAt.Hour:@notification.CreatedAt.Minute @notification.CreatedAt.ToString("tt")</MudText> *@
             </MudMenuItem>
             <MudDivider/>
         }
@@ -55,7 +49,7 @@
 
     private void OpenNotification(Notification notification)
     {
-        _navigationManager.NavigateTo($"/Notification/{notification.Id}");
+        NavigationManager.NavigateTo($"/Notification/{notification.Id}");
     }
 
 }

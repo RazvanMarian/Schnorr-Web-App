@@ -5,6 +5,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
 @attribute [Authorize]
 
 
@@ -13,7 +14,7 @@
     <MudGrid Spacing="2" Justify="Justify.FlexStart">
         @foreach (var k in KeyViewModel.Keys)
         {
-            <MudItem xs="3" Style="min-width: 20rem">
+            <MudItem xs="3" Style="max-height: 10rem; width: 20rem">
                 <MudCard>
                     <MudCardContent>
                         <MudIcon Icon="@Icons.Filled.VpnKey"></MudIcon>
@@ -51,6 +52,9 @@ else if(_initialized)
 {
     <MudText Typo="Typo.h4">You don't have any keys yet</MudText>
 }
+
+<MudFab Color="Color.Primary" Style="position: fixed; bottom: 2rem; right: 2rem" 
+        Icon="@Icons.Material.Filled.Add" Size="Size.Large" OnClick="RedirectToGenerate"/>
 
 
 @code {
@@ -131,4 +135,10 @@ else if(_initialized)
             Snackbar.Add("Key could not be exported!", Severity.Error);
         }
     }
+
+    private void RedirectToGenerate()
+    {
+        NavigationManager.NavigateTo("Generate-Key");
+    }
+
 }
