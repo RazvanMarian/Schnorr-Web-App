@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using System.Net.Http;
 using System.Threading.Tasks;
-using LicentaWebApp.Shared;
-using LicentaWebApp.Shared.Models;
 using LicentaWebApp.Shared.PayloadModels;
+using LicentaWebApp.Shared.Utils;
 
 namespace LicentaWebApp.Client.Services
 {

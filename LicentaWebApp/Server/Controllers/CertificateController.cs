@@ -2,15 +2,14 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using DataAccessLayer.Models;
-using LicentaWebApp.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using LicentaWebApp.Shared.Utils;
 
 namespace LicentaWebApp.Server.Controllers
 {

@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace LicentaWebApp.Shared;
+namespace LicentaWebApp.Shared.Utils;
 
 public static class CardCodeGenerator
 {

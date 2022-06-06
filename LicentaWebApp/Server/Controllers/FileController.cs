@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
-using LicentaWebApp.Shared;
+using LicentaWebApp.Shared.Utils;
 using LicentaWebApp.Shared.PayloadModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;

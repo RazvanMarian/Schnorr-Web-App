@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace LicentaWebApp.Shared;
+namespace LicentaWebApp.Shared.Utils;
 using System.Security.Cryptography;
 
 public static class Encryptor

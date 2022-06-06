@@ -8,8 +8,8 @@
 @inject ILoginViewModel LoginViewModel
 
 
-<img src="logo.png" alt="" style="margin: auto; display: block;  padding-bottom: 1rem; max-width: 30%"/>
-<div style="margin: auto; width: 33%">
+<img src="logo.png" alt="" style="margin: auto; display: block;  margin-bottom: 1rem; max-width: 25rem"/>
+<div style="margin: auto; max-width: 25rem">
     @if (TimePassed)
     {
         <MudText Typo="Typo.h5"  Align="Align.Center">You will be redirected to log in..</MudText>
@@ -61,6 +61,13 @@
         
         LoginViewModel.EmailAddress = UserViewModel.EmailAddress;
         var authenticationResponse = await LoginViewModel.AuthenticateSmartCard(UserViewModel.SmartCardCode);
+        
+        if (authenticationResponse.Token == "could not establish connection")
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Could not establish connection to smart card reader!", Severity.Error);
+            return;
+        }
         
         if (authenticationResponse.Token == "reader not connected")
         {

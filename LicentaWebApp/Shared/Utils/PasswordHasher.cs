@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 
-namespace LicentaWebApp.Shared;
+namespace LicentaWebApp.Shared.Utils;
 
 public sealed class PasswordHasher
 {

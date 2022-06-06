@@ -11,10 +11,10 @@
 
 @if (KeyViewModel.Keys.Any())
 {
-    <MudGrid Spacing="2" Justify="Justify.FlexStart">
+    <MudGrid Justify="Justify.FlexStart">
         @foreach (var k in KeyViewModel.Keys)
         {
-            <MudItem xs="3" Style="max-height: 10rem; width: 20rem">
+            <MudItem Style="min-height: 10rem; width: 20rem">
                 <MudCard>
                     <MudCardContent>
                         <MudIcon Icon="@Icons.Filled.VpnKey"></MudIcon>

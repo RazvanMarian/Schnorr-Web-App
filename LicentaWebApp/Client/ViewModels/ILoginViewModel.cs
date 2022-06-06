@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using System.Net.Http;
 using System.Threading.Tasks;
-using LicentaWebApp.Shared;
+using LicentaWebApp.Shared.Utils;
 
 namespace LicentaWebApp.Client.ViewModels
 {

@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using LicentaWebApp.Shared;
+using LicentaWebApp.Shared.Utils;
 using LicentaWebApp.Shared.Models;
 
 namespace LicentaWebApp.Client.ViewModels
@@ -74,11 +74,12 @@ namespace LicentaWebApp.Client.ViewModels
 
         public async Task<AuthenticationResponse> AuthenticateSmartCard(int[] helper)
         {
-            var url = "https://192.168.94.67:8443/auth-card";
+            var url = "https://192.168.192.67:8443/auth-card";
             
             ServicePointManager.ServerCertificateValidationCallback += (_, _, _, _) => true;
             
             var response = await _httpClient.PostAsJsonAsync(url,helper);
+            
             
             var content = await response.Content.ReadAsStringAsync();
             content = content.Trim('[', ']');

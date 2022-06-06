@@ -1,6 +1,6 @@
 using System;
 
-namespace LicentaWebApp.Shared;
+namespace LicentaWebApp.Shared.Utils;
 
 public static class OTPGenerator
 {

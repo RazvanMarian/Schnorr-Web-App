@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using LicentaWebApp.Shared;
+using LicentaWebApp.Shared.Utils;
 using LicentaWebApp.Shared.PayloadModels;
 
 namespace LicentaWebApp.Client.Services

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace LicentaWebApp.Shared;
+namespace LicentaWebApp.Shared.Utils;
 
 public static class AesEncryptor
 {

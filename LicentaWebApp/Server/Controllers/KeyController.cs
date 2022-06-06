@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using DataAccessLayer.Models;
-using LicentaWebApp.Shared;
+using LicentaWebApp.Shared.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 

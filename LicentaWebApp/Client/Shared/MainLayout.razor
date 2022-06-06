@@ -93,11 +93,12 @@
             if (user.Identity is {IsAuthenticated: true })
             {
                 Notifications = await NotificationViewModel.GetNotifications();
+                Notifications = Notifications.OrderByDescending(n => n.CreatedAt).ToList();
 
                 NotificationNumber = Notifications?.Count ?? 0;
             }
             StateHasChanged();
-            await Task.Delay(30000);
+            await Task.Delay(2000);
         }
     }
 

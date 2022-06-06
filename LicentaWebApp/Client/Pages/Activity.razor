@@ -16,7 +16,7 @@ else if (!Notifications.Any())
 }
 else
 {
-    <MudText Align="Align.Center" Style="padding-bottom: 5rem" Typo="Typo.h3">My History</MudText>
+    <MudText Align="Align.Center" Style="padding-bottom: 5rem" Typo="Typo.h4">My History</MudText>
     <MudText Typo="Typo.h6">Latest requests accepted</MudText>
     <MudExpansionPanels Style="margin-bottom: 1rem">
         @foreach (var notification in Notifications)
@@ -70,7 +70,7 @@ else
         {
             @if (notification.Status < 0)
             {
-                <MudExpansionPanel Text="@notification.FileName">
+                <MudExpansionPanel Text="@notification.FileName" Style="display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis">
                     <MudItem style="display: inline-block">
                         @if (notification.Status == -1)
                         {

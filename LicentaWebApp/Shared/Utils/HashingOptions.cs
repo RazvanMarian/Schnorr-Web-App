@@ -1,4 +1,4 @@
-namespace LicentaWebApp.Shared;
+namespace LicentaWebApp.Shared.Utils;
 
 public sealed class HashingOptions
 {

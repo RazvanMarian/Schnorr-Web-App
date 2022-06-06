@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLayer.Models;
-using LicentaWebApp.Shared;
+using LicentaWebApp.Shared.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
