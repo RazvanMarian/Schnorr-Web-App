@@ -80,7 +80,6 @@ namespace LicentaWebApp.Client.ViewModels
             
             var response = await _httpClient.PostAsJsonAsync(url,helper);
             
-            
             var content = await response.Content.ReadAsStringAsync();
             content = content.Trim('[', ']');
             Console.WriteLine(content);

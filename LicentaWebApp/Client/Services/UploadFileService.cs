@@ -161,7 +161,7 @@ namespace LicentaWebApp.Client.Services
         
         public async Task<string> AuthenticateSmartCard(int[] helper)
         {
-            var url = "https://192.168.94.67:8443/auth-card";
+            var url = "https://192.168.192.67:8443/auth-card";
             
             ServicePointManager.ServerCertificateValidationCallback += (_, _, _, _) => true;
             

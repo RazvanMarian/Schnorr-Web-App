@@ -107,15 +107,6 @@ namespace LicentaWebApp.Server.Controllers
                 };
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
-                
-                const string publicKeyFilePath = "/home/razvan/certificates/cert.pem";
-                await using (var fileInput = new FileStream(publicKeyFilePath, FileMode.Open, FileAccess.Read))
-                {
-                    var memoryStream = new MemoryStream();
-                    await fileInput.CopyToAsync(memoryStream);
-                    var buffer = memoryStream.ToArray();
-                    notification.PublicKey = Convert.ToBase64String(buffer);
-                }
 
                 const string filePath = "/home/razvan/signatures/signature.bin";
                 await using (var fileInput = new FileStream(filePath, FileMode.Open, FileAccess.Read))
@@ -289,15 +280,6 @@ namespace LicentaWebApp.Server.Controllers
                         var tempPass = stringBuilder.ToString();
                         Encryptor.EncryptFile(tempPrv,tempPass);
                     }
-                }
-                
-                const string publicKeyFilePath = "/home/razvan/certificates/cert.pem";
-                await using (var fileInput = new FileStream(publicKeyFilePath, FileMode.Open, FileAccess.Read))
-                {
-                    var memoryStream = new MemoryStream();
-                    await fileInput.CopyToAsync(memoryStream);
-                    var buffer = memoryStream.ToArray();
-                    notification.PublicKey = Convert.ToBase64String(buffer);
                 }
 
                 const string signatureFilePath = "/home/razvan/signatures/signature.bin";

@@ -439,7 +439,6 @@ namespace LicentaWebApp.Server.Controllers
                 if (loggedInUser != null)
                 {
                     var (code, _) = CardCodeGenerator.GenerateCode(loggedInUser.Password);
-                    
                     authenticationRequest.SmartCardCode = authenticationRequest.SmartCardCode
                         .Take(authenticationRequest.SmartCardCode.Length - 2).ToArray();
                     

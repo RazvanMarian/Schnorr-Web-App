@@ -235,23 +235,4 @@ public class NotificationController : ControllerBase
         }
     }
     
-    [HttpGet]
-    [Route("get-public-key/{notificationId}")]
-    public async Task<ActionResult<string>> GetPublicKey(int notificationId)
-    {
-        try
-        {
-            var notification = await _context.Notifications
-                .Where(n => n.Id == notificationId).FirstOrDefaultAsync();
-            
-            if (string.IsNullOrEmpty(notification?.PublicKey))
-                return BadRequest("Signature could not be loaded");
-
-            return await Task.FromResult(notification.PublicKey);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Internal server error: {ex}");
-        }
-    }
 }

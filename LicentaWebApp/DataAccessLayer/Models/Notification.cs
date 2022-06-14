@@ -22,7 +22,6 @@ public class Notification
     [Required]
     public string FileName { get; set; }
     public string Signature { get; set; }
-    public string PublicKey { get; set; }
     [AllowNull]
     public List<NotificationUserStatus> UserStatusList { get; set; } = new List<NotificationUserStatus>();
 }
