@@ -3,76 +3,29 @@
 #include <openssl/x509v3.h>
 #include <openssl/evp.h>
 
-X509 *Create_Certificate(EC_KEY *private_key, EC_KEY *public_key)
+void getOpenSSLError()
 {
-    OpenSSL_add_all_algorithms();
-    ERR_load_BIO_strings();
-    ERR_load_crypto_strings();
+    BIO *bio = BIO_new(BIO_s_mem());
+    ERR_print_errors(bio);
+    char *buf;
+    size_t len = BIO_get_mem_data(bio, &buf);
+    std::string ret(buf, len);
+    BIO_free(bio);
 
-    // Setare versiune cerere certificat
-    X509_REQ *x509_req = X509_REQ_new();
-    int ret = X509_REQ_set_version(x509_req, 1);
-    if (ret != 1)
-    {
-        std::cout << "Eroare setare versiune request" << std::endl;
-        return NULL;
-    }
+    std::cout << ret << std::endl;
+}
 
-    // Setare subject cerere certificat
-    X509_NAME *x509_name = X509_REQ_get_subject_name(x509_req);
+X509 *Create_Certificate(EC_KEY *key, bool flag)
+{
 
-    ret = X509_NAME_add_entry_by_txt(x509_name, "C", MBSTRING_ASC, (const unsigned char *)"RO", -1, -1, 0);
-    if (ret != 1)
-    {
-        std::cout << "Eroare setare camp 1" << std::endl;
-        return NULL;
-    }
-
-    ret = X509_NAME_add_entry_by_txt(x509_name, "ST", MBSTRING_ASC, (const unsigned char *)"B", -1, -1, 0);
-    if (ret != 1)
-    {
-        std::cout << "Eroare setare camp 2" << std::endl;
-        return NULL;
-    }
-
-    ret = X509_NAME_add_entry_by_txt(x509_name, "L", MBSTRING_ASC, (const unsigned char *)"Bucharest", -1, -1, 0);
-    if (ret != 1)
-    {
-        std::cout << "Eroare setare camp 3" << std::endl;
-        return NULL;
-    }
-
-    ret = X509_NAME_add_entry_by_txt(x509_name, "O", MBSTRING_ASC, (const unsigned char *)"Company Inc.", -1, -1, 0);
-    if (ret != 1)
-    {
-        std::cout << "Eroare setare camp 3" << std::endl;
-        return NULL;
-    }
-
-    ret = X509_NAME_add_entry_by_txt(x509_name, "CN", MBSTRING_ASC, (const unsigned char *)"Co. Inc.", -1, -1, 0);
-    if (ret != 1)
-    {
-        std::cout << "Eroare setare camp 4" << std::endl;
-        return NULL;
-    }
+    int ret;
 
     // Setare cheie publica cerere certificat
     EVP_PKEY *pKey = EVP_PKEY_new();
-    EVP_PKEY_assign_EC_KEY(pKey, public_key);
-
-    ret = X509_REQ_set_pubkey(x509_req, pKey);
+    ret = EVP_PKEY_set1_EC_KEY(pKey, key);
     if (ret != 1)
     {
-        std::cout << "Eroare setare cheie publica cerere" << std::endl;
-        return NULL;
-    }
-
-    EVP_PKEY *pkey_private = EVP_PKEY_new();
-    EVP_PKEY_assign_EC_KEY(pkey_private, private_key);
-    ret = X509_REQ_sign(x509_req, pkey_private, EVP_sha256()); // return x509_req->signature->length
-    if (ret <= 0)
-    {
-        std::cout << "Eroare semnare cerere" << std::endl;
+        printf("eroare setare cheie evp!\n");
         return NULL;
     }
 
@@ -109,7 +62,7 @@ X509 *Create_Certificate(EC_KEY *private_key, EC_KEY *public_key)
 
     fclose(fp);
 
-    // Creare certificat din request
+    // Creare certificat
     X509 *newcert;
     if (!(newcert = X509_new()))
     {
@@ -134,7 +87,7 @@ X509 *Create_Certificate(EC_KEY *private_key, EC_KEY *public_key)
 
     // Extragere subject name din request
     X509_NAME *name;
-    if (!(name = X509_REQ_get_subject_name(x509_req)))
+    if (!(name = X509_get_subject_name(newcert)))
         std::cout << "Eroare preluare subiect din cerere!" << std::endl;
 
     // Setare subject name in certificatul nou
@@ -158,23 +111,8 @@ X509 *Create_Certificate(EC_KEY *private_key, EC_KEY *public_key)
         return NULL;
     }
 
-    // Extragere cheie publica din request
-    EVP_PKEY *req_pubkey;
-    if (!(req_pubkey = X509_REQ_get_pubkey(x509_req)))
-    {
-        std::cout << "Eroare extragere cheie publica din request!" << std::endl;
-        return NULL;
-    }
-
-    /// Verificare semnatura request
-    if (X509_REQ_verify(x509_req, req_pubkey) != 1)
-    {
-        std::cout << "Eroare verificare semnatura!" << std::endl;
-        return NULL;
-    }
-
     // Setare cheie publica certificat
-    if (X509_set_pubkey(newcert, req_pubkey) != 1)
+    if (X509_set_pubkey(newcert, pKey) != 1)
     {
         std::cout << "Eroare setare cheie publica certificat!" << std::endl;
         return NULL;
@@ -209,18 +147,19 @@ X509 *Create_Certificate(EC_KEY *private_key, EC_KEY *public_key)
     }
 
     // Salvare certificat
-    BIO *output = BIO_new_file((const char *)"/home/razvan/certificates/cert.pem", "wb");
-
-    ret = PEM_write_bio_X509(output, newcert);
-    if (ret == 0)
+    if (flag == true)
     {
-        std::cout << "Eroare la scriere in fisier!" << std::endl;
-        return NULL;
-    }
+        BIO *output = BIO_new_file((const char *)"/home/razvan/certificates/cert.pem", "wb");
 
-    BIO_free_all(output);
-    X509_REQ_free(x509_req);
-    // X509_free(newcert);
+        ret = PEM_write_bio_X509(output, newcert);
+        if (ret == 0)
+        {
+            std::cout << "Eroare la scriere in fisier!" << std::endl;
+            return NULL;
+        }
+
+        BIO_free_all(output);
+    }
 
     return newcert;
 }

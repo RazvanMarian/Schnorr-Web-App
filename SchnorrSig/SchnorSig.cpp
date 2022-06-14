@@ -12,6 +12,7 @@ extern "C"
     {
 
         EC_KEY *SCHNORR_keys[signersNumber];
+        X509 *certs[signersNumber];
         int res;
         for (int i = 0; i < signersNumber; i++)
         {
@@ -22,13 +23,14 @@ extern "C"
                 std::cout << "Erorr reading the private key!" << std::endl;
                 return -1;
             }
+            certs[i] = Create_Certificate(SCHNORR_keys[i], false);
         }
 
         SCHNORR_SIG *sig = SCHNORR_SIG_new();
         res = SCHNORR_multiple_sign(SCHNORR_keys, signersNumber, hash, SHA256_DIGEST_LENGTH, sig);
         if (res != 0)
         {
-            std::cout << "Eroare la crearea semnaturii" << std::endl;
+            std::cout << "Eroare la crearea semnaturii!" << std::endl;
             return -1;
         }
 
@@ -39,37 +41,17 @@ extern "C"
             return -1;
         }
 
-        res = SCHNORR_write_signature(sig, "/home/razvan/signatures/signature.plain");
+        SCHNORR_SIGNED_DATA *signed_data = SCHNORR_create_pkcs7(SCHNORR_keys, certs, signersNumber, sig);
+        if (signed_data == NULL)
+        {
+            std::cout << "Eroare creare strucutra pkcs7 semnatura" << std::endl;
+            return -1;
+        }
+
+        res = write_schnorr_signed_data_asn1(signed_data, "/home/razvan/signatures/signature.bin");
         if (res != 0)
         {
-            std::cout << "Eroare la scrierea semnaturii in fisier" << std::endl;
-            return -1;
-        }
-
-        EC_KEY *pKey = SCHNORR_generate_aggregate_public_key(SCHNORR_keys, signersNumber);
-        if (pKey == NULL)
-        {
-            std::cout << "Eroare la generarea cheii publice agregate" << std::endl;
-            return -1;
-        }
-
-        EC_KEY *privateKey = SCHNORR_generate_aggregate_private_key(SCHNORR_keys, signersNumber);
-        if (pKey == NULL)
-        {
-            std::cout << "Eroare la generarea cheii private agregate" << std::endl;
-            return -1;
-        }
-
-        X509 *cert = Create_Certificate(privateKey, pKey);
-        if (cert == NULL)
-        {
-            std::cout << "Eroare la creare certificat!" << std::endl;
-            return -1;
-        }
-
-        if (write_signature(sig, cert) != 0)
-        {
-            std::cout << "Eroare la scrierea semnaturii!" << std::endl;
+            std::cout << "Eroare la scrierea semnaturii in fisier!" << std::endl;
             return -1;
         }
 
@@ -82,7 +64,7 @@ extern "C"
         int res = SCHNORR_generate_key(&key);
         if (res != 0)
         {
-            std::cout << "Eroare la generarea cheii !" << std::endl;
+            std::cout << "Eroare la generarea cheii!" << std::endl;
             return res;
         }
 
@@ -130,18 +112,36 @@ extern "C"
             return -1;
         }
 
-        X509 *cert = Create_Certificate(sign_key, verify_key);
+        EC_KEY **key = (EC_KEY **)malloc(sizeof(EC_KEY *));
+        key[0] = EC_KEY_new();
+        const EC_POINT *point = EC_KEY_get0_public_key(verify_key);
+        const EC_GROUP *group = EC_KEY_get0_group(verify_key);
+        if (point == NULL)
+        {
+            std::cout << "eroare" << std::endl;
+            return -1;
+        }
+
+        if (EC_POINT_is_at_infinity(group, point))
+        {
+            std::cout << "eroare punct la infinitate" << std::endl;
+            return -1;
+        }
+        EC_KEY_set_group(key[0], group);
+        int ret = EC_KEY_set_public_key(key[0], point);
+        const BIGNUM *number = EC_KEY_get0_private_key(sign_key);
+        ret = EC_KEY_set_private_key(key[0], number);
+
+        X509 *cert[1];
+        cert[0] = Create_Certificate(key[0], false);
         if (cert == NULL)
         {
             std::cout << "Eroare la creare certificat!" << std::endl;
             return -1;
         }
 
-        if (write_signature(sig, cert) != 0)
-        {
-            std::cout << "Eroare la scrierea semnaturii!" << std::endl;
-            return -1;
-        }
+        SCHNORR_SIGNED_DATA *signed_data = SCHNORR_create_pkcs7(key, cert, 1, sig);
+        write_schnorr_signed_data_asn1(signed_data, "/home/razvan/signatures/signature.bin");
 
         return 0;
     }
@@ -165,7 +165,24 @@ extern "C"
             return 1;
         }
 
-        X509 *cert = Create_Certificate(private_key, public_key);
+        EC_KEY *key = EC_KEY_new();
+        const EC_POINT *point = EC_KEY_get0_public_key(public_key);
+        const EC_GROUP *group = EC_KEY_get0_group(public_key);
+        if (point == NULL)
+        {
+            std::cout << "eroare" << std::endl;
+        }
+
+        if (EC_POINT_is_at_infinity(group, point))
+        {
+            std::cout << "eroare punct la infinitate" << std::endl;
+        }
+        EC_KEY_set_group(key, group);
+        int ret = EC_KEY_set_public_key(key, point);
+        const BIGNUM *number = EC_KEY_get0_private_key(private_key);
+        ret = EC_KEY_set_private_key(key, number);
+
+        X509 *cert = Create_Certificate(key, true);
         if (cert == NULL)
         {
             std::cout << "Eroare la creare certificat !" << std::endl;
@@ -180,29 +197,40 @@ extern "C"
 
     int Verify_File(const char *hash, const char *signatureFileName)
     {
-        EC_KEY *key = NULL;
 
-        X509 *cert = X509_new();
-        SCHNORR_SIG *sig = SCHNORR_SIG_new();
-        int res = read_signature(signatureFileName, cert, sig);
-        if (res != 0)
+        SCHNORR_SIGNED_DATA *data;
+        read_schnorr_signed_data_asn1(&data, signatureFileName);
+
+        STACK_OF(X509) *x509_stack = SCHNORR_get_signers_certificates(data);
+        if (x509_stack == NULL)
         {
+            printf("eroare preluare certificate\n");
             return -1;
         }
 
-        res = Get_Public_Key_From_Certificate(&key, cert);
-        if (res != 0)
+        SCHNORR_SIG *signature = SCHNORR_get_signature(data);
+        if (signature == NULL)
         {
+            printf("eroare preluare semnatura\n");
+            return -1;
+        }
+        int signers_number = sk_X509_num(x509_stack);
+
+        EC_KEY **keys = (EC_KEY **)malloc(sizeof(EC_KEY *) * signers_number);
+        for (int i = 0; i < signers_number; i++)
+        {
+            X509 *cert = sk_X509_value(x509_stack, i);
+            EVP_PKEY *pkey = X509_get_pubkey(cert);
+
+            keys[i] = EVP_PKEY_get0_EC_KEY(pkey);
+        }
+
+        if (SCHNORR_multiple_verify(keys, signers_number, hash, SHA256_DIGEST_LENGTH, signature) != 0)
+        {
+            printf("eroare verificare\n");
             return -1;
         }
 
-        res = SCHNORR_verify(key, hash, SHA256_DIGEST_LENGTH, sig);
-        if (res != 0)
-        {
-            return -1;
-        }
-
-        SCHNORR_SIG_free(sig);
-        return res;
+        return 0;
     }
 }
