@@ -77,35 +77,40 @@ namespace LicentaWebApp.Client.ViewModels
             var url = "https://192.168.192.67:8443/auth-card";
             
             ServicePointManager.ServerCertificateValidationCallback += (_, _, _, _) => true;
-            
-            var response = await _httpClient.PostAsJsonAsync(url,helper);
-            
-            var content = await response.Content.ReadAsStringAsync();
-            content = content.Trim('[', ']');
-            Console.WriteLine(content);
-
-            if (content is "sun.security.smartcardio.PCSCException: SCARD_E_SERVICE_STOPPED" or 
-                "sun.security.smartcardio.PCSCException: SCARD_E_NO_READERS_AVAILABLE")
+            try
             {
-                return new AuthenticationResponse() { Token = "reader not connected" };
+                var response = await _httpClient.PostAsJsonAsync(url, helper);
+
+                var content = await response.Content.ReadAsStringAsync();
+                content = content.Trim('[', ']');
+                Console.WriteLine(content);
+
+                if (content is "sun.security.smartcardio.PCSCException: SCARD_E_SERVICE_STOPPED" or
+                    "sun.security.smartcardio.PCSCException: SCARD_E_NO_READERS_AVAILABLE")
+                {
+                    return new AuthenticationResponse() { Token = "reader not connected" };
+                }
+
+                if (content == "sun.security.smartcardio.PCSCException: SCARD_W_REMOVED_CARD")
+                {
+                    return new AuthenticationResponse() { Token = "card not connected" };
+                }
+
+                var authenticationRequest = new AuthenticationRequest
+                {
+                    EmailAddress = EmailAddress,
+                    SmartCardCode = content.Split(",").Select(Int32.Parse).ToArray()
+                };
+
+
+                var httpMessageResponse =
+                    await _httpClient.PostAsJsonAsync($"user/authenticate-challenge-card", authenticationRequest);
+                return await httpMessageResponse.Content.ReadFromJsonAsync<AuthenticationResponse>();
             }
-
-            if (content == "sun.security.smartcardio.PCSCException: SCARD_W_REMOVED_CARD")
+            catch (Exception)
             {
-                return new AuthenticationResponse() { Token = "card not connected" };
+                return new AuthenticationResponse() { Token ="error connecting" };
             }
-            
-            var authenticationRequest = new AuthenticationRequest
-            {
-                EmailAddress = EmailAddress,
-                SmartCardCode = content.Split(",").Select(Int32.Parse).ToArray()
-            };
-            
-
-            var httpMessageResponse =
-                await _httpClient.
-                    PostAsJsonAsync($"user/authenticate-challenge-card", authenticationRequest);
-            return await httpMessageResponse.Content.ReadFromJsonAsync<AuthenticationResponse>();
         }
 
         public async Task<AuthenticationResponse> GenerateCardCode()

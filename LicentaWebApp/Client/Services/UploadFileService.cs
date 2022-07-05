@@ -91,7 +91,6 @@ namespace LicentaWebApp.Client.Services
             {
                 await document.OpenReadStream(15 * megaBytes).CopyToAsync(ms);
                 var buffer = ms.ToArray();
-
                 byte[] pdf = {0x25, 0x50, 0x44, 0x46};
                 if (!buffer.Take(4).SequenceEqual(pdf))
                     return null;

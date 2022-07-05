@@ -8,7 +8,7 @@
 
 extern "C"
 {
-    int Multiple_Sign(const char *hash, const char *keys[], int signersNumber)
+    int MultipleSign(const char *hash, const char *keys[], int signersNumber)
     {
 
         EC_KEY *SCHNORR_keys[signersNumber];
@@ -58,7 +58,7 @@ extern "C"
         return 0;
     }
 
-    int Generate(const char *privateFilename, const char *publicFilename)
+    int GenerateKeyPair(const char *privateFilename, const char *publicFilename)
     {
         EC_KEY *key;
         int res = SCHNORR_generate_key(&key);
@@ -85,7 +85,7 @@ extern "C"
         return res;
     }
 
-    int Sign_Document(const char *hash, const char *privateFilename, const char *publicFilename)
+    int Sign(const char *hash, const char *privateFilename, const char *publicFilename)
     {
         EC_KEY *sign_key;
         EC_KEY *verify_key;
@@ -146,7 +146,7 @@ extern "C"
         return 0;
     }
 
-    int Generate_Certificate(const char *privateFilename, const char *publicFilename)
+    int GenerateCertificate(const char *privateFilename, const char *publicFilename)
     {
         EC_KEY *private_key;
         EC_KEY *public_key;
@@ -195,7 +195,7 @@ extern "C"
         return 0;
     }
 
-    int Verify_File(const char *hash, const char *signatureFileName)
+    int Verify(const char *hash, const char *signatureFileName)
     {
 
         SCHNORR_SIGNED_DATA *data;

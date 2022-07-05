@@ -28,13 +28,13 @@ namespace LicentaWebApp.Server.Controllers
         private const string ImportPath = "../../SchnorrSig/schnorrlib.dll";
 
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Sign_Document(string hash, string privateFilename, string publicFilename);
+        private static extern int Sign(string hash, string privateFilename, string publicFilename);
 
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Multiple_Sign(string hash, string[] privateKeys, int signersNumber);
+        private static extern int MultipleSign(string hash, string[] privateKeys, int signersNumber);
         
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Verify_File(string hash, string signaturePath);
+        private static extern int Verify(string hash, string signaturePath);
 
         private readonly UserContext _context;
 
@@ -86,7 +86,7 @@ namespace LicentaWebApp.Server.Controllers
                 Encryptor.DecryptFile(key.PrivateKeyPath,user.Password);
                 Encryptor.DecryptFile(key.PublicKeyPath,user.Password);
                 
-                var result = Sign_Document(payload.Hash, key.PrivateKeyPath, key.PublicKeyPath);
+                var result = Sign(payload.Hash, key.PrivateKeyPath, key.PublicKeyPath);
                 
                 Encryptor.EncryptFile(tempPrv,tempPass);
                 Encryptor.EncryptFile(tempPub,tempPass);
@@ -265,7 +265,7 @@ namespace LicentaWebApp.Server.Controllers
                     }
                 }
                 
-                var result = Multiple_Sign(hashString, keys.ToArray(), keys.Count);
+                var result = MultipleSign(hashString, keys.ToArray(), keys.Count);
                 if (result != 0)
                     return BadRequest("Error signing the document!");
 
@@ -313,7 +313,7 @@ namespace LicentaWebApp.Server.Controllers
                     payload.SignatureContent.Length);
                 fs.Close();
 
-                var result = Verify_File(payload.FileHash, "/home/razvan/temp_files/data.bin");
+                var result = Verify(payload.FileHash, "/home/razvan/temp_files/data.bin");
                 if (result != 0)
                     return BadRequest("Error verifying the signature");
 

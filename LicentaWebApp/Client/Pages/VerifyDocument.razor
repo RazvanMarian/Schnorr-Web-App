@@ -129,7 +129,6 @@
     {
         _processing = true;
         var res = await _uploadFileService.VerifyFile(_documentFile, _signatureFile);
-
         if (res != null)
         {
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
@@ -140,7 +139,6 @@
             _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
             _snackbar.Add("The signature could not be verified!", Severity.Error);
         }
-
         Clear();
         _processing = false;
     }

@@ -20,7 +20,7 @@ namespace LicentaWebApp.Server.Controllers
     {
         private const string ImportPath = "../../SchnorrSig/schnorrlib.dll";
         [DllImport(ImportPath, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Generate_Certificate(string privateFilename, string publicFilename);
+        private static extern int GenerateCertificate(string privateFilename, string publicFilename);
         
         private readonly UserContext _context;
         public CertificateController(UserContext context)
@@ -62,7 +62,7 @@ namespace LicentaWebApp.Server.Controllers
                 Encryptor.DecryptFile(key.PublicKeyPath,user.Password);
 
                 
-                var result = Generate_Certificate(key.PrivateKeyPath, key.PublicKeyPath);
+                var result = GenerateCertificate(key.PrivateKeyPath, key.PublicKeyPath);
                 if (result != 0)
                     return BadRequest("error");
                 var filePath = "/home/razvan/certificates/cert.pem";

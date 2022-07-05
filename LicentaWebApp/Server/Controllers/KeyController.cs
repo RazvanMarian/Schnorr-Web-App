@@ -22,7 +22,7 @@ namespace LicentaWebApp.Server.Controllers
     public class KeyController : ControllerBase
     {
         [DllImport("../../SchnorrSig/schnorrlib.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Generate(string privateFilename, string publicFilename);
+        private static extern int GenerateKeyPair(string privateFilename, string publicFilename);
 
 
         private readonly UserContext _context;
@@ -60,7 +60,7 @@ namespace LicentaWebApp.Server.Controllers
                 var privateFilename = "/home/razvan/keys/" + keyNameHash + "_" + currentUser.Id + ".prv";
                 var publicFilename = "/home/razvan/keys/" + keyNameHash + "_" + currentUser.Id + ".pub";
 
-                var returnCode = Generate(privateFilename, publicFilename);
+                var returnCode = GenerateKeyPair(privateFilename, publicFilename);
                 if (returnCode != 0)
                     return BadRequest("Generation error...");
 

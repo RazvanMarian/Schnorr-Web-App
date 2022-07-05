@@ -82,8 +82,15 @@
             Snackbar.Add("The smart card is not connected!", Severity.Error);
             return;
         }
+
+        if (authenticationResponse.Token == "error connecting")
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Could not establish connection!", Severity.Error);
+            return;
+        }
         
-        
+
         if (authenticationResponse.Token != string.Empty)
         {
             await LocalStorageService.SetItemAsync("jwt_token", authenticationResponse.Token);
