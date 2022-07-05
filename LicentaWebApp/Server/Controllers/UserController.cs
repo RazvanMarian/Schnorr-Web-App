@@ -579,8 +579,9 @@ namespace LicentaWebApp.Server.Controllers
         private void SendOtpMail(string email, string otp)
         {
             string to = email;
-            const string from = "schnorrsign@gmail.com"; 
-            const string password = "Minge789?";
+            const string from = "schnorrsign@gmail.com";
+            const string password = "juhkzzwmsgfpbnns";
+            //const string password = "Minge789?";
             string mail = "Your otp code is: " + otp +".";
             MailMessage message = new MailMessage();
             message.To.Add(to);
