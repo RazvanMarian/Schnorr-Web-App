@@ -1,0 +1,86 @@
+@page "/Register"
+@using LicentaWebApp.Client.ViewModels
+@inject ILoginViewModel LoginViewModel
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IUserViewModel UserViewModel
+@inject IDialogService DialogService
+
+<div style="max-width: 400px; margin: auto">
+    
+    <img src="logo.png" alt="" style="margin: auto; display: block;  padding-bottom: 1rem; max-width: 100%"/>
+    <EditForm Model="@LoginViewModel" OnValidSubmit="RegisterUser">
+
+        <DataAnnotationsValidator/>
+        <MudCard>
+            <MudCardContent>
+                <MudTextField Label="First Name" Class="mt-3"
+                                              @bind-Value="LoginViewModel.FirstName" For="@(() => LoginViewModel.FirstName)"/>
+                <MudTextField Label="Last Name" Class="mt-3"
+                              @bind-Value="LoginViewModel.LastName" For="@(() => LoginViewModel.LastName)"/>
+                <MudTextField Label="Email" Class="mt-3"
+                              @bind-Value="LoginViewModel.EmailAddress" For="@(() => LoginViewModel.EmailAddress)"/>
+                <MudTextField Label="Password" Class="mt-3"
+                              @bind-Value="LoginViewModel.Password" For="@(() => LoginViewModel.Password)"
+                              InputType="InputType.Password"/>
+            </MudCardContent>
+            <MudCardActions Style="text-align: center">
+                
+                 <span style="display: inline-block; width: 7.5rem; margin: auto"> 
+                     <MudButton Disabled="Processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                Style="margin: auto; width: 7.5rem; height: 2rem">
+                    
+                    @if (!Processing)
+                    {
+                        <MudText>Register</MudText>
+                    }
+                    else
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                        <MudText Style="margin-left: 0.5rem">Register</MudText>
+                    }
+                </MudButton>
+                
+                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="margin-top: 1rem; width: 7.5rem; height: 2rem"
+                                OnClick="RedirectBack">
+                    <MudText>Log in</MudText>
+                </MudButton>
+                </span> 
+            </MudCardActions>
+        </MudCard>
+
+    </EditForm>
+</div>
+
+
+@code {
+    private bool Processing { get; set; }
+
+    private async Task RegisterUser()
+    {
+        if (LoginViewModel.Password.Length < 8)
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("Password must be at least 8 characters long!", Severity.Error);
+            return;
+        }
+
+        var result = await LoginViewModel.RegisterUser();
+        if (result == "success")
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add("User created successfully", Severity.Success);
+            NavigationManager.NavigateTo("/Login");
+            return;
+        }
+
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+        Snackbar.Add(result, Severity.Error);
+    }
+
+    private void RedirectBack()
+    {
+        NavigationManager.NavigateTo("/Login");
+    }
+
+}

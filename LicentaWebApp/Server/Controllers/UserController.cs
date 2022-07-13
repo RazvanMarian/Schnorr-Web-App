@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using DataAccessLayer.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLayer.Models;
+using LicentaWebApp.Shared.PayloadModels;
 using LicentaWebApp.Shared.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +34,8 @@ namespace LicentaWebApp.Server.Controllers
             _configuration = configuration;
         }
 
+        
+        
         private string GenerateJwtToken(User user)
         {
             var secretKey = _configuration["JWTSettings:SecretKey"];
@@ -60,6 +63,36 @@ namespace LicentaWebApp.Server.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);
+        }
+
+        [HttpPost("register-user")]
+        public async Task<ActionResult<string>> RegisterUser(RegisterRequest registerRequest)
+        {
+            if (registerRequest.Password.Length < 8)
+                return BadRequest("password too short");
+            
+            var user = await _context.Users.Where(
+                u => u.EmailAddress == registerRequest.EmailAddress).AsNoTracking().FirstOrDefaultAsync();
+            
+            
+            
+            if(user!=null)
+                return BadRequest("Email already used");
+
+            var company = await _context.Companies.Where(c => c.Name == "ATM").FirstOrDefaultAsync();
+
+            PasswordHasher passwordHasher = new PasswordHasher(new HashingOptions());
+            _context.Users.Add(new User
+            {
+                Password = passwordHasher.Hash(registerRequest.Password),
+                FirstName = registerRequest.FirstName,
+                LastName = registerRequest.LastName,
+                CreatedDate = DateTime.Now,
+                EmailAddress =registerRequest.EmailAddress,
+                Company = company
+            });
+            await _context.SaveChangesAsync();
+            return Ok("success");
         }
 
         [HttpPost("authenticate-credentials")]

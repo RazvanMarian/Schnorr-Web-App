@@ -6,6 +6,8 @@ namespace LicentaWebApp.Client.ViewModels
 {
     public interface ILoginViewModel
     {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         [EmailAddress]
         public string EmailAddress { get; set; }
         public string Password { get; set; }
@@ -17,5 +19,6 @@ namespace LicentaWebApp.Client.ViewModels
         public Task<AuthenticationResponse> AuthenticateOtp();
         public Task<AuthenticationResponse> AuthenticateSmartCard(int[] helper);
         public Task<AuthenticationResponse> GenerateCardCode();
+        public Task<string> RegisterUser();
     }
 }

@@ -21,11 +21,11 @@
                               @bind-Value="LoginViewModel.Password" For="@(() => LoginViewModel.Password)"
                               InputType="InputType.Password"/>
             </MudCardContent>
-            <MudCardActions>
+            <MudCardActions Style="text-align: center">
                 
-                
-                <MudButton Disabled="Processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
-                           Class="ml-auto" Style="margin: auto">
+                 <span style="display: inline-block; width: 7.5rem; margin: auto"> 
+                     <MudButton Disabled="Processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                Style="margin: auto; width: 7.5rem; height: 2rem">
                     
                     @if (!Processing)
                     {
@@ -38,6 +38,11 @@
                     }
                 </MudButton>
                 
+                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="margin-top: 1rem; width: 7.5rem; height: 2rem"
+                                OnClick="RedirectToRegister">
+                    <MudText>Register</MudText>
+                </MudButton>
+                </span> 
             </MudCardActions>
         </MudCard>
         <MudText Typo="Typo.body2" Align="Align.Center" Class="my-4">
@@ -107,6 +112,11 @@
     private IDialogReference OpenDialog()
     {
         return DialogService.Show<LoginDialog>("Simple Dialog", new DialogOptions {DisableBackdropClick = true});
+    }
+
+    private void RedirectToRegister()
+    {
+        NavigationManager.NavigateTo("/Register");
     }
     
 }

@@ -7,11 +7,14 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using LicentaWebApp.Shared.Utils;
 using LicentaWebApp.Shared.Models;
+using LicentaWebApp.Shared.PayloadModels;
 
 namespace LicentaWebApp.Client.ViewModels
 {
     public class LoginViewModel: ILoginViewModel
     {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         [EmailAddress]
         public string EmailAddress { get; set; }
         public string Password { get; set; }
@@ -74,7 +77,7 @@ namespace LicentaWebApp.Client.ViewModels
 
         public async Task<AuthenticationResponse> AuthenticateSmartCard(int[] helper)
         {
-            var url = "https://192.168.192.67:8443/auth-card";
+            var url = "https://192.168.215.67:8443/auth-card";
             
             ServicePointManager.ServerCertificateValidationCallback += (_, _, _, _) => true;
             try
@@ -128,10 +131,26 @@ namespace LicentaWebApp.Client.ViewModels
             return await httpMessageResponse.Content.ReadFromJsonAsync<AuthenticationResponse>();
         }
 
+        public async Task<string> RegisterUser()
+        {
+            var registerRequest = new RegisterRequest
+            {
+                FirstName = this.FirstName,
+                LastName = this.LastName,
+                EmailAddress = this.EmailAddress,
+                Password = this.Password
+            };
+
+            var httpMessageResponse = await _httpClient.PostAsJsonAsync("user/register-user",registerRequest);
+            return await httpMessageResponse.Content.ReadAsStringAsync();
+        }
+
         public static implicit operator LoginViewModel(User user)
         {
             return new LoginViewModel
             {
+                FirstName = user.FirstName,
+                LastName=user.LastName,
                 EmailAddress = user.EmailAddress,
                 Password = user.Password
             };
@@ -141,8 +160,8 @@ namespace LicentaWebApp.Client.ViewModels
         {
             return new User
             {
-                FirstName = "first",
-                LastName = "last",
+                FirstName = loginViewModel.FirstName,
+                LastName = loginViewModel.LastName,
                 EmailAddress = loginViewModel.EmailAddress,
                 Password = loginViewModel.Password,
             };
